@@ -1,0 +1,69 @@
+import React from 'react';
+import HandNotation from './HandNotation';
+
+export default function PreviousHands({ history }) {
+  return (
+    <div
+      className="flex flex-col rounded-lg overflow-hidden h-full"
+      style={{
+        background: '#050d21',
+        border: '1px solid #C5A059',
+        minHeight: 0
+      }}
+    >
+      <div
+        className="text-center py-2"
+        style={{
+          color: '#E5B64E',
+          fontWeight: 800,
+          fontSize: 13,
+          letterSpacing: '1px',
+          borderBottom: '1px solid #C5A059',
+          background: 'linear-gradient(180deg, #0a1838 0%, #050d21 100%)'
+        }}
+      >
+        PREVIOUS HANDS
+      </div>
+      <div
+        className="grid grid-cols-3 px-3 py-1.5 text-center"
+        style={{
+          color: '#E5B64E',
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: '0.5px',
+          borderBottom: '1px solid rgba(197,160,89,0.3)'
+        }}
+      >
+        <div className="text-left">HAND</div>
+        <div>TYPE</div>
+        <div className="text-right">R/B L/H</div>
+      </div>
+      <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
+        {history.length === 0 && (
+          <div className="text-center py-6 text-xs" style={{ color: '#5a678a', opacity: 0.5 }}>
+            No hands yet
+          </div>
+        )}
+        {history.map((h, i) => (
+          <div
+            key={i}
+            className="grid grid-cols-3 px-3 py-1.5 text-center items-center"
+            style={{
+              background: i % 2 === 0 ? 'rgba(10,24,56,0.6)' : 'transparent',
+              fontSize: 11,
+              borderBottom: '1px solid rgba(197,160,89,0.08)'
+            }}
+          >
+            <div className="text-left">
+              <HandNotation cards={h.handCards} />
+              {h.hand === 'FOLD' && <span style={{ color: '#888' }}>FOLD</span>}
+              {h.hand === 'BOARD' && <span className="text-white">BOARD</span>}
+            </div>
+            <div style={{ color: h.color, fontWeight: 700 }}>{h.type}</div>
+            <div className="text-right" style={{ color: h.color, fontWeight: 700 }}>{h.rb}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
