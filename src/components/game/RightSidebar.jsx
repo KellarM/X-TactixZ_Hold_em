@@ -16,7 +16,7 @@ export default function RightSidebar({
 
   return (
     <div className="flex flex-col h-full" style={{ gap: 12 }}>
-      <div style={{ flex: 3, minHeight: 0 }}>
+      <div style={{ flex: 7, minHeight: 0 }}>
         <RankBoard
           odds={flopOdds}
           bets={bets}
@@ -26,7 +26,7 @@ export default function RightSidebar({
           onRemove={onRemove}
         />
       </div>
-      <div style={{ flex: 2, minHeight: 0 }}>
+      <div style={{ flex: 3, minHeight: 0 }}>
         <ColorBoard
           odds={flopOdds}
           bets={bets}
@@ -35,7 +35,7 @@ export default function RightSidebar({
           onRemove={onRemove}
         />
       </div>
-      <div style={{ flex: 2, minHeight: 0 }}>
+      <div style={{ flex: 1, minHeight: 0 }}>
         {riverOpen ? (
           <RiverBoard
             odds={riverOdds}
