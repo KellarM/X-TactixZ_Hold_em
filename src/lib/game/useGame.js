@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   FIXED_HANDS,
   DEALER_STOCK,
@@ -20,6 +20,19 @@ export const CHIPS = [
 ];
 
 const START_BANK = 99.99;
+const STORAGE_KEY = 'rapidfire_postflop_v1';
+
+function loadSavedState() {
+  try {
+    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== 'object') return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
 
 function emptyBets() {
   return {
@@ -36,17 +49,29 @@ function boardTotal(bets, board) {
 }
 
 export function useGame() {
-  const [phase, setPhase] = useState('ante'); // ante | postflop | postturn | resolved
-  const [bank, setBank] = useState(START_BANK);
-  const [ante, setAnte] = useState(0);
-  const [deck, setDeck] = useState([]);      // 5 community cards in deal order
-  const [revealed, setRevealed] = useState(0);
-  const [bets, setBets] = useState(emptyBets());
-  const [selectedChip, setSelectedChip] = useState(0.01);
-  const [history, setHistory] = useState([]);
-  const [result, setResult] = useState(null);
+  const saved = useRef(loadSavedState());
+  const [phase, setPhase] = useState(saved.current?.phase ?? 'ante'); // ante | postflop | postturn | resolved
+  const [bank, setBank] = useState(saved.current?.bank ?? START_BANK);
+  const [ante, setAnte] = useState(saved.current?.ante ?? 0);
+  const [deck, setDeck] = useState(saved.current?.deck ?? []);      // 5 community cards in deal order
+  const [revealed, setRevealed] = useState(saved.current?.revealed ?? 0);
+  const [bets, setBets] = useState(saved.current?.bets ?? emptyBets());
+  const [selectedChip, setSelectedChip] = useState(saved.current?.selectedChip ?? 0.01);
+  const [history, setHistory] = useState(saved.current?.history ?? []);
+  const [result, setResult] = useState(saved.current?.result ?? null);
   const [flopOdds, setFlopOdds] = useState(null);
   const [computing, setComputing] = useState(false);
+
+  // Persist game state so a preview refresh / reconnect restores the board
+  // instead of resetting to a fresh hand.
+  useEffect(() => {
+    try {
+      const data = { phase, bank, ante, deck, revealed, bets, selectedChip, history, result };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {
+      // ignore storage errors (private mode / quota)
+    }
+  }, [phase, bank, ante, deck, revealed, bets, selectedChip, history, result]);
 
   const community = deck.slice(0, revealed);
   const flop = deck.slice(0, 3);
