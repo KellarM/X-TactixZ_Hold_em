@@ -22,7 +22,9 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
       style={{
         background: '#051532',
         border: '1.5px solid #C5A059',
-        flex: '0 0 auto'
+        flex: '1 1 0',
+        minHeight: 0,
+        height: '100%'
       }}
     >
       <SectionTitle>CARD BOARD — HAND POSITIONS</SectionTitle>
@@ -37,14 +39,18 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
             color: '#8a9ab0',
             fontSize: 10,
             fontWeight: 600,
-            letterSpacing: '1px'
+            letterSpacing: '1px',
+            flexShrink: 0
           }}
         >
           FLOP PENDING — PLACE ANTE & DEAL TO REVEAL ODDS
         </div>
       )}
 
-      <div className="grid grid-cols-5 grid-rows-2" style={{ gap: 6 }}>
+      <div
+        className="grid grid-cols-5 grid-rows-2"
+        style={{ gap: 6, flex: 1, minHeight: 0 }}
+      >
         {FIXED_HANDS.map((hand) => {
           const isLocked = locked(hand.id);
           const p = payout(hand.id);
@@ -74,7 +80,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
 
 export function SectionTitle({ children }) {
   return (
-    <div className="text-center mb-2" style={{ color: '#E5B64E', fontSize: 11, fontWeight: 700, letterSpacing: '1.5px' }}>
+    <div className="text-center mb-2" style={{ color: '#E5B64E', fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', flexShrink: 0 }}>
       {children}
     </div>
   );
@@ -88,7 +94,8 @@ export function BettingSlot({ oddsLabel, locked, pending, bet, onPlace, onRemove
         background: '#04122b',
         border: `1px solid ${locked ? '#3a4a6a' : '#C5A059'}`,
         opacity: locked ? 0.45 : 1,
-        minHeight: 80,
+        height: '100%',
+        minHeight: 0,
         transition: 'opacity 0.2s, border-color 0.2s'
       }}
     >
