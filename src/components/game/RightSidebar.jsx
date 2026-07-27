@@ -1,24 +1,12 @@
 import React from 'react';
 import { Lock, Unlock } from 'lucide-react';
-import { RANK_LABELS, COLOR_POSITIONS, formatPayout, formatMoney } from '@/lib/game/cards';
-
-// One unified right-side panel.
-// 15 rows total: 7 Rank + 6 Color (2-col grid = 3 rows) + 2 River (1 row)
-// All rows share the same flex-1 height — fills top to bottom, no wasted space.
+import { RANK_LABELS, formatPayout, formatMoney } from '@/lib/game/cards';
 
 const GOLD = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
-const GOLD_BORDER = '#C5A059';
 const DARK_GOLD = 'linear-gradient(135deg, #6b5a2a 0%, #4a3e1e 100%)';
-
-function SectionLabel({ children, right }) {
-  return (
-    <div className="flex items-center justify-between px-2 py-0.5 flex-shrink-0"
-      style={{ background: '#07101f', borderBottom: `1px solid ${GOLD_BORDER}` }}>
-      <span style={{ color: '#E5B64E', fontSize: 9, fontWeight: 800, letterSpacing: '1.2px' }}>{children}</span>
-      {right && <span style={{ color: '#FFD700', fontSize: 9, fontWeight: 700 }}>{right}</span>}
-    </div>
-  );
-}
+const GOLD_BORDER = '#C5A059';
+const GAP = 3; // sliver gap between slots
+const RADIUS = 8; // rounded corners on every slot
 
 function BetBadge({ amount, onClick }) {
   if (!amount) return null;
@@ -26,10 +14,36 @@ function BetBadge({ amount, onClick }) {
     <span
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       className="absolute -top-2 -right-2 rounded-full px-1.5 py-0.5"
-      style={{ background: '#051025', color: '#E5B64E', fontSize: 8, fontWeight: 800, border: `1px solid ${GOLD_BORDER}`, zIndex: 10, cursor: 'pointer' }}
+      style={{
+        background: '#051025',
+        color: '#E5B64E',
+        fontSize: 8,
+        fontWeight: 800,
+        border: `1px solid ${GOLD_BORDER}`,
+        zIndex: 10,
+        cursor: 'pointer'
+      }}
     >
       {formatMoney(amount)}
     </span>
+  );
+}
+
+function SectionHeader({ children, right }) {
+  return (
+    <div
+      className="flex-shrink-0 flex items-center justify-between px-2"
+      style={{
+        background: '#07101f',
+        border: `1px solid ${GOLD_BORDER}`,
+        borderRadius: RADIUS,
+        padding: '3px 8px',
+        marginBottom: GAP,
+      }}
+    >
+      <span style={{ color: '#E5B64E', fontSize: 9, fontWeight: 800, letterSpacing: '1.2px' }}>{children}</span>
+      {right && <span style={{ color: '#FFD700', fontSize: 9, fontWeight: 700 }}>{right}</span>}
+    </div>
   );
 }
 
@@ -75,13 +89,15 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
 
   return (
     <div
-      className="flex flex-col h-full rounded-lg overflow-hidden"
-      style={{ border: `1.5px solid ${GOLD_BORDER}`, background: '#0a1224' }}
+      className="flex flex-col h-full"
+      style={{ gap: GAP }}
     >
 
-      {/* ── HAND RANKING — 7 rows ── */}
-      <SectionLabel>HAND RANKING</SectionLabel>
-      <div className="flex flex-col" style={{ flex: 7, minHeight: 0 }}>
+      {/* ── HAND RANKING HEADER ── */}
+      <SectionHeader>HAND RANKING</SectionHeader>
+
+      {/* ── 7 Rank slots — each individually rounded, small gap ── */}
+      <div className="flex flex-col" style={{ flex: 7, minHeight: 0, gap: GAP }}>
         {RANK_LABELS.map((label) => {
           const isLocked = rankLocked(label);
           const p = rankPayout(label);
@@ -91,19 +107,21 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
               key={label}
               disabled={isLocked}
               onClick={() => !isLocked && onPlace('rank', label)}
-              className="relative flex items-center justify-between px-3 flex-1"
+              className="relative flex items-center justify-between flex-1"
               style={{
                 background: isLocked ? DARK_GOLD : GOLD,
-                borderBottom: '1px solid rgba(0,0,0,0.25)',
+                border: `1px solid ${GOLD_BORDER}`,
+                borderRadius: RADIUS,
                 opacity: isLocked ? 0.55 : 1,
                 cursor: isLocked ? 'not-allowed' : 'pointer',
+                padding: '0 10px',
                 minHeight: 0,
               }}
             >
               <span style={{ color: '#3d3013', fontWeight: 800, fontSize: 12, letterSpacing: '0.3px' }}>
                 {label}
               </span>
-              <span className="flex items-center" style={{ gap: 6 }}>
+              <span className="flex items-center" style={{ gap: 5 }}>
                 <span style={{ color: '#3d3013', fontWeight: 700, fontSize: 10 }}>
                   {isLocked ? 'LOCKED' : formatPayout(p)}
                 </span>
@@ -117,9 +135,14 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         })}
       </div>
 
-      {/* ── COLOR BOARD — 6 positions in 2-col grid = 3 rows ── */}
-      <SectionLabel right={`Cap: ${formatMoney(caps.color)}`}>COLOR BOARD</SectionLabel>
-      <div className="grid grid-cols-2" style={{ flex: 3, minHeight: 0 }}>
+      {/* ── COLOR BOARD HEADER ── */}
+      <SectionHeader right={`Cap: ${formatMoney(caps.color)}`}>COLOR BOARD</SectionHeader>
+
+      {/* ── 6 Color slots — 2-col grid, each cell individually rounded ── */}
+      <div
+        className="grid grid-cols-2"
+        style={{ flex: 3, minHeight: 0, gap: GAP }}
+      >
         {colorPositions.map((pos) => {
           const isLocked = colorLocked(pos.key);
           const p = colorPayout(pos.key);
@@ -132,17 +155,18 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
               key={pos.key}
               disabled={isLocked}
               onClick={() => !isLocked && onPlace('color', pos.key)}
-              className="relative flex flex-col items-center justify-center flex-1"
+              className="relative flex flex-col items-center justify-center"
               style={{
                 background: bgColor,
-                border: '1px solid rgba(197,160,89,0.3)',
+                border: `1px solid ${GOLD_BORDER}`,
+                borderRadius: RADIUS,
                 opacity: isLocked ? 0.4 : 1,
                 cursor: isLocked ? 'not-allowed' : 'pointer',
                 minHeight: 0,
               }}
             >
               <span style={{ color: '#FFD700', fontWeight: 800, fontSize: 16, lineHeight: 1 }}>{pos.num}</span>
-              <span style={{ color: '#FFD700', fontWeight: 600, fontSize: 9, lineHeight: 1.3 }}>
+              <span style={{ color: '#FFD700', fontWeight: 600, fontSize: 9, lineHeight: 1.4 }}>
                 {isLocked ? 'LOCKED' : formatPayout(p)}
               </span>
               <BetBadge amount={bet} onClick={() => onRemove('color', pos.key)} />
@@ -151,9 +175,14 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         })}
       </div>
 
-      {/* ── RIVER — 2 positions in 1 row ── */}
-      <SectionLabel right={`Cap: ${formatMoney(caps.river)}`}>RIVER — LOW / HIGH</SectionLabel>
-      <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0 }}>
+      {/* ── RIVER HEADER ── */}
+      <SectionHeader right={`Cap: ${formatMoney(caps.river)}`}>RIVER — LOW / HIGH</SectionHeader>
+
+      {/* ── 2 River slots — individually rounded ── */}
+      <div
+        className="grid grid-cols-2"
+        style={{ flex: 1, minHeight: 0, gap: GAP }}
+      >
         {[
           { side: 'low', label: 'LOW', range: '2–7' },
           { side: 'high', label: 'HIGH', range: '8–A' }
@@ -165,10 +194,11 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
               key={b.side}
               disabled={isLocked}
               onClick={() => !isLocked && onPlace('river', b.side)}
-              className="relative flex flex-col items-center justify-center flex-1"
+              className="relative flex flex-col items-center justify-center"
               style={{
                 background: isLocked ? DARK_GOLD : GOLD,
-                border: '1px solid rgba(197,160,89,0.3)',
+                border: `1px solid ${GOLD_BORDER}`,
+                borderRadius: RADIUS,
                 opacity: isLocked ? 0.55 : 1,
                 cursor: isLocked ? 'not-allowed' : 'pointer',
                 minHeight: 0,
