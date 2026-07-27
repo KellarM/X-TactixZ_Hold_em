@@ -34,7 +34,7 @@ function getCardImageUrl(card) {
 // size: 'sm' (betting slot cards) | 'md' (community cards) | 'lg'
 export default function PlayingCard({ card, faceDown = false, size = 'md', className = '' }) {
   const dims = {
-    sm: { w: 36, h: 50,  rank: '13px', suit: '11px', big: 16, pad: '3px' },
+    sm: { w: 40, h: 56,  rank: '14px', suit: '12px', big: 18, pad: '3px' },
     md: { w: 66, h: 92,  rank: '22px', suit: '20px', big: 32, pad: '5px' },
     lg: { w: 80, h: 112, rank: '26px', suit: '24px', big: 40, pad: '6px' }
   }[size] || { w: 66, h: 92, rank: '22px', suit: '20px', big: 32, pad: '5px' };

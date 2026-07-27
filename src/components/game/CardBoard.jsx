@@ -1,6 +1,6 @@
 import React from 'react';
 import PlayingCard from './PlayingCard';
-import { FIXED_HANDS, formatPayout, formatMoney } from '@/lib/game/cards';
+import { FIXED_HANDS, formatPayout } from '@/lib/game/cards';
 import Chip from '@/components/game/Chip';
 
 export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }) {
@@ -25,7 +25,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
         border: '1.5px solid #C5A059',
         flex: '1 1 0',
         minHeight: 0,
-        height: '100%'
+        height: '100%',
       }}
     >
       <SectionTitle>CARD BOARD — HAND POSITIONS</SectionTitle>
@@ -40,7 +40,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
             fontSize: 10,
             fontWeight: 600,
             letterSpacing: '1px',
-            flexShrink: 0
+            flexShrink: 0,
           }}
         >
           FLOP PENDING — PLACE ANTE &amp; DEAL TO REVEAL ODDS
@@ -60,12 +60,11 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
               key={hand.id}
               oddsLabel={formatPayout(p)}
               locked={isLocked}
-              pending={false}
               bet={bet}
               onPlace={() => onPlace('card', hand.id)}
               onRemove={() => onRemove('card', hand.id)}
             >
-              <div className="flex" style={{ gap: 3 }}>
+              <div className="flex items-center justify-center" style={{ gap: 3 }}>
                 {hand.cards.map((c, i) => (
                   <PlayingCard key={i} card={c} size="sm" />
                 ))}
@@ -80,51 +79,73 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
 
 export function SectionTitle({ children }) {
   return (
-    <div className="text-center mb-2" style={{ color: '#E5B64E', fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', flexShrink: 0 }}>
+    <div
+      className="text-center mb-2"
+      style={{ color: '#E5B64E', fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', flexShrink: 0 }}
+    >
       {children}
     </div>
   );
 }
 
-export function BettingSlot({ oddsLabel, locked, pending, bet, onPlace, onRemove, children }) {
+export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, children }) {
   return (
     <div
-      className="relative flex flex-col items-center justify-between rounded-md p-2"
+      className="relative flex flex-col rounded-md"
       style={{
         background: '#04122b',
         border: `1px solid ${locked ? '#3a4a6a' : '#C5A059'}`,
         opacity: locked ? 0.45 : 1,
         height: '100%',
         minHeight: 0,
-        transition: 'opacity 0.2s, border-color 0.2s'
+        cursor: locked ? 'not-allowed' : 'pointer',
+        transition: 'opacity 0.2s, border-color 0.2s',
+        overflow: 'visible',
       }}
+      onClick={() => { if (!locked) onPlace(); }}
     >
-      <div style={{ color: '#FFD700', fontSize: 11, fontWeight: 700, marginBottom: 4 }}>
+      {/* Odds label — fixed at top */}
+      <div style={{
+        color: '#FFD700',
+        fontSize: 11,
+        fontWeight: 700,
+        textAlign: 'center',
+        padding: '5px 4px 2px',
+        flexShrink: 0,
+        lineHeight: 1,
+      }}>
         {locked ? 'LOCKED' : oddsLabel}
       </div>
-      <div>{children}</div>
+
+      {/* Cards — centred, always same position */}
+      <div style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '0 4px',
+      }}>
+        {children}
+      </div>
+
+      {/* Chip overlay — absolute, never shifts layout */}
       {bet > 0 && !locked && (
         <span
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          className="absolute"
           title="Click to remove bet"
           style={{
-            bottom: -10, left: '50%', transform: 'translateX(-50%)',
-            zIndex: 10, cursor: 'pointer',
-            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.8))',
+            position: 'absolute',
+            bottom: 6,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 10,
+            cursor: 'pointer',
+            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.9))',
+            pointerEvents: 'auto',
           }}
         >
-          <Chip amount={bet} scale={0.52} />
+          <Chip amount={bet} scale={0.55} />
         </span>
-      )}
-      {!locked && (
-        <button
-          onClick={onPlace}
-          className="mt-1 w-full rounded text-center"
-          style={{ color: '#C5A059', fontSize: 9, fontWeight: 700, padding: '2px 0' }}
-        >
-          {bet > 0 ? '' : 'BET'}
-        </button>
       )}
     </div>
   );
