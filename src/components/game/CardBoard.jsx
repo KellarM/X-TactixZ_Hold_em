@@ -44,7 +44,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
         </div>
       )}
 
-      <div className="grid grid-cols-5 grid-rows-2" style={{ gap: 8 }}>
+      <div className="grid grid-cols-5 grid-rows-2" style={{ gap: 6 }}>
         {FIXED_HANDS.map((hand) => {
           const isLocked = locked(hand.id);
           const p = payout(hand.id);
@@ -59,7 +59,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
               onPlace={() => onPlace('card', hand.id)}
               onRemove={() => onRemove('card', hand.id)}
             >
-              <div className="flex" style={{ gap: 4 }}>
+              <div className="flex" style={{ gap: 3 }}>
                 {hand.cards.map((c, i) => (
                   <PlayingCard key={i} card={c} size="sm" />
                 ))}
@@ -88,7 +88,7 @@ export function BettingSlot({ oddsLabel, locked, pending, bet, onPlace, onRemove
         background: '#04122b',
         border: `1px solid ${locked ? '#3a4a6a' : '#C5A059'}`,
         opacity: locked ? 0.45 : 1,
-        minHeight: 88,
+        minHeight: 80,
         transition: 'opacity 0.2s, border-color 0.2s'
       }}
     >
