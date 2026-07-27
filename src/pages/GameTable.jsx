@@ -1,6 +1,8 @@
 import React from 'react';
 import { useGame } from '@/lib/game/useGame';
 import { formatMoney } from '@/lib/game/cards';
+import { useGameSounds } from '@/hooks/useGameSounds';
+import GearMenu from '@/components/game/GearMenu';
 import PreviousHands from '@/components/game/PreviousHands';
 import DealerArea from '@/components/game/DealerArea';
 import CardBoard from '@/components/game/CardBoard';
@@ -11,6 +13,11 @@ import ResultOverlay from '@/components/game/ResultOverlay';
 export default function GameTable() {
   const game = useGame();
   const { phase, actions, handEvals, leadingHandIds, winnerHandIds } = game;
+  const { soundManager } = useGameSounds();
+
+  const handleResetBank = () => {
+    actions.newHand();
+  };
 
   let dealLabel = 'DEAL';
   let subLabel = 'PLACE AN ANTE TO DEAL';
@@ -112,13 +119,18 @@ export default function GameTable() {
           onFold={actions.fold}
           onDeal={onDeal}
           onNewHand={actions.newHand}
-          onSettings={() => {}}
+          onSettings={null}
         />
       </div>
 
       {phase === 'resolved' && game.result && (
         <ResultOverlay result={game.result} onClose={actions.newHand} />
       )}
+
+      {/* ■■ GearMenu — fixed bottom-right ■■ */}
+      <div style={{ position: 'fixed', bottom: 12, right: 12, zIndex: 150 }}>
+        <GearMenu soundManager={soundManager} onResetBank={handleResetBank} />
+      </div>
     </div>
   );
 }
