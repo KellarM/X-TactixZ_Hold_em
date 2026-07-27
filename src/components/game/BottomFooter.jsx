@@ -18,6 +18,8 @@ export default function BottomFooter({
   onClearAnte,
   onDeal,
   onNewHand,
+  onClearBets,
+  onFold,
   onSettings
 }) {
   return (
@@ -102,6 +104,26 @@ export default function BottomFooter({
       <div onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined} title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}>
         <StatBox label="BET SUM COUNT" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
       </div>
+
+      {/* Clear Bets / Fold — shown during post-flop and post-turn */}
+      {(phase === 'postflop' || phase === 'postturn') && (
+        <div className="flex" style={{ gap: 8 }}>
+          <button
+            onClick={onClearBets}
+            className="rounded-md py-2 px-3"
+            style={{ background: '#1a1030', border: '1px solid #C5A059', color: '#C5A059', fontWeight: 700, fontSize: 11, letterSpacing: '0.5px' }}
+          >
+            CLEAR BETS
+          </button>
+          <button
+            onClick={onFold}
+            className="rounded-md py-2 px-3"
+            style={{ background: '#3a1020', border: '1px solid #C5A059', color: '#FF6B6B', fontWeight: 700, fontSize: 11, letterSpacing: '0.5px' }}
+          >
+            FOLD
+          </button>
+        </div>
+      )}
 
       {/* Settings */}
       <button

@@ -76,8 +76,6 @@ export default function GameTable() {
             boardTotals={game.boardTotals}
             onPlace={actions.placeBet}
             onRemove={actions.removeBet}
-            onClearBets={actions.clearBets}
-            onFold={actions.fold}
           />
         </div>
       </div>
@@ -96,6 +94,8 @@ export default function GameTable() {
           else actions.setSelectedChip(v);
         }}
         onClearAnte={actions.clearAnte}
+        onClearBets={actions.clearBets}
+        onFold={actions.fold}
         onDeal={onDeal}
         onNewHand={actions.newHand}
         onSettings={() => {}}

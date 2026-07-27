@@ -7,10 +7,10 @@ const GOLD_BORDER = '#b8860b';
 export default function ColorBoard({ odds, bets, caps, onPlace, onRemove }) {
   const positions = [
     { key: '3R', num: '3', color: 'red', label: '3 Red' },
-    { key: '4R', num: '4', color: 'red', label: '4 Red' },
-    { key: '5R', num: '5', color: 'red', label: '5 Red' },
     { key: '3B', num: '3', color: 'black', label: '3 Black' },
+    { key: '4R', num: '4', color: 'red', label: '4 Red' },
     { key: '4B', num: '4', color: 'black', label: '4 Black' },
+    { key: '5R', num: '5', color: 'red', label: '5 Red' },
     { key: '5B', num: '5', color: 'black', label: '5 Black' }
   ];
 
