@@ -12,7 +12,6 @@ export default function RightSidebar({
   phase, flopOdds, riverOdds, bets, caps,
   onPlace, onRemove
 }) {
-  const colorOpen = !!flopOdds;
   const riverOpen = phase === 'postturn' || phase === 'resolved';
 
   return (
@@ -25,15 +24,13 @@ export default function RightSidebar({
         onPlace={onPlace}
         onRemove={onRemove}
       />
-      {colorOpen && (
-        <ColorBoard
-          odds={flopOdds}
-          bets={bets}
-          caps={caps}
-          onPlace={onPlace}
-          onRemove={onRemove}
-        />
-      )}
+      <ColorBoard
+        odds={flopOdds}
+        bets={bets}
+        caps={caps}
+        onPlace={onPlace}
+        onRemove={onRemove}
+      />
       {riverOpen ? (
         <RiverBoard
           odds={riverOdds}
