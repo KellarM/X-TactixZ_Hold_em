@@ -159,7 +159,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
 
       {/* ■■ HAND RANKING BOARD ■■ */}
       <div style={{ ...boardPanelStyle, flex: 5 }}>
-        <SectionHeader>HAND RANKING</SectionHeader>
+        <SectionHeader capValue={caps.rank}>HAND RANKING</SectionHeader>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {RANK_LABELS.map((label) => {
             const locked = rankLocked(label);

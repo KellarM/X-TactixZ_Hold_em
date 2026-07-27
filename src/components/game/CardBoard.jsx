@@ -96,7 +96,7 @@ export default function CardBoard({
         height: '100%'
       }}
     >
-      <SectionTitle>CARD BOARD — HAND POSITIONS</SectionTitle>
+      <SectionTitle capValue={caps && caps.card !== undefined ? caps.card : undefined}>CARD BOARD — HAND POSITIONS</SectionTitle>
 
       {isAntePhase && (
         <div
@@ -151,13 +151,29 @@ export default function CardBoard({
   );
 }
 
-export function SectionTitle({ children }) {
+export function SectionTitle({ children, capValue }) {
   return (
     <div
-      className="text-center mb-2"
-      style={{ color: '#E5B64E', fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', flexShrink: 0 }}
+      className="flex items-center justify-between mb-2"
+      style={{ flexShrink: 0, padding: '0 2px' }}
     >
-      {children}
+      <span style={{ color: '#E5B64E', fontSize: 11, fontWeight: 700, letterSpacing: '1.5px' }}>
+        {children}
+      </span>
+      {capValue !== undefined && (
+        <span style={{
+          background: 'rgba(0,0,0,0.85)',
+          border: '1px solid rgba(234,179,8,0.5)',
+          color: '#fbbf24',
+          fontSize: 10,
+          fontWeight: 900,
+          borderRadius: 99,
+          padding: '1px 7px',
+          whiteSpace: 'nowrap',
+        }}>
+          Match Cap: {typeof capValue === 'number' ? ('$' + capValue.toFixed(2)) : capValue}
+        </span>
+      )}
     </div>
   );
 }
