@@ -12,7 +12,6 @@ export default function GameTable() {
   const game = useGame();
   const { phase, actions } = game;
 
-  // Deal-button config per phase
   let dealLabel = 'DEAL';
   let subLabel = 'PLACE AN ANTE TO DEAL';
   let canDeal = false;
@@ -38,25 +37,26 @@ export default function GameTable() {
 
   return (
     <div
-      className="min-h-screen flex flex-col"
-      style={{ background: '#051025', color: '#FFFFFF' }}
+      className="flex flex-col"
+      style={{ background: '#051025', color: '#FFFFFF', height: '100vh', overflow: 'hidden' }}
     >
-      <div className="flex-1 flex p-3" style={{ gap: 12, minHeight: 0 }}>
-        {/* Left: Previous Hands — narrower */}
-        <div style={{ width: 180, flexShrink: 0 }}>
+      {/* Main content row — fills all space above footer */}
+      <div className="flex flex-1 min-h-0 p-3" style={{ gap: 12 }}>
+
+        {/* Left: Previous Hands */}
+        <div style={{ width: 175, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <PreviousHands history={game.history} />
         </div>
 
-        {/* Center: Dealer area + card board */}
-        <div className="flex-1 flex flex-col" style={{ gap: 10, minWidth: 0 }}>
+        {/* Center: Dealer area on top, Card Board below, empty space stretches between */}
+        <div className="flex-1 flex flex-col min-w-0" style={{ gap: 10 }}>
           <DealerArea
             statusMessage={game.statusMessage}
             community={game.community}
             revealed={game.revealed}
             phase={phase}
           />
-          {/* Card Board: fixed height, doesn't eat the whole column */}
-          <div style={{ flex: '0 0 auto' }}>
+          <div style={{ flexShrink: 0 }}>
             <CardBoard
               odds={game.flopOdds}
               bets={game.bets}
@@ -66,10 +66,12 @@ export default function GameTable() {
               onRemove={actions.removeBet}
             />
           </div>
+          {/* Spacer so Card Board doesn't get stretched */}
+          <div className="flex-1" />
         </div>
 
-        {/* Right: Rank + Color + River boards — wider for better proportions */}
-        <div style={{ width: 290, flexShrink: 0 }}>
+        {/* Right: single unified panel — fills full height */}
+        <div style={{ width: 285, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <RightSidebar
             phase={phase}
             flopOdds={game.flopOdds}
@@ -81,28 +83,32 @@ export default function GameTable() {
             onRemove={actions.removeBet}
           />
         </div>
+
       </div>
 
-      <BottomFooter
-        bank={game.bank}
-        ante={game.ante}
-        totalWagered={game.totalWagered}
-        selectedChip={game.selectedChip}
-        phase={phase}
-        canDeal={canDeal}
-        dealLabel={dealLabel}
-        subLabel={subLabel}
-        onChipSelect={(v) => {
-          if (phase === 'ante') actions.addToAnte(v);
-          else actions.setSelectedChip(v);
-        }}
-        onClearAnte={actions.clearAnte}
-        onClearBets={actions.clearBets}
-        onFold={actions.fold}
-        onDeal={onDeal}
-        onNewHand={actions.newHand}
-        onSettings={() => {}}
-      />
+      {/* Footer — fixed at bottom */}
+      <div style={{ flexShrink: 0 }}>
+        <BottomFooter
+          bank={game.bank}
+          ante={game.ante}
+          totalWagered={game.totalWagered}
+          selectedChip={game.selectedChip}
+          phase={phase}
+          canDeal={canDeal}
+          dealLabel={dealLabel}
+          subLabel={subLabel}
+          onChipSelect={(v) => {
+            if (phase === 'ante') actions.addToAnte(v);
+            else actions.setSelectedChip(v);
+          }}
+          onClearAnte={actions.clearAnte}
+          onClearBets={actions.clearBets}
+          onFold={actions.fold}
+          onDeal={onDeal}
+          onNewHand={actions.newHand}
+          onSettings={() => {}}
+        />
+      </div>
 
       {phase === 'resolved' && game.result && (
         <ResultOverlay result={game.result} onClose={actions.newHand} />
