@@ -50,28 +50,24 @@ const boardPanelStyle = {
   boxSizing: 'border-box',
 };
 
-// Rank board uses old pill badge (unchanged per spec)
+// Chip badge — absolute at right-centre of the row
 function BetBadge({ amount, onClick }) {
   if (!amount) return null;
   return (
     <span
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className="absolute"
+      title="Click to remove bet"
       style={{
-        top: -8, right: -8,
-        background: 'rgba(0,0,0,0.85)',
-        border: '1px solid rgba(234,179,8,0.5)',
-        color: '#fbbf24',
-        fontSize: 9,
-        fontWeight: 900,
-        borderRadius: 99,
-        padding: '1px 5px',
+        position: 'absolute',
+        top: '50%', right: 6,
+        transform: 'translateY(-50%)',
         zIndex: 10,
         cursor: 'pointer',
-        whiteSpace: 'nowrap',
+        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
+        pointerEvents: 'auto',
       }}
     >
-      {formatMoney(amount)}
+      <Chip amount={amount} scale={0.48} />
     </span>
   );
 }
@@ -129,7 +125,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
   return (
     <div className="flex flex-col h-full" style={{ gap: GAP }}>
 
-      {/* ■■ HAND RANKING BOARD — flex: 5, rank board UNCHANGED ■■ */}
+      {/* ■■ HAND RANKING BOARD — flex: 5 ■■ */}
       <div style={{ ...boardPanelStyle, flex: 5 }}>
         <SectionHeader>HAND RANKING</SectionHeader>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -163,7 +159,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ COLOR BOARD — chip inline on RIGHT ■■ */}
+      {/* ■■ COLOR BOARD — centered column, chip absolute right ■■ */}
       <div style={{ ...boardPanelStyle, flex: 3 }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -179,33 +175,21 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
                 key={pos.key}
                 disabled={locked}
                 onClick={() => !locked && onPlace('color', pos.key)}
-                className="relative flex items-center justify-between"
-                style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer', padding: '0 8px', gap: 4 }}
+                className="relative flex flex-col items-center justify-center"
+                style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {/* Left: number + payout */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1 }}>
-                  <span style={{ ...goldEmbossText, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
-                  <span style={{ ...goldEmbossText, fontSize: 10, fontWeight: 800, lineHeight: 1.3 }}>
-                    {locked ? 'LOCKED' : formatPayout(p)}
-                  </span>
-                </div>
-                {/* Right: chip when bet placed */}
-                {bet > 0 && !locked && (
-                  <span
-                    onClick={(e) => { e.stopPropagation(); onRemove('color', pos.key); }}
-                    title="Click to remove bet"
-                    style={{ cursor: 'pointer', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))', flexShrink: 0 }}
-                  >
-                    <Chip amount={bet} scale={0.52} />
-                  </span>
-                )}
+                <span style={{ ...goldEmbossText, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
+                <span style={{ ...goldEmbossText, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
+                  {locked ? 'LOCKED' : formatPayout(p)}
+                </span>
+                <BetBadge amount={bet} onClick={() => onRemove('color', pos.key)} />
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* ■■ RIVER — LOW / HIGH — chip inline on RIGHT ■■ */}
+      {/* ■■ RIVER — LOW / HIGH — centered column, chip absolute right ■■ */}
       <div style={{ ...boardPanelStyle, flex: 2 }}>
         <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -221,27 +205,15 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
                 key={b.side}
                 disabled={locked}
                 onClick={() => !locked && onPlace('river', b.side)}
-                className="relative flex items-center justify-between"
-                style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer', padding: '0 10px', gap: 4 }}
+                className="relative flex flex-col items-center justify-center"
+                style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {/* Left: label + range + payout */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1 }}>
-                  <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
-                  <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 15, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
-                  <span style={{ color: '#000', fontWeight: 900, fontSize: 12, lineHeight: 1 }}>
-                    {locked ? (riverOpen ? 'LOCKED' : 'AFTER TURN') : formatPayout(riverPayout(b.side))}
-                  </span>
-                </div>
-                {/* Right: chip when bet placed */}
-                {bet > 0 && !locked && (
-                  <span
-                    onClick={(e) => { e.stopPropagation(); onRemove('river', b.side); }}
-                    title="Click to remove bet"
-                    style={{ cursor: 'pointer', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.8))', flexShrink: 0 }}
-                  >
-                    <Chip amount={bet} scale={0.52} />
-                  </span>
-                )}
+                <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
+                <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
+                <span style={{ color: '#000', fontWeight: 900, fontSize: 13, lineHeight: 1 }}>
+                  {locked ? (riverOpen ? 'LOCKED' : 'AFTER TURN') : formatPayout(riverPayout(b.side))}
+                </span>
+                <BetBadge amount={bet} onClick={() => onRemove('river', b.side)} />
               </button>
             );
           })}

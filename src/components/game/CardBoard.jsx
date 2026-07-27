@@ -64,7 +64,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
               onPlace={() => onPlace('card', hand.id)}
               onRemove={() => onRemove('card', hand.id)}
             >
-              <div className="flex items-center justify-center" style={{ gap: 3 }}>
+              <div style={{ display: 'flex', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
                 {hand.cards.map((c, i) => (
                   <PlayingCard key={i} card={c} size="sm" />
                 ))}
@@ -91,51 +91,57 @@ export function SectionTitle({ children }) {
 export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, children }) {
   return (
     <div
-      className="relative flex flex-col rounded-md"
+      className="relative rounded-md"
       style={{
         background: '#04122b',
         border: `1px solid ${locked ? '#3a4a6a' : '#C5A059'}`,
-        opacity: locked ? 0.45 : 1,
+        opacity: locked ? 0.5 : 1,
         height: '100%',
         minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
         cursor: locked ? 'not-allowed' : 'pointer',
         transition: 'opacity 0.2s, border-color 0.2s',
         overflow: 'visible',
+        userSelect: 'none',
       }}
       onClick={() => { if (!locked) onPlace(); }}
     >
-      {/* Odds label — fixed at top */}
+      {/* Odds label — top */}
       <div style={{
         color: '#FFD700',
         fontSize: 11,
         fontWeight: 700,
-        textAlign: 'center',
-        padding: '5px 4px 2px',
+        padding: '5px 4px 3px',
         flexShrink: 0,
         lineHeight: 1,
+        textAlign: 'center',
+        width: '100%',
       }}>
         {locked ? 'LOCKED' : oddsLabel}
       </div>
 
-      {/* Cards — centred, always same position */}
+      {/* Cards — flex-1, always centred */}
       <div style={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '0 4px',
+        width: '100%',
+        padding: '0 4px 4px',
       }}>
         {children}
       </div>
 
-      {/* Chip overlay — absolute, never shifts layout */}
+      {/* Chip — absolute overlay at bottom-centre */}
       {bet > 0 && !locked && (
         <span
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
           title="Click to remove bet"
           style={{
             position: 'absolute',
-            bottom: 6,
+            bottom: 5,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 10,
@@ -144,7 +150,7 @@ export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, childre
             pointerEvents: 'auto',
           }}
         >
-          <Chip amount={bet} scale={0.55} />
+          <Chip amount={bet} scale={0.52} />
         </span>
       )}
     </div>

@@ -1,153 +1,176 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useGame } from '@/lib/game/useGame';
 import { formatMoney } from '@/lib/game/cards';
-import { useGameSounds } from '@/hooks/useGameSounds';
+import { useGameSounds } from '@/lib/game/useGameSounds';
 import PreviousHands from '@/components/game/PreviousHands';
 import DealerArea from '@/components/game/DealerArea';
 import CardBoard from '@/components/game/CardBoard';
 import RightSidebar from '@/components/game/RightSidebar';
 import BottomFooter from '@/components/game/BottomFooter';
 import ResultOverlay from '@/components/game/ResultOverlay';
-import GearMenu from '@/components/game/GearMenu';
-
-// ■■ Layout constants ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-// Previous Hands rail: w-56 = 224px
-// Right sidebar: 285px — full height, OUTSIDE the footer zone
-// Gap between columns: 6px
-// Outer padding: 6px
-
-const SIDEBAR_WIDTH = 285;
-const GAP = 6;
-const PAD = 6;
+import SettingsModal from '@/components/game/SettingsModal';
 
 export default function GameTable() {
   const game = useGame();
   const { phase, actions } = game;
-  const { soundManager } = useGameSounds();
+  const sounds = useGameSounds();
 
-  const handleResetBank = () => {
-    actions.newHand && actions.newHand();
-    if (typeof actions.resetBank === 'function') actions.resetBank();
+  const [showSettings, setShowSettings] = useState(false);
+  const [playerStats, setPlayerStats] = useState({
+    totalBets: 0,
+    totalWins: 0,
+    roundsPlayed: 0,
+    roundsWon: 0,
+    highestMultiplier: 0,
+    highestBalance: null,
+    lowestBalance: null,
+  });
+
+  // Preload / start ambient on first user interaction
+  useEffect(() => {
+    const handler = () => sounds.preloadSounds();
+    window.addEventListener('pointerdown', handler, { once: true });
+    return () => window.removeEventListener('pointerdown', handler);
+  }, []);
+
+  // Update player stats when a hand resolves
+  useEffect(() => {
+    if (phase === 'resolved' && game.result) {
+      const r = game.result;
+      const betTotal = r.totalWagered ?? 0;
+      const winTotal = r.totalPayout  ?? 0;
+      const multiplier = betTotal > 0 ? winTotal / betTotal : 0;
+      setPlayerStats(prev => ({
+        totalBets:         prev.totalBets + betTotal,
+        totalWins:         prev.totalWins + winTotal,
+        roundsPlayed:      prev.roundsPlayed + 1,
+        roundsWon:         prev.roundsWon + (winTotal > betTotal ? 1 : 0),
+        highestMultiplier: Math.max(prev.highestMultiplier, multiplier),
+        highestBalance:    prev.highestBalance == null ? game.bank : Math.max(prev.highestBalance, game.bank),
+        lowestBalance:     prev.lowestBalance  == null ? game.bank : Math.min(prev.lowestBalance,  game.bank),
+      }));
+      if (winTotal > 0) sounds.playCardDeal();
+    }
+  }, [phase]);
+
+  // Sound on chip place / remove
+  const handlePlaceBet = useCallback((...args) => {
+    sounds.playChipPlace();
+    actions.placeBet(...args);
+  }, [actions]);
+
+  const handleRemoveBet = useCallback((...args) => {
+    sounds.playChipRemove();
+    actions.removeBet(...args);
+  }, [actions]);
+
+  const handleDeal = () => {
+    sounds.playCardDeal();
+    if (phase === 'ante')     actions.deal();
+    else if (phase === 'postflop') actions.dealTurn();
+    else if (phase === 'postturn') actions.dealRiver();
   };
 
   let dealLabel = 'DEAL';
-  let subLabel = 'PLACE AN ANTE TO DEAL';
-  let canDeal = false;
+  let subLabel  = 'PLACE AN ANTE TO DEAL';
+  let canDeal   = false;
   if (phase === 'ante') {
     dealLabel = 'DEAL';
-    subLabel = game.ante > 0
+    subLabel  = game.ante > 0
       ? `ANTE ${formatMoney(game.ante)} — PRESS TO DEAL FLOP`
       : 'SELECT A CHIP, PLACE AN ANTE, THEN DEAL';
     canDeal = game.ante > 0 && game.ante <= game.bank;
   } else if (phase === 'postflop') {
     dealLabel = 'DEAL TURN';
-    subLabel = 'CONFIRM BETS — DEAL THE TURN';
-    canDeal = !game.computing;
+    subLabel  = 'CONFIRM BETS — DEAL THE TURN';
+    canDeal   = !game.computing;
   } else if (phase === 'postturn') {
     dealLabel = 'DEAL RIVER';
-    subLabel = 'PLACE RIVER BET OR DEAL NOW';
-    canDeal = true;
+    subLabel  = 'PLACE RIVER BET OR DEAL NOW';
+    canDeal   = true;
   }
-
-  const onDeal = () => {
-    if (phase === 'ante') actions.deal();
-    else if (phase === 'postflop') actions.dealTurn();
-    else if (phase === 'postturn') actions.dealRiver();
-  };
 
   return (
     <div
-      className="flex"
+      className="flex flex-col"
       style={{ background: '#051025', color: '#FFFFFF', height: '100vh', overflow: 'hidden' }}
     >
-      {/* ■■■ LEFT + CENTER COLUMN — flex-1, contains its own footer ■■■ */}
-      <div className="flex flex-col" style={{ flex: 1, minWidth: 0 }}>
-        {/* ■■ Main content row ■■ */}
-        <div
-          className="flex flex-1 min-h-0"
-          style={{ padding: PAD, gap: GAP }}
-        >
-          {/* LEFT: Previous Hands — 224px */}
-          <div style={{ width: 224, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
-            <PreviousHands history={game.history} />
-          </div>
+      {/* ■■ Main content row ■■ */}
+      <div className="flex flex-1 min-h-0" style={{ padding: 6, gap: 6 }}>
 
-          {/* CENTER: Dealer area + Card Board */}
-          <div className="flex-1 flex flex-col min-w-0" style={{ gap: GAP }}>
-            <DealerArea
-              statusMessage={game.statusMessage}
-              community={game.community}
-              revealed={game.revealed}
+        {/* LEFT: Previous Hands */}
+        <div style={{ width: 224, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+          <PreviousHands history={game.history} />
+        </div>
+
+        {/* CENTER: Dealer area + Card Board */}
+        <div className="flex-1 flex flex-col min-w-0" style={{ gap: 6 }}>
+          <DealerArea
+            statusMessage={game.statusMessage}
+            community={game.community}
+            revealed={game.revealed}
+            phase={phase}
+          />
+          <div className="flex-1 min-h-0">
+            <CardBoard
+              odds={game.flopOdds}
+              bets={game.bets}
+              caps={game.caps}
               phase={phase}
+              onPlace={handlePlaceBet}
+              onRemove={handleRemoveBet}
             />
-            <div className="flex-1 min-h-0">
-              <CardBoard
-                odds={game.flopOdds}
-                bets={game.bets}
-                caps={game.caps}
-                phase={phase}
-                onPlace={actions.placeBet}
-                onRemove={actions.removeBet}
-                handEvals={game.handEvals}
-                leadingHandIds={game.leadingHandIds}
-                winnerHandIds={game.winnerHandIds}
-              />
-            </div>
           </div>
         </div>
 
-        {/* ■■ Footer — spans ONLY left+center, stops at right sidebar ■■ */}
-        <div style={{ flexShrink: 0 }}>
-          <BottomFooter
-            bank={game.bank}
-            ante={game.ante}
-            totalWagered={game.totalWagered}
-            selectedChip={game.selectedChip}
+        {/* RIGHT: sidebar */}
+        <div style={{ width: 285, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+          <RightSidebar
             phase={phase}
-            canDeal={canDeal}
-            dealLabel={dealLabel}
-            subLabel={subLabel}
-            onChipSelect={(v) => {
-              if (phase === 'ante') actions.addToAnte(v);
-              else actions.setSelectedChip(v);
-            }}
-            onClearAnte={actions.clearAnte}
-            onClearBets={actions.clearBets}
-            onFold={actions.fold}
-            onDeal={onDeal}
-            onNewHand={actions.newHand}
-            onSettings={null}
-            gearMenu={<GearMenu soundManager={soundManager} onResetBank={handleResetBank} />}
+            flopOdds={game.flopOdds}
+            riverOdds={game.riverOdds}
+            bets={game.bets}
+            caps={game.caps}
+            boardTotals={game.boardTotals}
+            onPlace={handlePlaceBet}
+            onRemove={handleRemoveBet}
           />
         </div>
-
-        {phase === 'resolved' && game.result && (
-          <ResultOverlay result={game.result} onClose={actions.newHand} />
-        )}
       </div>
 
-      {/* ■■■ RIGHT SIDEBAR — 285px, full height, OUTSIDE footer zone ■■■ */}
-      <div
-        style={{
-          width: SIDEBAR_WIDTH,
-          flexShrink: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          padding: PAD,
-          paddingLeft: 0,
-        }}
-      >
-        <RightSidebar
+      {/* ■■ Footer ■■ */}
+      <div style={{ flexShrink: 0 }}>
+        <BottomFooter
+          bank={game.bank}
+          ante={game.ante}
+          totalWagered={game.totalWagered}
+          selectedChip={game.selectedChip}
           phase={phase}
-          flopOdds={game.flopOdds}
-          riverOdds={game.riverOdds}
-          bets={game.bets}
-          caps={game.caps}
-          boardTotals={game.boardTotals}
-          onPlace={actions.placeBet}
-          onRemove={actions.removeBet}
+          canDeal={canDeal}
+          dealLabel={dealLabel}
+          subLabel={subLabel}
+          onChipSelect={(v) => {
+            if (phase === 'ante') actions.addToAnte(v);
+            else actions.setSelectedChip(v);
+          }}
+          onClearAnte={actions.clearAnte}
+          onClearBets={actions.clearBets}
+          onFold={actions.fold}
+          onDeal={handleDeal}
+          onNewHand={actions.newHand}
+          onSettings={() => setShowSettings(true)}
         />
       </div>
+
+      {phase === 'resolved' && game.result && (
+        <ResultOverlay result={game.result} onClose={actions.newHand} />
+      )}
+
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        playerStats={playerStats}
+      />
     </div>
   );
 }

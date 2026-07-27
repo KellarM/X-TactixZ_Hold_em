@@ -1,7 +1,7 @@
 import React from 'react';
 import { SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
 
-// Real card image URLs — same CDN as Classic game
+// Real card image URLs — all 10 fixed hand cards
 const CARD_IMAGES = {
   'A_diamonds':  'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/906a8f36c_image.png',
   '10_hearts':   'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/05d9e3ffe_image.png',
@@ -27,43 +27,39 @@ const CARD_IMAGES = {
 
 function getCardImageUrl(card) {
   if (!card) return null;
-  const key = `${card.rank}_${card.suit}`;
-  return CARD_IMAGES[key] ?? null;
+  return CARD_IMAGES[`${card.rank}_${card.suit}`] ?? null;
 }
 
-// size: 'sm' (betting slot cards) | 'md' (community cards) | 'lg'
+const CARD_BACK_URL = 'https://media.base44.com/images/public/69f3a45ad82dff5b772d4de2/1b33b172d_image.png';
+
+// size: 'sm' (hand slot) | 'md' (community) | 'lg'
 export default function PlayingCard({ card, faceDown = false, size = 'md', className = '' }) {
   const dims = {
-    sm: { w: 40, h: 56,  rank: '14px', suit: '12px', big: 18, pad: '3px' },
-    md: { w: 66, h: 92,  rank: '22px', suit: '20px', big: 32, pad: '5px' },
-    lg: { w: 80, h: 112, rank: '26px', suit: '24px', big: 40, pad: '6px' }
-  }[size] || { w: 66, h: 92, rank: '22px', suit: '20px', big: 32, pad: '5px' };
+    sm: { w: 50, h: 70 },
+    md: { w: 56, h: 80 },
+    lg: { w: 70, h: 98 },
+  }[size] || { w: 56, h: 80 };
 
-  // ■■ Face down / no card ■■
+  // ■■ Face down / card back
   if (faceDown || !card || !card.rank || !card.suit) {
     return (
-      <div
-        className={`relative flex flex-col items-center justify-center rounded-[6px] ${className}`}
+      <img
+        src={CARD_BACK_URL}
+        alt="Card back"
+        className={`rounded-[6px] ${className}`}
         style={{
-          width: dims.w, height: dims.h,
-          background: 'linear-gradient(135deg, #1a0a12 0%, #2a0a14 50%, #1a0a12 100%)',
+          width: dims.w,
+          height: dims.h,
+          objectFit: 'cover',
+          display: 'block',
+          flexShrink: 0,
           border: '1.5px solid #C5A059',
-          boxShadow: 'inset 0 0 6px rgba(0,0,0,0.6)',
         }}
-      >
-        <div className="absolute inset-1 rounded-[4px] opacity-30" style={{
-          backgroundImage:
-            'repeating-linear-gradient(45deg, #4a1020 0px, #4a1020 2px, transparent 2px, transparent 6px), ' +
-            'repeating-linear-gradient(-45deg, #4a1020 0px, #4a1020 2px, transparent 2px, transparent 6px)',
-        }} />
-        <div style={{ position: 'relative', fontSize: size === 'sm' ? 5 : 7, fontWeight: 800, color: '#E5B64E', letterSpacing: '0.5px' }}>
-          RAPID FIRE
-        </div>
-      </div>
+      />
     );
   }
 
-  // ■■ Real card image ■■
+  // ■■ Real image (fixed hand cards)
   const imgUrl = getCardImageUrl(card);
   if (imgUrl) {
     return (
@@ -72,9 +68,10 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
         alt={`${card.rank} of ${card.suit}`}
         className={`rounded-[6px] ${className}`}
         style={{
-          width: dims.w, height: dims.h,
+          width: dims.w,
+          height: dims.h,
           objectFit: 'cover',
-          border: '1px solid rgba(197,160,89,0.6)',
+          border: '1px solid rgba(197,160,89,0.5)',
           boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
           display: 'block',
           flexShrink: 0,
@@ -83,32 +80,32 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
     );
   }
 
-  // ■■ Text fallback for community cards not in the image map ■■
+  // ■■ Text fallback for community stock cards
   const isRed = SUIT_COLOR[card.suit] === 'red';
-  const color = isRed ? '#D11A1A' : '#0A0A0A';
+  const color = isRed ? '#dc2626' : '#000000';
   const sym = SUIT_SYMBOL[card.suit];
 
   return (
     <div
-      className={`relative rounded-[6px] flex flex-col ${className}`}
+      className={`rounded-lg flex flex-col shadow-lg select-none overflow-hidden relative ${className}`}
       style={{
-        width: dims.w, height: dims.h,
-        background: '#FAFAFA',
-        border: '1px solid #C5A059',
-        padding: dims.pad,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
+        width: dims.w,
+        height: dims.h,
+        background: '#ffffff',
+        border: `2px solid ${isRed ? 'rgba(239,68,68,0.6)' : 'rgba(107,114,128,0.6)'}`,
+        flexShrink: 0,
       }}
     >
-      <div className="flex flex-col items-start leading-none" style={{ color }}>
-        <span style={{ fontSize: dims.rank, fontWeight: 900, lineHeight: 1 }}>{card.rank}</span>
-        <span style={{ fontSize: dims.suit, lineHeight: 1, marginTop: -1 }}>{sym}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: '3px 4px 0', color, fontWeight: 'bold', lineHeight: 1 }}>
+        <div style={{ fontSize: size === 'md' ? '1.05em' : '0.9em' }}>{card.rank}</div>
+        <div style={{ fontSize: size === 'md' ? '0.55em' : '0.45em' }}>{sym}</div>
       </div>
-      <div className="flex-1 flex items-center justify-center">
-        <span style={{ fontSize: dims.big, color, lineHeight: 1, opacity: 0.9 }}>{sym}</span>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color, fontSize: size === 'md' ? '2.4em' : '2em', lineHeight: 1, opacity: 0.75 }}>
+        {sym}
       </div>
-      <div className="flex flex-col items-end leading-none rotate-180" style={{ color }}>
-        <span style={{ fontSize: dims.rank, fontWeight: 900, lineHeight: 1 }}>{card.rank}</span>
-        <span style={{ fontSize: dims.suit, lineHeight: 1, marginTop: -1 }}>{sym}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', padding: '0 4px 3px', color, fontWeight: 'bold', lineHeight: 1, transform: 'rotate(180deg)' }}>
+        <div style={{ fontSize: size === 'md' ? '1.05em' : '0.9em' }}>{card.rank}</div>
+        <div style={{ fontSize: size === 'md' ? '0.55em' : '0.45em' }}>{sym}</div>
       </div>
     </div>
   );
