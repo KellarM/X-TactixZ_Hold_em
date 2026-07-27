@@ -4,10 +4,8 @@ import { formatMoney } from '@/lib/game/cards';
 import PreviousHands from '@/components/game/PreviousHands';
 import DealerArea from '@/components/game/DealerArea';
 import CardBoard from '@/components/game/CardBoard';
-import RankBoard from '@/components/game/RankBoard';
-import ColorBoard from '@/components/game/ColorBoard';
-import RiverBoard from '@/components/game/RiverBoard';
-import InfoPanels from '@/components/game/InfoPanels';
+import AnteSpot from '@/components/game/AnteSpot';
+import RightSidebar from '@/components/game/RightSidebar';
 import BottomFooter from '@/components/game/BottomFooter';
 import ResultOverlay from '@/components/game/ResultOverlay';
 
@@ -17,11 +15,11 @@ export default function GameTable() {
 
   // Deal-button config per phase
   let dealLabel = 'DEAL';
-  let subLabel = 'PLACE A BET TO DEAL';
+  let subLabel = 'PLACE AN ANTE TO DEAL';
   let canDeal = false;
   if (phase === 'ante') {
     dealLabel = 'DEAL';
-    subLabel = game.ante > 0 ? `ANTE ${formatMoney(game.ante)} — PRESS TO DEAL FLOP` : 'PLACE A BET TO DEAL';
+    subLabel = game.ante > 0 ? `ANTE ${formatMoney(game.ante)} — PRESS TO DEAL FLOP` : 'SELECT A CHIP, PLACE AN ANTE, THEN DEAL';
     canDeal = game.ante > 0 && game.ante <= game.bank;
   } else if (phase === 'postflop') {
     dealLabel = 'DEAL TURN';
@@ -50,7 +48,7 @@ export default function GameTable() {
           <PreviousHands history={game.history} />
         </div>
 
-        {/* Center: Dealer area + boards */}
+        {/* Center: Dealer area + card board + ante spot */}
         <div className="flex-1 flex flex-col" style={{ gap: 12, minWidth: 0 }}>
           <DealerArea
             statusMessage={game.statusMessage}
@@ -66,55 +64,27 @@ export default function GameTable() {
             onPlace={actions.placeBet}
             onRemove={actions.removeBet}
           />
-          <div className="grid grid-cols-2" style={{ gap: 12 }}>
-            <ColorBoard
-              odds={game.flopOdds}
-              bets={game.bets}
-              caps={game.caps}
-              onPlace={actions.placeBet}
-              onRemove={actions.removeBet}
-            />
-            <RiverBoard
-              odds={game.riverOdds}
-              bets={game.bets}
-              caps={game.caps}
-              phase={phase}
-              onPlace={actions.placeBet}
-              onRemove={actions.removeBet}
-            />
-          </div>
+          {phase === 'ante' && (
+            <div className="flex justify-center">
+              <AnteSpot ante={game.ante} onClear={actions.clearAnte} />
+            </div>
+          )}
         </div>
 
-        {/* Right: Rank board + info panels */}
-        <div style={{ width: 230, flexShrink: 0 }} className="flex flex-col">
-          <div className="flex flex-col" style={{ gap: 12 }}>
-            <RankBoard
-              odds={game.flopOdds}
-              bets={game.bets}
-              caps={game.caps}
-              onPlace={actions.placeBet}
-              onRemove={actions.removeBet}
-            />
-            <InfoPanels phase={phase} boardTotals={game.boardTotals} />
-            {phase !== 'ante' && phase !== 'resolved' && (
-              <div className="flex" style={{ gap: 8 }}>
-                <button
-                  onClick={actions.clearBets}
-                  className="flex-1 rounded-md py-2"
-                  style={{ background: '#1a1030', border: '1px solid #C5A059', color: '#C5A059', fontWeight: 700, fontSize: 11 }}
-                >
-                  CLEAR BETS
-                </button>
-                <button
-                  onClick={actions.fold}
-                  className="flex-1 rounded-md py-2"
-                  style={{ background: '#3a1020', border: '1px solid #C5A059', color: '#FF6B6B', fontWeight: 700, fontSize: 11 }}
-                >
-                  FOLD
-                </button>
-              </div>
-            )}
-          </div>
+        {/* Right: Rank + Color + River boards (with locked placeholders) */}
+        <div style={{ width: 240, flexShrink: 0 }}>
+          <RightSidebar
+            phase={phase}
+            flopOdds={game.flopOdds}
+            riverOdds={game.riverOdds}
+            bets={game.bets}
+            caps={game.caps}
+            boardTotals={game.boardTotals}
+            onPlace={actions.placeBet}
+            onRemove={actions.removeBet}
+            onClearBets={actions.clearBets}
+            onFold={actions.fold}
+          />
         </div>
       </div>
 

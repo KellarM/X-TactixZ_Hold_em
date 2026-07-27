@@ -33,6 +33,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
               key={hand.id}
               oddsLabel={formatPayout(p)}
               locked={isLocked}
+              pending={isLocked && phase === 'ante'}
               bet={bet}
               onPlace={() => onPlace('card', hand.id)}
               onRemove={() => onRemove('card', hand.id)}
@@ -58,19 +59,19 @@ export function SectionTitle({ children }) {
   );
 }
 
-export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, children, accent }) {
+export function BettingSlot({ oddsLabel, locked, pending, bet, onPlace, onRemove, children, accent }) {
   return (
     <div
       className="relative flex flex-col items-center rounded-md p-2"
       style={{
         background: '#04122b',
-        border: `1px solid ${locked ? '#3a4a6a' : '#C5A059'}`,
-        opacity: locked ? 0.45 : 1,
+        border: `1px solid ${pending ? '#2a3550' : (locked ? '#3a4a6a' : '#C5A059')}`,
+        opacity: pending ? 0.78 : (locked ? 0.45 : 1),
         minHeight: 92
       }}
     >
-      <div style={{ color: '#FFD700', fontSize: 11, fontWeight: 700, marginBottom: 4 }}>
-        {locked ? 'LOCKED' : oddsLabel}
+      <div style={{ color: pending ? '#8a9ab0' : '#FFD700', fontSize: 11, fontWeight: 700, marginBottom: 4, letterSpacing: pending ? '0.5px' : 0 }}>
+        {locked ? (pending ? 'FLOP PENDING' : 'LOCKED') : oddsLabel}
       </div>
       <div>{children}</div>
       {bet > 0 && !locked && (

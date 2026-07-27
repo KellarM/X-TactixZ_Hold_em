@@ -5,7 +5,7 @@ import { SectionTitle } from './CardBoard';
 
 const GOLD_BTN = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
 
-export default function RankBoard({ odds, bets, caps, onPlace, onRemove }) {
+export default function RankBoard({ odds, bets, caps, onPlace, onRemove, phase }) {
   const locked = (label) => {
     if (!odds) return true;
     const o = odds.rankOdds[label];
@@ -45,7 +45,7 @@ export default function RankBoard({ odds, bets, caps, onPlace, onRemove }) {
               </span>
               <span className="flex items-center" style={{ gap: 8 }}>
                 <span style={{ color: '#3d3013', fontWeight: 700, fontSize: 11 }}>
-                  {isLocked ? 'LOCKED' : formatPayout(p)}
+                  {isLocked ? (phase === 'ante' ? 'FLOP PENDING' : 'LOCKED') : formatPayout(p)}
                 </span>
                 {isLocked ? (
                   <Lock size={15} color="#3d3013" strokeWidth={2.5} />
