@@ -263,8 +263,8 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ RIVER — LOW / HIGH — flex: 1 (1 row of 2-col) ■■ */}
-      <div style={{ ...boardPanelStyle, flex: 1 }}>
+      {/* ■■ RIVER — LOW / HIGH — flex: 4 (2× height) ■■ */}
+      <div style={{ ...boardPanelStyle, flex: 4 }}>
         <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {[
