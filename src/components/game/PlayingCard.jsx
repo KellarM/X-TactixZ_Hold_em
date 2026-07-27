@@ -5,12 +5,13 @@ import { SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
 // size: 'sm' (betting slot) | 'md' (community card) | 'lg'
 export default function PlayingCard({ card, faceDown = false, size = 'md', className = '' }) {
   const dims = {
-    sm: { w: 34, h: 48, rank: '13px', suit: '12px', pad: '3px' },
-    md: { w: 64, h: 90, rank: '20px', suit: '18px', pad: '5px' },
-    lg: { w: 78, h: 110, rank: '24px', suit: '22px', pad: '6px' }
+    sm: { w: 36, h: 50, rank: '13px', suit: '11px', big: 16, pad: '3px' },
+    md: { w: 66, h: 92, rank: '22px', suit: '20px', big: 32, pad: '5px' },
+    lg: { w: 80, h: 112, rank: '26px', suit: '24px', big: 40, pad: '6px' }
   }[size];
 
-  if (faceDown || !card) {
+  // Card back (face down or no card yet)
+  if (faceDown || !card || !card.rank || !card.suit) {
     return (
       <div
         className={`relative flex flex-col items-center justify-center rounded-[6px] ${className}`}
@@ -38,19 +39,23 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
             letterSpacing: '0.5px',
             lineHeight: 1
           }}>RAPID FIRE</div>
-          <div style={{
-            fontSize: size === 'sm' ? 4 : 5.5,
-            fontWeight: 700,
-            color: '#C5A059',
-            letterSpacing: '0.8px',
-            lineHeight: 1
-          }}>TEXAS HOLD'EM</div>
+          {size !== 'sm' && (
+            <div style={{
+              fontSize: 5.5,
+              fontWeight: 700,
+              color: '#C5A059',
+              letterSpacing: '0.8px',
+              lineHeight: 1
+            }}>TEXAS HOLD'EM</div>
+          )}
         </div>
       </div>
     );
   }
 
-  const color = SUIT_COLOR[card.suit] === 'red' ? '#D11A1A' : '#0A0A0A';
+  // Card face
+  const isRed = SUIT_COLOR[card.suit] === 'red';
+  const color = isRed ? '#D11A1A' : '#0A0A0A';
   const sym = SUIT_SYMBOL[card.suit];
 
   return (
@@ -59,22 +64,25 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
       style={{
         width: dims.w,
         height: dims.h,
-        background: '#FFFFFF',
+        background: '#FAFAFA',
         border: '1px solid #C5A059',
         padding: dims.pad,
         boxShadow: '0 2px 4px rgba(0,0,0,0.4)'
       }}
     >
+      {/* Top-left corner: rank + suit */}
       <div className="flex flex-col items-start leading-none" style={{ color }}>
-        <span style={{ fontSize: dims.rank, fontWeight: 800, lineHeight: 1 }}>{card.rank}</span>
-        <span style={{ fontSize: dims.suit, lineHeight: 1 }}>{sym}</span>
+        <span style={{ fontSize: dims.rank, fontWeight: 900, lineHeight: 1 }}>{card.rank}</span>
+        <span style={{ fontSize: dims.suit, lineHeight: 1, marginTop: -1 }}>{sym}</span>
       </div>
+      {/* Center: large suit symbol */}
       <div className="flex-1 flex items-center justify-center">
-        <span style={{ fontSize: size === 'sm' ? 18 : 30, color, lineHeight: 1 }}>{sym}</span>
+        <span style={{ fontSize: dims.big, color, lineHeight: 1, opacity: 0.9 }}>{sym}</span>
       </div>
+      {/* Bottom-right corner: rank + suit (rotated) */}
       <div className="flex flex-col items-end leading-none rotate-180" style={{ color }}>
-        <span style={{ fontSize: dims.rank, fontWeight: 800, lineHeight: 1 }}>{card.rank}</span>
-        <span style={{ fontSize: dims.suit, lineHeight: 1 }}>{sym}</span>
+        <span style={{ fontSize: dims.rank, fontWeight: 900, lineHeight: 1 }}>{card.rank}</span>
+        <span style={{ fontSize: dims.suit, lineHeight: 1, marginTop: -1 }}>{sym}</span>
       </div>
     </div>
   );

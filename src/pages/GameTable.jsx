@@ -42,31 +42,34 @@ export default function GameTable() {
       style={{ background: '#051025', color: '#FFFFFF' }}
     >
       <div className="flex-1 flex p-3" style={{ gap: 12, minHeight: 0 }}>
-        {/* Left: Previous Hands */}
-        <div style={{ width: 200, flexShrink: 0 }}>
+        {/* Left: Previous Hands — narrower */}
+        <div style={{ width: 180, flexShrink: 0 }}>
           <PreviousHands history={game.history} />
         </div>
 
-        {/* Center: Dealer area + card board + ante spot */}
-        <div className="flex-1 flex flex-col" style={{ gap: 12, minWidth: 0 }}>
+        {/* Center: Dealer area + card board */}
+        <div className="flex-1 flex flex-col" style={{ gap: 10, minWidth: 0 }}>
           <DealerArea
             statusMessage={game.statusMessage}
             community={game.community}
             revealed={game.revealed}
             phase={phase}
           />
-          <CardBoard
-            odds={game.flopOdds}
-            bets={game.bets}
-            caps={game.caps}
-            phase={phase}
-            onPlace={actions.placeBet}
-            onRemove={actions.removeBet}
-          />
+          {/* Card Board: fixed height, doesn't eat the whole column */}
+          <div style={{ flex: '0 0 auto' }}>
+            <CardBoard
+              odds={game.flopOdds}
+              bets={game.bets}
+              caps={game.caps}
+              phase={phase}
+              onPlace={actions.placeBet}
+              onRemove={actions.removeBet}
+            />
+          </div>
         </div>
 
-        {/* Right: Rank + Color + River boards (with locked placeholders) */}
-        <div style={{ width: 240, flexShrink: 0 }}>
+        {/* Right: Rank + Color + River boards — wider for better proportions */}
+        <div style={{ width: 290, flexShrink: 0 }}>
           <RightSidebar
             phase={phase}
             flopOdds={game.flopOdds}

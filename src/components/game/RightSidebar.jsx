@@ -15,8 +15,9 @@ export default function RightSidebar({
   const riverOpen = phase === 'postturn' || phase === 'resolved';
 
   return (
-    <div className="flex flex-col h-full" style={{ gap: 12 }}>
-      <div style={{ flex: 7, minHeight: 0 }}>
+    <div className="flex flex-col h-full" style={{ gap: 10 }}>
+      {/* Rank Board — less vertical weight */}
+      <div style={{ flex: 5, minHeight: 0 }}>
         <RankBoard
           odds={flopOdds}
           bets={bets}
@@ -26,7 +27,8 @@ export default function RightSidebar({
           onRemove={onRemove}
         />
       </div>
-      <div style={{ flex: 3, minHeight: 0 }}>
+      {/* Color Board — more vertical weight */}
+      <div style={{ flex: 4, minHeight: 0 }}>
         <ColorBoard
           odds={flopOdds}
           bets={bets}
@@ -35,7 +37,8 @@ export default function RightSidebar({
           onRemove={onRemove}
         />
       </div>
-      <div style={{ flex: 1, minHeight: 0 }}>
+      {/* River Board */}
+      <div style={{ flex: 2, minHeight: 0 }}>
         {riverOpen ? (
           <RiverBoard
             odds={riverOdds}

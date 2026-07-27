@@ -14,16 +14,37 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
     return o ? o.payout : null;
   };
 
+  const isAntePhase = phase === 'ante';
+
   return (
     <div
-      className="rounded-lg p-3 flex flex-col flex-1"
+      className="rounded-lg p-3 flex flex-col"
       style={{
         background: '#051532',
-        border: '1.5px solid #C5A059'
+        border: '1.5px solid #C5A059',
+        flex: '0 0 auto'
       }}
     >
       <SectionTitle>CARD BOARD — HAND POSITIONS</SectionTitle>
-      <div className="grid grid-cols-5 grid-rows-2 flex-1" style={{ gap: 8 }}>
+
+      {/* Single banner when in ante phase instead of per-slot "FLOP PENDING" */}
+      {isAntePhase && (
+        <div
+          className="text-center rounded-md py-1.5 mb-2"
+          style={{
+            background: 'rgba(197, 160, 89, 0.12)',
+            border: '1px dashed #C5A059',
+            color: '#8a9ab0',
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: '1px'
+          }}
+        >
+          FLOP PENDING — PLACE ANTE & DEAL TO REVEAL ODDS
+        </div>
+      )}
+
+      <div className="grid grid-cols-5 grid-rows-2" style={{ gap: 8 }}>
         {FIXED_HANDS.map((hand) => {
           const isLocked = locked(hand.id);
           const p = payout(hand.id);
@@ -33,7 +54,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
               key={hand.id}
               oddsLabel={formatPayout(p)}
               locked={isLocked}
-              pending={isLocked && phase === 'ante'}
+              pending={false}
               bet={bet}
               onPlace={() => onPlace('card', hand.id)}
               onRemove={() => onRemove('card', hand.id)}
@@ -59,26 +80,27 @@ export function SectionTitle({ children }) {
   );
 }
 
-export function BettingSlot({ oddsLabel, locked, pending, bet, onPlace, onRemove, children, accent }) {
+export function BettingSlot({ oddsLabel, locked, pending, bet, onPlace, onRemove, children }) {
   return (
     <div
-      className="relative flex flex-col items-center justify-between rounded-md p-2 h-full"
+      className="relative flex flex-col items-center justify-between rounded-md p-2"
       style={{
         background: '#04122b',
-        border: `1px solid ${pending ? '#2a3550' : (locked ? '#3a4a6a' : '#C5A059')}`,
-        opacity: pending ? 0.78 : (locked ? 0.45 : 1),
-        minHeight: 92
+        border: `1px solid ${locked ? '#3a4a6a' : '#C5A059'}`,
+        opacity: locked ? 0.45 : 1,
+        minHeight: 88,
+        transition: 'opacity 0.2s, border-color 0.2s'
       }}
     >
-      <div style={{ color: pending ? '#8a9ab0' : '#FFD700', fontSize: 11, fontWeight: 700, marginBottom: 4, letterSpacing: pending ? '0.5px' : 0 }}>
-        {locked ? (pending ? 'FLOP PENDING' : 'LOCKED') : oddsLabel}
+      <div style={{ color: '#FFD700', fontSize: 11, fontWeight: 700, marginBottom: 4 }}>
+        {locked ? 'LOCKED' : oddsLabel}
       </div>
       <div>{children}</div>
       {bet > 0 && !locked && (
         <button
           onClick={onRemove}
           className="absolute -top-2 -right-2 rounded-full px-1.5 py-0.5"
-          style={{ background: '#C5A059', color: '#051025', fontSize: 9, fontWeight: 800 }}
+          style={{ background: '#C5A059', color: '#051025', fontSize: 9, fontWeight: 800, zIndex: 10 }}
           title="Remove bet"
         >
           {formatMoney(bet)}
