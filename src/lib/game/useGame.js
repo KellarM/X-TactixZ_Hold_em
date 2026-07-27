@@ -231,6 +231,9 @@ export function useGame() {
   }, [ante, bank]);
 
   const placeBet = useCallback((board, position) => {
+    // Phase guard: card/rank/color only during postflop; river only during postturn
+    if (board === 'river' && phase !== 'postturn') return;
+    if (board !== 'river' && phase !== 'postflop') return;
     const amount = selectedChip;
     if (amount <= 0) return;
     const cap = board === 'river'
@@ -252,9 +255,12 @@ export function useGame() {
     } else {
       setBets({ ...bets, [board]: { ...bets[board], [position]: +(positionCurrent + amount).toFixed(2) } });
     }
-  }, [selectedChip, ante, bank, bets, boardTotals]);
+  }, [phase, selectedChip, ante, bank, bets, boardTotals]);
 
   const removeBet = useCallback((board, position) => {
+    // Phase guard: can only remove bets during the phase they were placed
+    if (board === 'river' && phase !== 'postturn') return;
+    if (board !== 'river' && phase !== 'postflop') return;
     const current = board === 'river' ? (bets.river[position] || 0) : (bets[board][position] || 0);
     if (!current) return;
     setBank(+(bank + current).toFixed(2));
@@ -265,7 +271,7 @@ export function useGame() {
       delete nextBoard[position];
       setBets({ ...bets, [board]: nextBoard });
     }
-  }, [bank, bets]);
+  }, [phase, bank, bets]);
 
   const clearBets = useCallback(() => {
     const refund = boardTotals.card + boardTotals.rank + boardTotals.color + boardTotals.river;
