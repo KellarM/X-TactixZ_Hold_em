@@ -1,7 +1,7 @@
 import React from 'react';
 import { FIXED_HANDS, formatPayout, formatMoney } from '@/lib/game/cards';
 
-// ■■ Card image URLs pulled directly from original game (cardImages.js) ■■■■■■■■
+// ■■ Card image URLs from original game ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 const CARD_IMAGES = {
   'A_diamonds':  'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/906a8f36c_image.png',
   '10_hearts':   'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/05d9e3ffe_image.png',
@@ -30,7 +30,6 @@ function getCardImg(card) {
   return CARD_IMAGES[`${card.rank}_${card.suit}`] ?? null;
 }
 
-// Single card rendered as image (original game style) or fallback text
 function CardImg({ card }) {
   const url = getCardImg(card);
   if (url) {
@@ -49,7 +48,7 @@ function CardImg({ card }) {
       />
     );
   }
-  // Fallback: plain white card
+  // Fallback plain card
   const isRed = card.suit === 'hearts' || card.suit === 'diamonds';
   const sym = { spades: '♠', hearts: '♥', diamonds: '♦', clubs: '♣' }[card.suit] || '';
   return (
@@ -69,7 +68,10 @@ function CardImg({ card }) {
   );
 }
 
-export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }) {
+export default function CardBoard({
+  odds, bets, caps, phase, onPlace, onRemove,
+  handEvals = {}, leadingHandIds = [], winnerHandIds = []
+}) {
   const locked = (id) => {
     if (!odds) return true;
     const o = odds.cardOdds.find(x => x.handId === id);
@@ -121,12 +123,18 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
           const isLocked = locked(hand.id);
           const p = payout(hand.id);
           const bet = bets.card[hand.id] || 0;
+          const isLeading = leadingHandIds.includes(hand.id);
+          const isWinner = winnerHandIds.includes(hand.id);
+          const currentRank = handEvals[hand.id] || null;
           return (
             <BettingSlot
               key={hand.id}
               oddsLabel={formatPayout(p)}
               locked={isLocked}
               bet={bet}
+              isLeading={isLeading}
+              isWinner={isWinner}
+              currentRank={currentRank}
               onPlace={() => onPlace('card', hand.id)}
               onRemove={() => onRemove('card', hand.id)}
             >
@@ -154,38 +162,90 @@ export function SectionTitle({ children }) {
   );
 }
 
-export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, children }) {
+export function BettingSlot({ oddsLabel, locked, bet, isLeading, isWinner, currentRank, onPlace, onRemove, children }) {
+  const isActive = isLeading || isWinner;
+
+  const borderColor = isWinner
+    ? '#FFD700'
+    : isLeading
+    ? '#C5A059'
+    : locked
+    ? '#3a4a6a'
+    : '#C5A059';
+
+  const borderWidth = isActive ? 2 : 1;
+
+  const background = isWinner
+    ? 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)'
+    : isLeading
+    ? 'rgba(197,160,89,0.15)'
+    : '#04122b';
+
+  const oddsColor = isWinner
+    ? '#000'
+    : isLeading
+    ? '#FFD700'
+    : locked
+    ? '#6a7a9a'
+    : '#e8b84b';
+
   return (
     <div
       className="relative flex flex-col items-center justify-between rounded-md p-2"
       style={{
-        background: '#04122b',
-        border: `1px solid ${locked ? '#3a4a6a' : '#C5A059'}`,
-        opacity: locked ? 0.55 : 1,
+        background,
+        border: `${borderWidth}px solid ${borderColor}`,
+        opacity: locked && !isActive ? 0.45 : 1,
         height: '100%',
         minHeight: 0,
         boxSizing: 'border-box',
-        transition: 'opacity 0.2s, border-color 0.2s'
+        transition: 'all 0.25s ease',
+        boxShadow: isWinner
+          ? '0 0 16px rgba(255,215,0,0.6), 0 0 32px rgba(255,215,0,0.3)'
+          : isLeading
+          ? '0 0 10px rgba(197,160,89,0.4)'
+          : 'none'
       }}
     >
-      {/* Odds — top, Oswald font matching original */}
+      {/* Odds — top */}
       <div style={{
-        color: locked ? '#6a7a9a' : '#e8b84b',
+        color: oddsColor,
         fontFamily: 'Oswald, sans-serif',
         fontWeight: 700,
         fontSize: 13,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
-        textShadow: locked ? 'none' : '0 0 2px #000, 1px 1px 2px #000',
+        textShadow: locked && !isActive ? 'none' : '0 0 2px #000, 1px 1px 2px #000',
         marginBottom: 4,
         flexShrink: 0
       }}>
-        {locked ? 'LOCKED' : oddsLabel}
+        {locked && !isActive ? 'LOCKED' : oddsLabel}
       </div>
 
-      {/* Cards — centered, fills remaining space */}
+      {/* Cards — centered */}
       <div className="flex-1 flex items-center justify-center">
         {children}
+      </div>
+
+      {/* Current rank label — bottom, shows live hand during play */}
+      <div style={{
+        fontSize: 9,
+        fontWeight: 700,
+        fontFamily: 'Oswald, sans-serif',
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
+        color: isWinner ? '#000' : isLeading ? '#FFD700' : '#8a9ab0',
+        textShadow: isWinner ? 'none' : '0 1px 2px #000',
+        marginTop: 3,
+        minHeight: 12,
+        textAlign: 'center',
+        flexShrink: 0,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        width: '100%'
+      }}>
+        {currentRank || '\u00A0'}
       </div>
 
       {/* Bet badge */}
@@ -200,12 +260,26 @@ export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, childre
         </button>
       )}
 
+      {/* Winner badge */}
+      {isWinner && (
+        <div
+          className="absolute -top-2.5 -left-2.5 rounded-full px-1.5 py-0.5"
+          style={{ background: '#FFD700', color: '#000', fontSize: 9, fontWeight: 900, zIndex: 10, whiteSpace: 'nowrap' }}
+        >
+          WIN!
+        </div>
+      )}
+
       {/* BET button — bottom */}
       {!locked && (
         <button
           onClick={onPlace}
           className="mt-1 w-full rounded text-center"
-          style={{ color: '#C5A059', fontSize: 9, fontWeight: 700, padding: '2px 0', flexShrink: 0 }}
+          style={{
+            color: isWinner ? '#000' : '#C5A059',
+            fontSize: 9, fontWeight: 700,
+            padding: '2px 0', flexShrink: 0
+          }}
         >
           {bet > 0 ? formatMoney(bet) : 'BET'}
         </button>

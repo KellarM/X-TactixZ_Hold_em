@@ -8,15 +8,9 @@ import RightSidebar from '@/components/game/RightSidebar';
 import BottomFooter from '@/components/game/BottomFooter';
 import ResultOverlay from '@/components/game/ResultOverlay';
 
-// ── Layout constants — matched to original game (RapidFireGame.jsx) ──────────
-//   Previous Hands rail:  w-56 = 224px  (original: className="w-56")
-//   Right sidebar:        285px          (unchanged)
-//   Gap between columns:  6px            (original: gap-1.5 = 6px)
-//   Outer padding:        6px            (original: p-1.5 = 6px)
-
 export default function GameTable() {
   const game = useGame();
-  const { phase, actions } = game;
+  const { phase, actions, handEvals, leadingHandIds, winnerHandIds } = game;
 
   let dealLabel = 'DEAL';
   let subLabel = 'PLACE AN ANTE TO DEAL';
@@ -48,22 +42,18 @@ export default function GameTable() {
       className="flex flex-col"
       style={{ background: '#051025', color: '#FFFFFF', height: '100vh', overflow: 'hidden' }}
     >
-      {/* ── Main content row ─────────────────────────────────────────────── */}
-      {/* gap-1.5 = 6px, p-1.5 = 6px — matching original game layout */}
+      {/* ■■ Main content row ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */}
       <div
         className="flex flex-1 min-h-0"
         style={{ padding: 6, gap: 6 }}
       >
-
-        {/* LEFT: Previous Hands — w-56 = 224px (original game spec) */}
+        {/* LEFT: Previous Hands */}
         <div style={{ width: 224, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <PreviousHands history={game.history} />
         </div>
 
-        {/* CENTER: Dealer area fixed heights + Card Board fills remaining */}
+        {/* CENTER: Dealer area + Card Board */}
         <div className="flex-1 flex flex-col min-w-0" style={{ gap: 6 }}>
-
-          {/* DealerArea: 32px announcement + 152px community cards (from original) */}
           <DealerArea
             statusMessage={game.statusMessage}
             community={game.community}
@@ -71,7 +61,7 @@ export default function GameTable() {
             phase={phase}
           />
 
-          {/* Card Board — flex-1 fills remaining center height, no spacer */}
+          {/* Card Board — flex-1 fills remaining center height */}
           <div className="flex-1 min-h-0">
             <CardBoard
               odds={game.flopOdds}
@@ -80,11 +70,14 @@ export default function GameTable() {
               phase={phase}
               onPlace={actions.placeBet}
               onRemove={actions.removeBet}
+              handEvals={handEvals}
+              leadingHandIds={leadingHandIds}
+              winnerHandIds={winnerHandIds}
             />
           </div>
         </div>
 
-        {/* RIGHT: unified sidebar — 285px, fills full height */}
+        {/* RIGHT: Sidebar */}
         <div style={{ width: 285, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
           <RightSidebar
             phase={phase}
@@ -97,10 +90,9 @@ export default function GameTable() {
             onRemove={actions.removeBet}
           />
         </div>
-
       </div>
 
-      {/* ── Footer — fixed at bottom ─────────────────────────────────────── */}
+      {/* ■■ Footer ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■ */}
       <div style={{ flexShrink: 0 }}>
         <BottomFooter
           bank={game.bank}

@@ -4,11 +4,13 @@ import {
   DEALER_STOCK,
   RANK_LABELS,
   COLOR_POSITIONS,
+  SUIT_SYMBOL,
   formatMoney
 } from './cards';
 import { shuffleDeck, dealCommunity } from './shuffle';
 import { computePostFlopOdds, computeRiverOdds } from './oddsEngine';
 import { settleRound } from './gameLogic';
+import { bestHand, compare5 } from './pokerEvaluator';
 
 export const CHIPS = [
   { value: 0.01, label: '1¢' },
@@ -48,12 +50,60 @@ function boardTotal(bets, board) {
   return Object.values(bets[board]).reduce((a, b) => a + b, 0);
 }
 
+// Describe a card as "K♠" style for dealer messages
+function cardDisplay(card) {
+  if (!card) return '';
+  const sym = SUIT_SYMBOL[card.suit] || '';
+  return `${card.rank}${sym}`;
+}
+
+// Find the leading hand(s) against the current community board
+function findLeadingHands(community) {
+  if (!community || community.length < 3) return { handIds: [], rankName: null };
+  const evals = FIXED_HANDS.map(h => {
+    const all = [...h.cards, ...community];
+    if (all.length < 5) return { id: h.id, label: h.label, result: null };
+    const result = bestHand(h.cards, community.length >= 5
+      ? community
+      : [...community, ...Array(5 - community.length).fill(null)].slice(0, 5));
+    return { id: h.id, label: h.label, result };
+  }).filter(e => e.result !== null);
+
+  if (evals.length === 0) return { handIds: [], rankName: null };
+
+  let best = evals[0];
+  for (const e of evals) {
+    if (compare5(e.result, best.result) > 0) best = e;
+  }
+  const leaders = evals.filter(e => compare5(e.result, best.result) === 0);
+  return { handIds: leaders.map(e => e.id), rankName: best.result.name };
+}
+
+// Evaluate current best hand rank for each fixed hand against community
+function evaluateHandRanks(community) {
+  if (!community || community.length < 3) return {};
+  const out = {};
+  for (const h of FIXED_HANDS) {
+    const all = [...h.cards, ...community];
+    if (all.length < 5) { out[h.id] = null; continue; }
+    try {
+      const result = bestHand(h.cards, community.length >= 5
+        ? community
+        : [...community, ...Array(5 - community.length).fill(null)].slice(0, 5));
+      out[h.id] = result ? result.name : null;
+    } catch {
+      out[h.id] = null;
+    }
+  }
+  return out;
+}
+
 export function useGame() {
   const saved = useRef(loadSavedState());
-  const [phase, setPhase] = useState(saved.current?.phase ?? 'ante'); // ante | postflop | postturn | resolved
+  const [phase, setPhase] = useState(saved.current?.phase ?? 'ante');
   const [bank, setBank] = useState(saved.current?.bank ?? START_BANK);
   const [ante, setAnte] = useState(saved.current?.ante ?? 0);
-  const [deck, setDeck] = useState(saved.current?.deck ?? []);      // 5 community cards in deal order
+  const [deck, setDeck] = useState(saved.current?.deck ?? []);
   const [revealed, setRevealed] = useState(saved.current?.revealed ?? 0);
   const [bets, setBets] = useState(saved.current?.bets ?? emptyBets());
   const [selectedChip, setSelectedChip] = useState(saved.current?.selectedChip ?? 0.01);
@@ -62,14 +112,12 @@ export function useGame() {
   const [flopOdds, setFlopOdds] = useState(null);
   const [computing, setComputing] = useState(false);
 
-  // Persist game state so a preview refresh / reconnect restores the board
-  // instead of resetting to a fresh hand.
   useEffect(() => {
     try {
       const data = { phase, bank, ante, deck, revealed, bets, selectedChip, history, result };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
-      // ignore storage errors (private mode / quota)
+      // ignore
     }
   }, [phase, bank, ante, deck, revealed, bets, selectedChip, history, result]);
 
@@ -78,7 +126,25 @@ export function useGame() {
   const turn = revealed >= 4 ? deck[3] : null;
   const river = revealed >= 5 ? deck[4] : null;
 
-  // Compute post-flop odds (heavy ~150ms) after the flop paints.
+  // ■■ Live hand evaluations (rank name per hand against current board) ■■■■■■
+  const handEvals = useMemo(() => {
+    if (revealed < 3) return {};
+    return evaluateHandRanks(community);
+  }, [community, revealed]);
+
+  // ■■ Leading hand(s) — gold highlight target ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  const { handIds: leadingHandIds, rankName: leadingRankName } = useMemo(() => {
+    if (phase === 'resolved' || revealed < 3) return { handIds: [], rankName: null };
+    return findLeadingHands(community);
+  }, [community, revealed, phase]);
+
+  // ■■ Winner hand(s) after resolution ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  const winnerHandIds = useMemo(() => {
+    if (phase !== 'resolved' || !result) return [];
+    return result.resolution?.winnerHandIds || [];
+  }, [phase, result]);
+
+  // Compute post-flop odds after flop
   useEffect(() => {
     if (revealed >= 3) {
       setComputing(true);
@@ -93,7 +159,6 @@ export function useGame() {
     }
   }, [deck, revealed]);
 
-  // River odds (post-turn) — cheap counting, synchronous.
   const riverOdds = useMemo(() => {
     if (revealed < 4) return null;
     return computeRiverOdds(deck.slice(0, 4), DEALER_STOCK);
@@ -203,7 +268,6 @@ export function useGame() {
   }, [deck, bets, flopOdds, riverOdds]);
 
   const fold = useCallback(() => {
-    // refund placed bets; ante is lost
     const refund = boardTotals.card + boardTotals.rank + boardTotals.color + boardTotals.river;
     setBank(b => +(b + refund).toFixed(2));
     setHistory(prev => [{
@@ -232,6 +296,7 @@ export function useGame() {
     setPhase('ante');
   }, []);
 
+  // ■■ Dealer status message — rich, card-aware ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
   const statusMessage = useMemo(() => {
     if (phase === 'ante') {
       return ante > 0
@@ -240,19 +305,40 @@ export function useGame() {
     }
     if (phase === 'postflop') {
       if (computing) return 'Phase 2 — Calculating dynamic odds for all boards…';
-      return 'Phase 2 — Place Hand, Rank, and Color bets. Dead and dominant positions are locked. Confirm to deal the Turn.';
+      const flopStr = flop.map(cardDisplay).join(' ');
+      if (leadingRankName && leadingHandIds.length > 0) {
+        const leaderHand = FIXED_HANDS.find(h => h.id === leadingHandIds[0]);
+        const leaderLabel = leaderHand ? leaderHand.label : '';
+        return `Flop: ${flopStr} — ${leaderLabel} leads (${leadingRankName}) — Place bets, then deal Turn.`;
+      }
+      return `Flop: ${flopStr} — Phase 2: Place Hand, Rank, and Color bets. Deal Turn when ready.`;
     }
     if (phase === 'postturn') {
-      return 'Phase 3 — Turn dealt. Place your River bet (LOW 2–7 or HIGH 8–A), then deal the River.';
+      const turnStr = turn ? cardDisplay(turn) : '';
+      if (leadingRankName && leadingHandIds.length > 0) {
+        const leaderHand = FIXED_HANDS.find(h => h.id === leadingHandIds[0]);
+        const leaderLabel = leaderHand ? leaderHand.label : '';
+        return `Turn: ${turnStr} — ${leaderLabel} leads (${leadingRankName}) — River bet open! LOW 2–7 or HIGH 8–A.`;
+      }
+      return `Turn: ${turnStr} — Phase 3: Place River bet (LOW 2–7 or HIGH 8–A), then deal River.`;
     }
     if (phase === 'resolved') {
       if (!result) return 'Phase 4 — Round resolved.';
-      if (result.resolution.boardWin) return 'Phase 4 — The Board wins. All Hand and Rank bets lose.';
-      const label = result.historyEntry.type;
-      return `Phase 4 — Round resolved. Winning hand achieved: ${label}.`;
+      if (result.resolution?.boardWin) {
+        const riverStr = river ? cardDisplay(river) : '';
+        return `River: ${riverStr} — Board Wins! All Hand and Rank bets lose.`;
+      }
+      const riverStr = river ? cardDisplay(river) : '';
+      const label = result.historyEntry?.type || 'Unknown';
+      if (winnerHandIds.length > 0) {
+        const winnerHand = FIXED_HANDS.find(h => h.id === winnerHandIds[0]);
+        const winnerLabel = winnerHand ? winnerHand.label : '';
+        return `River: ${riverStr} — Winner: ${winnerLabel} — ${label}! Round complete.`;
+      }
+      return `River: ${riverStr} — Round resolved. ${label}.`;
     }
     return '';
-  }, [phase, ante, computing, result]);
+  }, [phase, ante, computing, result, flop, turn, river, leadingRankName, leadingHandIds, winnerHandIds]);
 
   return {
     phase,
@@ -275,6 +361,9 @@ export function useGame() {
     totalWagered,
     computing,
     statusMessage,
+    handEvals,
+    leadingHandIds,
+    winnerHandIds,
     actions: {
       addToAnte,
       clearAnte,
