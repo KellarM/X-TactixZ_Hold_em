@@ -157,8 +157,8 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
   return (
     <div className="flex flex-col h-full" style={{ gap: GAP }}>
 
-      {/* ■■ HAND RANKING BOARD ■■ */}
-      <div style={{ ...boardPanelStyle, flex: 5 }}>
+      {/* ■■ HAND RANKING BOARD — flex: 7 (7 rows) ■■ */}
+      <div style={{ ...boardPanelStyle, flex: 7 }}>
         <SectionHeader capValue={caps.rank}>HAND RANKING</SectionHeader>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {RANK_LABELS.map((label) => {
@@ -211,7 +211,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ COLOR BOARD ■■ */}
+      {/* ■■ COLOR BOARD — flex: 3 (3 rows of 2-col) ■■ */}
       <div style={{ ...boardPanelStyle, flex: 3 }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -263,8 +263,8 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ RIVER — LOW / HIGH ■■ */}
-      <div style={{ ...boardPanelStyle, flex: 2 }}>
+      {/* ■■ RIVER — LOW / HIGH — flex: 1 (1 row of 2-col) ■■ */}
+      <div style={{ ...boardPanelStyle, flex: 1 }}>
         <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {[

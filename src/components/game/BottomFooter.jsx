@@ -20,7 +20,8 @@ export default function BottomFooter({
   onNewHand,
   onClearBets,
   onFold,
-  onSettings
+  onSettings,
+  gearMenu,
 }) {
   return (
     <div
@@ -61,7 +62,7 @@ export default function BottomFooter({
       {/* Player Bank */}
       <StatBox label="PLAYERS BANK" value={formatMoney(bank)} />
 
-      {/* Ante box — sized to match the Players Bank box; click to clear during the ante phase */}
+      {/* Ante box */}
       <div onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined} title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}>
         <StatBox label="ANTE" value={formatMoney(ante)} />
       </div>
@@ -100,7 +101,7 @@ export default function BottomFooter({
         </span>
       </div>
 
-      {/* Bet sum count (clickable to clear ante during ante phase) */}
+      {/* Bet sum count */}
       <div onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined} title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}>
         <StatBox label="BET SUM COUNT" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
       </div>
@@ -125,6 +126,8 @@ export default function BottomFooter({
         </div>
       )}
 
+      {/* Settings — GearMenu component inline */}
+      {gearMenu || null}
     </div>
   );
 }
