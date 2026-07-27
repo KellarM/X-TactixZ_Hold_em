@@ -59,6 +59,11 @@ export default function BottomFooter({
       {/* Player Bank */}
       <StatBox label="PLAYERS BANK" value={formatMoney(bank)} />
 
+      {/* Ante box — sized to match the Players Bank box; click to clear during the ante phase */}
+      <div onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined} title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}>
+        <StatBox label="ANTE" value={formatMoney(ante)} />
+      </div>
+
       {/* Deal / action button */}
       <div className="flex flex-col items-center" style={{ gap: 4 }}>
         {phase === 'resolved' ? (

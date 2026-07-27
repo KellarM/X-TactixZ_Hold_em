@@ -4,7 +4,6 @@ import { formatMoney } from '@/lib/game/cards';
 import PreviousHands from '@/components/game/PreviousHands';
 import DealerArea from '@/components/game/DealerArea';
 import CardBoard from '@/components/game/CardBoard';
-import AnteSpot from '@/components/game/AnteSpot';
 import RightSidebar from '@/components/game/RightSidebar';
 import BottomFooter from '@/components/game/BottomFooter';
 import ResultOverlay from '@/components/game/ResultOverlay';
@@ -64,11 +63,6 @@ export default function GameTable() {
             onPlace={actions.placeBet}
             onRemove={actions.removeBet}
           />
-          {phase === 'ante' && (
-            <div className="flex justify-center">
-              <AnteSpot ante={game.ante} onClear={actions.clearAnte} />
-            </div>
-          )}
         </div>
 
         {/* Right: Rank + Color + River boards (with locked placeholders) */}

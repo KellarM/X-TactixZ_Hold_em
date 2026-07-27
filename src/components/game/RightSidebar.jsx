@@ -2,15 +2,14 @@ import React from 'react';
 import RankBoard from './RankBoard';
 import ColorBoard from './ColorBoard';
 import RiverBoard from './RiverBoard';
-import { UpgradePanel, RiverPlaceholder } from './InfoPanels';
+import { RiverPlaceholder } from './InfoPanels';
 
 // Composes the right-hand panel:
 //  - Hand Ranking (always)
 //  - Color board (only once post-flop odds exist)
 //  - River board (after the turn) — otherwise the "OPENS AFTER TURN" placeholder
-//  - Upgrade panel (until everything is in play, i.e. river not yet open)
 export default function RightSidebar({
-  phase, flopOdds, riverOdds, bets, caps, boardTotals,
+  phase, flopOdds, riverOdds, bets, caps,
   onPlace, onRemove, onClearBets, onFold
 }) {
   const colorOpen = !!flopOdds;
@@ -48,7 +47,6 @@ export default function RightSidebar({
       ) : (
         <RiverPlaceholder />
       )}
-      {!riverOpen && <UpgradePanel boardTotals={boardTotals} />}
       {showActions && (
         <div className="flex" style={{ gap: 8 }}>
           <button

@@ -16,14 +16,14 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
 
   return (
     <div
-      className="rounded-lg p-3"
+      className="rounded-lg p-3 flex flex-col flex-1"
       style={{
         background: '#051532',
         border: '1.5px solid #C5A059'
       }}
     >
       <SectionTitle>CARD BOARD — HAND POSITIONS</SectionTitle>
-      <div className="grid grid-cols-5" style={{ gap: 8 }}>
+      <div className="grid grid-cols-5 grid-rows-2 flex-1" style={{ gap: 8 }}>
         {FIXED_HANDS.map((hand) => {
           const isLocked = locked(hand.id);
           const p = payout(hand.id);
@@ -62,7 +62,7 @@ export function SectionTitle({ children }) {
 export function BettingSlot({ oddsLabel, locked, pending, bet, onPlace, onRemove, children, accent }) {
   return (
     <div
-      className="relative flex flex-col items-center rounded-md p-2"
+      className="relative flex flex-col items-center justify-between rounded-md p-2 h-full"
       style={{
         background: '#04122b',
         border: `1px solid ${pending ? '#2a3550' : (locked ? '#3a4a6a' : '#C5A059')}`,
