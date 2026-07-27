@@ -1,5 +1,4 @@
 import React from 'react';
-import Chip from '@/components/game/Chip';
 import { RANK_LABELS, formatPayout, formatMoney } from '@/lib/game/cards';
 
 const GAP = 4;
@@ -50,7 +49,7 @@ const boardPanelStyle = {
   boxSizing: 'border-box',
 };
 
-// Chip badge — absolute at right-centre of the row
+// Chip badge — absolute centred in the rank row (doesn't cover label or odds)
 function BetBadge({ amount, onClick }) {
   if (!amount) return null;
   return (
@@ -59,15 +58,23 @@ function BetBadge({ amount, onClick }) {
       title="Click to remove bet"
       style={{
         position: 'absolute',
-        top: '50%', right: 6,
-        transform: 'translateY(-50%)',
+        top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
         zIndex: 10,
         cursor: 'pointer',
-        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
+        background: 'rgba(197,160,89,0.95)',
+        color: '#051025',
+        fontWeight: 900,
+        fontSize: 11,
+        borderRadius: 99,
+        padding: '2px 8px',
+        border: '1px solid #fff',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.7)',
+        whiteSpace: 'nowrap',
         pointerEvents: 'auto',
       }}
     >
-      <Chip amount={amount} scale={0.48} />
+      {formatMoney(amount)}
     </span>
   );
 }
@@ -159,7 +166,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ COLOR BOARD — centered column, chip absolute right ■■ */}
+      {/* ■■ COLOR BOARD — flex: 3 ■■ */}
       <div style={{ ...boardPanelStyle, flex: 3 }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -189,7 +196,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ RIVER — LOW / HIGH — centered column, chip absolute right ■■ */}
+      {/* ■■ RIVER — LOW / HIGH — flex: 2 ■■ */}
       <div style={{ ...boardPanelStyle, flex: 2 }}>
         <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>

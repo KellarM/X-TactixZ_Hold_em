@@ -17,28 +17,25 @@ export default function GameTable() {
 
   const [showSettings, setShowSettings] = useState(false);
   const [playerStats, setPlayerStats] = useState({
-    totalBets: 0,
-    totalWins: 0,
-    roundsPlayed: 0,
-    roundsWon: 0,
+    totalBets: 0, totalWins: 0,
+    roundsPlayed: 0, roundsWon: 0,
     highestMultiplier: 0,
-    highestBalance: null,
-    lowestBalance: null,
+    highestBalance: null, lowestBalance: null,
   });
 
-  // Preload / start ambient on first user interaction
+  // Start ambient on first user interaction
   useEffect(() => {
     const handler = () => sounds.preloadSounds();
     window.addEventListener('pointerdown', handler, { once: true });
     return () => window.removeEventListener('pointerdown', handler);
   }, []);
 
-  // Update player stats when a hand resolves
+  // Track stats per resolved hand
   useEffect(() => {
     if (phase === 'resolved' && game.result) {
       const r = game.result;
-      const betTotal = r.totalWagered ?? 0;
-      const winTotal = r.totalPayout  ?? 0;
+      const betTotal  = r.totalWagered ?? 0;
+      const winTotal  = r.totalPayout  ?? 0;
       const multiplier = betTotal > 0 ? winTotal / betTotal : 0;
       setPlayerStats(prev => ({
         totalBets:         prev.totalBets + betTotal,
@@ -49,11 +46,9 @@ export default function GameTable() {
         highestBalance:    prev.highestBalance == null ? game.bank : Math.max(prev.highestBalance, game.bank),
         lowestBalance:     prev.lowestBalance  == null ? game.bank : Math.min(prev.lowestBalance,  game.bank),
       }));
-      if (winTotal > 0) sounds.playCardDeal();
     }
   }, [phase]);
 
-  // Sound on chip place / remove
   const handlePlaceBet = useCallback((...args) => {
     sounds.playChipPlace();
     actions.placeBet(...args);
@@ -66,7 +61,7 @@ export default function GameTable() {
 
   const handleDeal = () => {
     sounds.playCardDeal();
-    if (phase === 'ante')     actions.deal();
+    if (phase === 'ante')      actions.deal();
     else if (phase === 'postflop') actions.dealTurn();
     else if (phase === 'postturn') actions.dealRiver();
   };
@@ -75,8 +70,7 @@ export default function GameTable() {
   let subLabel  = 'PLACE AN ANTE TO DEAL';
   let canDeal   = false;
   if (phase === 'ante') {
-    dealLabel = 'DEAL';
-    subLabel  = game.ante > 0
+    subLabel = game.ante > 0
       ? `ANTE ${formatMoney(game.ante)} — PRESS TO DEAL FLOP`
       : 'SELECT A CHIP, PLACE AN ANTE, THEN DEAL';
     canDeal = game.ante > 0 && game.ante <= game.bank;
@@ -92,26 +86,39 @@ export default function GameTable() {
 
   return (
     <div
-      className="flex flex-col"
-      style={{ background: '#051025', color: '#FFFFFF', height: '100vh', overflow: 'hidden' }}
+      style={{
+        background: '#051025',
+        color: '#FFFFFF',
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
     >
-      {/* ■■ Main content row ■■ */}
-      <div className="flex flex-1 min-h-0" style={{ padding: 6, gap: 6 }}>
-
+      {/* ■■ Main content row — zero bottom padding so footer connects flush ■■ */}
+      <div
+        style={{
+          flex: '1 1 0',
+          minHeight: 0,
+          display: 'flex',
+          padding: '6px 6px 0 6px',
+          gap: 6,
+        }}
+      >
         {/* LEFT: Previous Hands */}
-        <div style={{ width: 224, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ width: 224, flexShrink: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
           <PreviousHands history={game.history} />
         </div>
 
         {/* CENTER: Dealer area + Card Board */}
-        <div className="flex-1 flex flex-col min-w-0" style={{ gap: 6 }}>
+        <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 6, height: '100%' }}>
           <DealerArea
             statusMessage={game.statusMessage}
             community={game.community}
             revealed={game.revealed}
             phase={phase}
           />
-          <div className="flex-1 min-h-0">
+          <div style={{ flex: '1 1 0', minHeight: 0 }}>
             <CardBoard
               odds={game.flopOdds}
               bets={game.bets}
@@ -123,8 +130,8 @@ export default function GameTable() {
           </div>
         </div>
 
-        {/* RIGHT: sidebar */}
-        <div style={{ width: 285, flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
+        {/* RIGHT: Sidebar — full height of content row */}
+        <div style={{ width: 285, flexShrink: 0, display: 'flex', flexDirection: 'column', height: '100%' }}>
           <RightSidebar
             phase={phase}
             flopOdds={game.flopOdds}
@@ -138,8 +145,8 @@ export default function GameTable() {
         </div>
       </div>
 
-      {/* ■■ Footer ■■ */}
-      <div style={{ flexShrink: 0 }}>
+      {/* ■■ Footer — full width, flush against content row ■■ */}
+      <div style={{ flexShrink: 0, width: '100%' }}>
         <BottomFooter
           bank={game.bank}
           ante={game.ante}
