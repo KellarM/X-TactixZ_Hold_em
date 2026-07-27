@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, RotateCcw } from 'lucide-react';
+import { RotateCcw } from 'lucide-react';
 import { CHIPS } from '@/lib/game/useGame';
 import { formatMoney } from '@/lib/game/cards';
 
@@ -125,15 +125,6 @@ export default function BottomFooter({
         </div>
       )}
 
-      {/* Settings */}
-      <button
-        onClick={onSettings}
-        className="rounded-full p-2"
-        style={{ border: '1px solid #C5A059', color: '#C5A059', cursor: 'pointer' }}
-        title="Settings"
-      >
-        <Settings size={18} />
-      </button>
     </div>
   );
 }
