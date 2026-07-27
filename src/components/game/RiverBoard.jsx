@@ -14,12 +14,12 @@ export default function RiverBoard({ odds, bets, caps, phase, onPlace, onRemove 
   const payout = (side) => (odds ? odds[side].payout : null);
 
   return (
-    <div className="rounded-lg p-3" style={{ background: '#0a162e', border: '1px solid #222e4d' }}>
+    <div className="rounded-lg p-3 flex flex-col h-full" style={{ background: '#0a162e', border: '1px solid #222e4d' }}>
       <div className="flex items-center justify-between mb-2">
         <SectionTitle>RIVER — LOW / HIGH</SectionTitle>
         <CapBadge value={caps.river} />
       </div>
-      <div className="grid grid-cols-2" style={{ gap: 10 }}>
+      <div className="grid grid-cols-2 flex-1" style={{ gap: 10 }}>
         {[
           { side: 'low', label: 'LOW', range: '2–7' },
           { side: 'high', label: 'HIGH', range: '8–A' }
@@ -33,7 +33,6 @@ export default function RiverBoard({ odds, bets, caps, phase, onPlace, onRemove 
               onClick={() => !isLocked && onPlace('river', b.side)}
               className="relative rounded-lg flex flex-col items-center justify-center"
               style={{
-                height: 64,
                 background: isLocked ? 'linear-gradient(135deg, #6b5a2a 0%, #4a3e1e 100%)' : GOLD_BTN,
                 border: '1px solid #bf953f',
                 opacity: isLocked ? 0.5 : 1,

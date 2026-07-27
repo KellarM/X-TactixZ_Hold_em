@@ -15,34 +15,40 @@ export default function RightSidebar({
   const riverOpen = phase === 'postturn' || phase === 'resolved';
 
   return (
-    <div className="flex flex-col" style={{ gap: 12, height: '100%' }}>
-      <RankBoard
-        odds={flopOdds}
-        bets={bets}
-        caps={caps}
-        phase={phase}
-        onPlace={onPlace}
-        onRemove={onRemove}
-      />
-      <ColorBoard
-        odds={flopOdds}
-        bets={bets}
-        caps={caps}
-        onPlace={onPlace}
-        onRemove={onRemove}
-      />
-      {riverOpen ? (
-        <RiverBoard
-          odds={riverOdds}
+    <div className="flex flex-col h-full" style={{ gap: 12 }}>
+      <div style={{ flex: 3, minHeight: 0 }}>
+        <RankBoard
+          odds={flopOdds}
           bets={bets}
           caps={caps}
           phase={phase}
           onPlace={onPlace}
           onRemove={onRemove}
         />
-      ) : (
-        <RiverPlaceholder />
-      )}
+      </div>
+      <div style={{ flex: 2, minHeight: 0 }}>
+        <ColorBoard
+          odds={flopOdds}
+          bets={bets}
+          caps={caps}
+          onPlace={onPlace}
+          onRemove={onRemove}
+        />
+      </div>
+      <div style={{ flex: 2, minHeight: 0 }}>
+        {riverOpen ? (
+          <RiverBoard
+            odds={riverOdds}
+            bets={bets}
+            caps={caps}
+            phase={phase}
+            onPlace={onPlace}
+            onRemove={onRemove}
+          />
+        ) : (
+          <RiverPlaceholder />
+        )}
+      </div>
     </div>
   );
 }

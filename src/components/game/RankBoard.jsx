@@ -18,9 +18,9 @@ export default function RankBoard({ odds, bets, caps, onPlace, onRemove, phase }
   };
 
   return (
-    <div className="rounded-lg p-3" style={{ background: '#0a1224', border: '1.5px solid #C5A059' }}>
+    <div className="rounded-lg p-3 flex flex-col h-full" style={{ background: '#0a1224', border: '1.5px solid #C5A059' }}>
       <SectionTitle>HAND RANKING</SectionTitle>
-      <div className="flex flex-col" style={{ gap: 6 }}>
+      <div className="flex flex-col flex-1" style={{ gap: 6 }}>
         {RANK_LABELS.map((label) => {
           const isLocked = locked(label);
           const p = payout(label);
@@ -30,9 +30,8 @@ export default function RankBoard({ odds, bets, caps, onPlace, onRemove, phase }
               key={label}
               disabled={isLocked}
               onClick={() => !isLocked && onPlace('rank', label)}
-              className="relative flex items-center justify-between rounded-lg px-3"
+              className="relative flex items-center justify-between rounded-lg px-3 flex-1"
               style={{
-                height: 40,
                 background: isLocked ? 'linear-gradient(135deg, #6b5a2a 0%, #4a3e1e 100%)' : GOLD_BTN,
                 border: '1px solid #2a2040',
                 opacity: isLocked ? 0.5 : 1,

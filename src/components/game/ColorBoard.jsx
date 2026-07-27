@@ -26,12 +26,12 @@ export default function ColorBoard({ odds, bets, caps, onPlace, onRemove }) {
   };
 
   return (
-    <div className="rounded-lg p-3" style={{ background: '#0a162e', border: '1.5px solid #C5A059' }}>
+    <div className="rounded-lg p-3 flex flex-col h-full" style={{ background: '#0a162e', border: '1.5px solid #C5A059' }}>
       <div className="flex items-center justify-between mb-2">
         <SectionTitle>COLOR BOARD</SectionTitle>
         <CapBadge value={caps.color} />
       </div>
-      <div className="grid grid-cols-2" style={{ gap: 8 }}>
+      <div className="grid grid-cols-2 grid-rows-3 flex-1" style={{ gap: 8 }}>
         {positions.map((pos) => {
           const isLocked = locked(pos.key);
           const p = payout(pos.key);
@@ -43,7 +43,6 @@ export default function ColorBoard({ odds, bets, caps, onPlace, onRemove }) {
               onClick={() => !isLocked && onPlace('color', pos.key)}
               className="relative rounded-lg flex flex-col items-center justify-center"
               style={{
-                height: 52,
                 background: isLocked
                   ? '#2a2a2a'
                   : (pos.color === 'red' ? '#c91e1e' : '#1a1a1a'),

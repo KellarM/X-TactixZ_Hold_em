@@ -26,7 +26,7 @@ export function UpgradePanel({ boardTotals }) {
 
 export function RiverPlaceholder() {
   return (
-    <div className="flex flex-col items-center text-center px-3 py-4" style={PANEL}>
+    <div className="flex flex-col items-center justify-center text-center px-3 py-4 h-full" style={PANEL}>
       <Lock size={26} color="#ffcc00" strokeWidth={2} />
       <div style={{ color: '#ffcc00', fontWeight: 800, fontSize: 13, letterSpacing: '0.5px', marginTop: 6 }}>
         OPENS AFTER TURN
