@@ -1,27 +1,99 @@
 import React from 'react';
-import { Lock, Unlock } from 'lucide-react';
 import { RANK_LABELS, formatPayout, formatMoney } from '@/lib/game/cards';
 
-const GOLD = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
-const DARK_GOLD = 'linear-gradient(135deg, #6b5a2a 0%, #4a3e1e 100%)';
-const GOLD_BORDER = '#C5A059';
-const GAP = 3; // sliver gap between slots
-const RADIUS = 8; // rounded corners on every slot
+// ═══════════════════════════════════════════════════════════════════════════
+// DESIGN TOKENS — extracted from original Rapid Fire game source code
+// (RankBets.jsx, SideBets.jsx)
+// ═══════════════════════════════════════════════════════════════════════════
+
+const GAP = 4;    // gap-1 in Tailwind = 4px
+const R   = 8;    // rounded-lg / borderRadius: '8px'
+
+// Gold gradient — active/bettable state (shared by Rank + River)
+const GOLD_ACTIVE = {
+  background: 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%, #e8c22a 100%)',
+  boxShadow: 'inset 0 1px 2px rgba(255,255,200,0.6), inset 0 -1px 2px rgba(100,60,0,0.5), 0 1px 4px rgba(0,0,0,0.5)',
+  border: '1px solid #000',
+};
+
+// Gold gradient — locked/dimmed state
+const GOLD_DIM = {
+  background: 'linear-gradient(135deg, #c9a820 0%, #b08a14 30%, #d4b830 55%, #8a6504 80%, #b08a14 100%)',
+  boxShadow: 'inset 0 1px 2px rgba(200,170,80,0.3)',
+  border: '1px solid #000',
+  opacity: 0.6,
+};
+
+// Color Board — Red active
+const RED_ACTIVE = {
+  background: 'linear-gradient(160deg, #e02020 0%, #8c0e0e 100%)',
+  border: '1px solid #111',
+};
+
+// Color Board — Black active
+const BLACK_ACTIVE = {
+  background: 'linear-gradient(160deg, #222 0%, #000 100%)',
+  border: '1px solid #2a2a2a',
+};
+
+// Color Board — Red locked
+const RED_LOCKED = {
+  background: 'linear-gradient(160deg, #8a1414 0%, #4a0505 100%)',
+  border: '1px solid #111',
+  opacity: 0.45,
+};
+
+// Color Board — Black locked
+const BLACK_LOCKED = {
+  background: 'linear-gradient(160deg, #111 0%, #000 100%)',
+  border: '1px solid #1a1a1a',
+  opacity: 0.45,
+};
+
+// Gold emboss text effect — used on Color Board numbers/payouts
+const goldEmbossText = {
+  color: 'transparent',
+  background: 'linear-gradient(180deg, #ffe566 0%, #c9960a 45%, #ffe566 80%, #a07005 100%)',
+  WebkitBackgroundClip: 'text',
+  backgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.7))',
+};
+
+// Cap badge — black pill with amber border (from SideBets.jsx)
+const capBadgeStyle = {
+  background: 'rgba(0,0,0,0.85)',
+  border: '1px solid rgba(234,179,8,0.5)',
+  color: '#fbbf24',
+  fontSize: 10,
+  fontWeight: 900,
+  borderRadius: 99,
+  padding: '1px 7px',
+  whiteSpace: 'nowrap',
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SUB-COMPONENTS
+// ═══════════════════════════════════════════════════════════════════════════
 
 function BetBadge({ amount, onClick }) {
   if (!amount) return null;
   return (
     <span
       onClick={(e) => { e.stopPropagation(); onClick(); }}
-      className="absolute -top-2 -right-2 rounded-full px-1.5 py-0.5"
+      className="absolute"
       style={{
-        background: '#051025',
-        color: '#E5B64E',
-        fontSize: 8,
-        fontWeight: 800,
-        border: `1px solid ${GOLD_BORDER}`,
+        top: -8, right: -8,
+        background: 'rgba(0,0,0,0.85)',
+        border: '1px solid rgba(234,179,8,0.5)',
+        color: '#fbbf24',
+        fontSize: 9,
+        fontWeight: 900,
+        borderRadius: 99,
+        padding: '1px 5px',
         zIndex: 10,
-        cursor: 'pointer'
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
       }}
     >
       {formatMoney(amount)}
@@ -29,105 +101,121 @@ function BetBadge({ amount, onClick }) {
   );
 }
 
-function SectionHeader({ children, right }) {
+function SectionHeader({ children, capValue }) {
   return (
     <div
-      className="flex-shrink-0 flex items-center justify-between px-2"
-      style={{
-        background: '#07101f',
-        border: `1px solid ${GOLD_BORDER}`,
-        borderRadius: RADIUS,
-        padding: '3px 8px',
-        marginBottom: GAP,
-      }}
+      className="flex-shrink-0 flex items-center justify-between"
+      style={{ padding: '0 2px', marginBottom: GAP }}
     >
-      <span style={{ color: '#E5B64E', fontSize: 9, fontWeight: 800, letterSpacing: '1.2px' }}>{children}</span>
-      {right && <span style={{ color: '#FFD700', fontSize: 9, fontWeight: 700 }}>{right}</span>}
+      <span style={{
+        ...goldEmbossText,
+        fontSize: 11,
+        fontWeight: 800,
+        letterSpacing: '0.1em',
+        textTransform: 'uppercase',
+      }}>
+        {children}
+      </span>
+      {capValue !== undefined && (
+        <span style={capBadgeStyle}>
+          Match Cap: {formatMoney(capValue)}
+        </span>
+      )}
     </div>
   );
 }
 
+// Lock icon — custom SVG matching original game (26x26)
+function LockIcon({ dim = false }) {
+  const bodyFill = `rgba(0,0,0,${dim ? 0.45 : 0.88})`;
+  const shackleColor = `rgba(0,0,0,${dim ? 0.45 : 0.88})`;
+  const keyholeColor = 'rgba(230,180,20,0.9)';
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, display: 'block' }}>
+      <rect x="3" y="11" width="18" height="12" rx="2.5" fill={bodyFill} />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke={shackleColor} strokeWidth="2.8" strokeLinecap="round" />
+      <circle cx="12" cy="17" r="2" fill={keyholeColor} />
+      <rect x="11" y="17" width="2" height="3" rx="1" fill={keyholeColor} />
+    </svg>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════
+
 export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, onPlace, onRemove }) {
   const riverOpen = phase === 'postturn' || phase === 'resolved';
 
-  // --- Rank helpers ---
-  const rankLocked = (label) => {
-    if (!flopOdds) return true;
-    const o = flopOdds.rankOdds[label];
-    return !o || o.locked;
-  };
-  const rankPayout = (label) => {
-    if (!flopOdds) return null;
-    return flopOdds.rankOdds[label]?.payout ?? null;
-  };
+  // Rank helpers
+  const rankLocked  = (l) => !flopOdds || !flopOdds.rankOdds[l] || flopOdds.rankOdds[l].locked;
+  const rankPayout  = (l) => flopOdds?.rankOdds[l]?.payout ?? null;
 
-  // --- Color helpers ---
+  // Color helpers
   const colorPositions = [
-    { key: '3R', num: '3', color: 'red' },
+    { key: '3R', num: '3', color: 'red'   },
     { key: '3B', num: '3', color: 'black' },
-    { key: '4R', num: '4', color: 'red' },
+    { key: '4R', num: '4', color: 'red'   },
     { key: '4B', num: '4', color: 'black' },
-    { key: '5R', num: '5', color: 'red' },
+    { key: '5R', num: '5', color: 'red'   },
     { key: '5B', num: '5', color: 'black' },
   ];
-  const colorLocked = (k) => {
-    if (!flopOdds) return true;
-    const o = flopOdds.colorOdds[k];
-    return !o || o.locked;
-  };
-  const colorPayout = (k) => {
-    if (!flopOdds) return null;
-    return flopOdds.colorOdds[k]?.payout ?? null;
-  };
+  const colorLocked = (k) => !flopOdds || !flopOdds.colorOdds[k] || flopOdds.colorOdds[k].locked;
+  const colorPayout = (k) => flopOdds?.colorOdds[k]?.payout ?? null;
 
-  // --- River helpers ---
-  const riverLocked = (side) => {
-    if (!riverOpen || !riverOdds) return true;
-    return riverOdds[side]?.locked ?? true;
-  };
-  const riverPayout = (side) => riverOdds?.[side]?.payout ?? null;
+  // River helpers
+  const riverLocked = (s) => !riverOpen || !riverOdds || (riverOdds[s]?.locked ?? true);
+  const riverPayout = (s) => riverOdds?.[s]?.payout ?? null;
 
   return (
-    <div
-      className="flex flex-col h-full"
-      style={{ gap: GAP }}
-    >
+    <div className="flex flex-col h-full" style={{ gap: GAP }}>
 
-      {/* ── HAND RANKING HEADER ── */}
+      {/* ── HAND RANKING ── */}
       <SectionHeader>HAND RANKING</SectionHeader>
 
-      {/* ── 7 Rank slots — each individually rounded, small gap ── */}
       <div className="flex flex-col" style={{ flex: 7, minHeight: 0, gap: GAP }}>
         {RANK_LABELS.map((label) => {
-          const isLocked = rankLocked(label);
+          const locked = rankLocked(label);
           const p = rankPayout(label);
           const bet = bets.rank[label] || 0;
+          const style = locked ? GOLD_DIM : GOLD_ACTIVE;
           return (
             <button
               key={label}
-              disabled={isLocked}
-              onClick={() => !isLocked && onPlace('rank', label)}
+              disabled={locked}
+              onClick={() => !locked && onPlace('rank', label)}
               className="relative flex items-center justify-between flex-1"
               style={{
-                background: isLocked ? DARK_GOLD : GOLD,
-                border: `1px solid ${GOLD_BORDER}`,
-                borderRadius: RADIUS,
-                opacity: isLocked ? 0.55 : 1,
-                cursor: isLocked ? 'not-allowed' : 'pointer',
-                padding: '0 10px',
+                ...style,
+                borderRadius: R,
+                padding: '0 12px',
                 minHeight: 0,
+                cursor: locked ? 'not-allowed' : 'pointer',
               }}
             >
-              <span style={{ color: '#3d3013', fontWeight: 800, fontSize: 12, letterSpacing: '0.3px' }}>
+              <span style={{
+                color: 'rgba(0,0,0,0.88)',
+                fontWeight: 900,
+                fontSize: 15,
+                lineHeight: 1,
+                WebkitTextStroke: '0.4px currentColor',
+              }}>
                 {label}
               </span>
-              <span className="flex items-center" style={{ gap: 5 }}>
-                <span style={{ color: '#3d3013', fontWeight: 700, fontSize: 10 }}>
-                  {isLocked ? 'LOCKED' : formatPayout(p)}
-                </span>
-                {isLocked
-                  ? <Lock size={12} color="#3d3013" strokeWidth={2.5} />
-                  : <Unlock size={12} color="#3d3013" strokeWidth={2.5} />}
+              <span className="flex items-center" style={{ gap: 6 }}>
+                {locked ? (
+                  <LockIcon dim={true} />
+                ) : (
+                  <span style={{
+                    color: 'rgba(0,0,0,0.88)',
+                    fontWeight: 900,
+                    fontSize: 14,
+                    lineHeight: 1,
+                    WebkitTextStroke: '0.4px currentColor',
+                  }}>
+                    {formatPayout(p)}
+                  </span>
+                )}
               </span>
               <BetBadge amount={bet} onClick={() => onRemove('rank', label)} />
             </button>
@@ -135,39 +223,50 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         })}
       </div>
 
-      {/* ── COLOR BOARD HEADER ── */}
-      <SectionHeader right={`Cap: ${formatMoney(caps.color)}`}>COLOR BOARD</SectionHeader>
+      {/* ── COLOR BOARD ── */}
+      <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
 
-      {/* ── 6 Color slots — 2-col grid, each cell individually rounded ── */}
-      <div
-        className="grid grid-cols-2"
-        style={{ flex: 3, minHeight: 0, gap: GAP }}
-      >
+      <div className="grid grid-cols-2" style={{ flex: 3, minHeight: 0, gap: GAP }}>
         {colorPositions.map((pos) => {
-          const isLocked = colorLocked(pos.key);
+          const locked = colorLocked(pos.key);
           const p = colorPayout(pos.key);
           const bet = bets.color[pos.key] || 0;
-          const bgColor = isLocked
-            ? '#2a2a2a'
-            : pos.color === 'red' ? '#c91e1e' : '#111111';
+
+          let style;
+          if (locked) {
+            style = pos.color === 'red' ? RED_LOCKED : BLACK_LOCKED;
+          } else {
+            style = pos.color === 'red' ? RED_ACTIVE : BLACK_ACTIVE;
+          }
+
           return (
             <button
               key={pos.key}
-              disabled={isLocked}
-              onClick={() => !isLocked && onPlace('color', pos.key)}
+              disabled={locked}
+              onClick={() => !locked && onPlace('color', pos.key)}
               className="relative flex flex-col items-center justify-center"
               style={{
-                background: bgColor,
-                border: `1px solid ${GOLD_BORDER}`,
-                borderRadius: RADIUS,
-                opacity: isLocked ? 0.4 : 1,
-                cursor: isLocked ? 'not-allowed' : 'pointer',
+                ...style,
+                borderRadius: R,
                 minHeight: 0,
+                cursor: locked ? 'not-allowed' : 'pointer',
               }}
             >
-              <span style={{ color: '#FFD700', fontWeight: 800, fontSize: 16, lineHeight: 1 }}>{pos.num}</span>
-              <span style={{ color: '#FFD700', fontWeight: 600, fontSize: 9, lineHeight: 1.4 }}>
-                {isLocked ? 'LOCKED' : formatPayout(p)}
+              <span style={{
+                ...goldEmbossText,
+                fontSize: 20,
+                fontWeight: 900,
+                lineHeight: 1,
+              }}>
+                {pos.num}
+              </span>
+              <span style={{
+                ...goldEmbossText,
+                fontSize: 11,
+                fontWeight: 800,
+                lineHeight: 1.4,
+              }}>
+                {locked ? 'LOCKED' : formatPayout(p)}
               </span>
               <BetBadge amount={bet} onClick={() => onRemove('color', pos.key)} />
             </button>
@@ -175,39 +274,39 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         })}
       </div>
 
-      {/* ── RIVER HEADER ── */}
-      <SectionHeader right={`Cap: ${formatMoney(caps.river)}`}>RIVER — LOW / HIGH</SectionHeader>
+      {/* ── RIVER — LOW / HIGH ── */}
+      <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
 
-      {/* ── 2 River slots — individually rounded ── */}
-      <div
-        className="grid grid-cols-2"
-        style={{ flex: 1, minHeight: 0, gap: GAP }}
-      >
+      <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
         {[
-          { side: 'low', label: 'LOW', range: '2–7' },
-          { side: 'high', label: 'HIGH', range: '8–A' }
+          { side: 'low',  label: 'LOW',  range: '2–7' },
+          { side: 'high', label: 'HIGH', range: '8–A' },
         ].map((b) => {
-          const isLocked = riverLocked(b.side);
+          const locked = riverLocked(b.side);
           const bet = bets.river[b.side] || 0;
+          const style = locked ? GOLD_DIM : GOLD_ACTIVE;
+
           return (
             <button
               key={b.side}
-              disabled={isLocked}
-              onClick={() => !isLocked && onPlace('river', b.side)}
+              disabled={locked}
+              onClick={() => !locked && onPlace('river', b.side)}
               className="relative flex flex-col items-center justify-center"
               style={{
-                background: isLocked ? DARK_GOLD : GOLD,
-                border: `1px solid ${GOLD_BORDER}`,
-                borderRadius: RADIUS,
-                opacity: isLocked ? 0.55 : 1,
-                cursor: isLocked ? 'not-allowed' : 'pointer',
+                ...style,
+                borderRadius: R,
                 minHeight: 0,
+                cursor: locked ? 'not-allowed' : 'pointer',
               }}
             >
-              <span style={{ color: '#1a0d00', fontWeight: 800, fontSize: 12, lineHeight: 1 }}>{b.label}</span>
-              <span style={{ color: '#1a0d00', fontWeight: 700, fontSize: 10, lineHeight: 1.2 }}>{b.range}</span>
-              <span style={{ color: '#1a0d00', fontWeight: 700, fontSize: 9, lineHeight: 1 }}>
-                {isLocked ? (riverOpen ? 'LOCKED' : 'AFTER TURN') : formatPayout(riverPayout(b.side))}
+              <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>
+                {b.label}
+              </span>
+              <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>
+                {b.range}
+              </span>
+              <span style={{ color: '#000', fontWeight: 900, fontSize: 13, lineHeight: 1 }}>
+                {locked ? (riverOpen ? 'LOCKED' : 'AFTER TURN') : formatPayout(riverPayout(b.side))}
               </span>
               <BetBadge amount={bet} onClick={() => onRemove('river', b.side)} />
             </button>
