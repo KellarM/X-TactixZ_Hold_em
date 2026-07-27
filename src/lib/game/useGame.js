@@ -10,7 +10,33 @@ import {
 import { shuffleDeck, dealCommunity } from './shuffle';
 import { computePostFlopOdds, computeRiverOdds } from './oddsEngine';
 import { settleRound } from './gameLogic';
-import { bestHand, compare5 } from './pokerEvaluator';
+import { bestHand, compare5, evaluate5, combinations } from './pokerEvaluator';
+
+// Best 5-card hand from a variable pool (2 hole + 3/4/5 community).
+// Recomputes index combos for the actual pool size (5, 6, or 7 cards).
+const COMBO_CACHE = {};
+function combosFor(n) {
+  if (n < 5) return [];
+  if (n === 5) return [[0, 1, 2, 3, 4]];
+  if (!COMBO_CACHE[n]) {
+    COMBO_CACHE[n] = combinations(
+      Array.from({ length: n }, (_, i) => i),
+      5
+    );
+  }
+  return COMBO_CACHE[n];
+}
+
+function bestFromPool(pool) {
+  if (!pool || pool.length < 5) return null;
+  const idxs = combosFor(pool.length);
+  let best = null;
+  for (const idx of idxs) {
+    const e = evaluate5([pool[idx[0]], pool[idx[1]], pool[idx[2]], pool[idx[3]], pool[idx[4]]]);
+    if (!best || compare5(e, best) > 0) best = e;
+  }
+  return best;
+}
 
 export const CHIPS = [
   { value: 0.01, label: '1¢' },
@@ -61,11 +87,8 @@ function cardDisplay(card) {
 function findLeadingHands(community) {
   if (!community || community.length < 3) return { handIds: [], rankName: null };
   const evals = FIXED_HANDS.map(h => {
-    const all = [...h.cards, ...community];
-    if (all.length < 5) return { id: h.id, label: h.label, result: null };
-    const result = bestHand(h.cards, community.length >= 5
-      ? community
-      : [...community, ...Array(5 - community.length).fill(null)].slice(0, 5));
+    const pool = [...h.cards, ...community];
+    const result = bestFromPool(pool);
     return { id: h.id, label: h.label, result };
   }).filter(e => e.result !== null);
 
@@ -84,12 +107,10 @@ function evaluateHandRanks(community) {
   if (!community || community.length < 3) return {};
   const out = {};
   for (const h of FIXED_HANDS) {
-    const all = [...h.cards, ...community];
-    if (all.length < 5) { out[h.id] = null; continue; }
+    const pool = [...h.cards, ...community];
+    if (pool.length < 5) { out[h.id] = null; continue; }
     try {
-      const result = bestHand(h.cards, community.length >= 5
-        ? community
-        : [...community, ...Array(5 - community.length).fill(null)].slice(0, 5));
+      const result = bestFromPool(pool);
       out[h.id] = result ? result.name : null;
     } catch {
       out[h.id] = null;
