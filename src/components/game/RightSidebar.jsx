@@ -1,5 +1,6 @@
 import React from 'react';
 import { RANK_LABELS, formatPayout, formatMoney } from '@/lib/game/cards';
+import Chip from '@/components/game/Chip';
 
 const GAP = 4;
 const R   = 8;
@@ -59,7 +60,6 @@ const capBadgeStyle = {
   whiteSpace: 'nowrap',
 };
 
-// Gold border panel — wraps each board section
 const boardPanelStyle = {
   background: '#051532',
   border: '1.5px solid #C5A059',
@@ -77,21 +77,17 @@ function BetBadge({ amount, onClick }) {
     <span
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       className="absolute"
+      title="Click to remove bet"
       style={{
-        top: -8, right: -8,
-        background: 'rgba(0,0,0,0.85)',
-        border: '1px solid rgba(234,179,8,0.5)',
-        color: '#fbbf24',
-        fontSize: 9,
-        fontWeight: 900,
-        borderRadius: 99,
-        padding: '1px 5px',
+        bottom: -6, left: '50%',
+        transform: 'translateX(-50%)',
         zIndex: 10,
         cursor: 'pointer',
-        whiteSpace: 'nowrap',
+        pointerEvents: 'auto',
+        filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.8))',
       }}
     >
-      {formatMoney(amount)}
+      <Chip amount={amount} scale={0.55} />
     </span>
   );
 }
@@ -157,7 +153,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
   return (
     <div className="flex flex-col h-full" style={{ gap: GAP }}>
 
-      {/* ■■ HAND RANKING BOARD — flex: 7 (7 rows) ■■ */}
+      {/* ■■ HAND RANKING BOARD — flex: 7 ■■ */}
       <div style={{ ...boardPanelStyle, flex: 7 }}>
         <SectionHeader capValue={caps.rank}>HAND RANKING</SectionHeader>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -211,7 +207,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ COLOR BOARD — flex: 3 (3 rows of 2-col) ■■ */}
+      {/* ■■ COLOR BOARD — flex: 3 ■■ */}
       <div style={{ ...boardPanelStyle, flex: 3 }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -219,14 +215,12 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
             const locked = colorLocked(pos.key);
             const p = colorPayout(pos.key);
             const bet = bets.color[pos.key] || 0;
-
             let style;
             if (locked) {
               style = pos.color === 'red' ? RED_LOCKED : BLACK_LOCKED;
             } else {
               style = pos.color === 'red' ? RED_ACTIVE : BLACK_ACTIVE;
             }
-
             return (
               <button
                 key={pos.key}
@@ -240,20 +234,10 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
                   cursor: locked ? 'not-allowed' : 'pointer',
                 }}
               >
-                <span style={{
-                  ...goldEmbossText,
-                  fontSize: 20,
-                  fontWeight: 900,
-                  lineHeight: 1,
-                }}>
+                <span style={{ ...goldEmbossText, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>
                   {pos.num}
                 </span>
-                <span style={{
-                  ...goldEmbossText,
-                  fontSize: 11,
-                  fontWeight: 800,
-                  lineHeight: 1.4,
-                }}>
+                <span style={{ ...goldEmbossText, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
                   {locked ? 'LOCKED' : formatPayout(p)}
                 </span>
                 <BetBadge amount={bet} onClick={() => onRemove('color', pos.key)} />
@@ -263,7 +247,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ RIVER — LOW / HIGH — flex: 4 (2× height) ■■ */}
+      {/* ■■ RIVER — LOW / HIGH — flex: 4 ■■ */}
       <div style={{ ...boardPanelStyle, flex: 4 }}>
         <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -274,7 +258,6 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
             const locked = riverLocked(b.side);
             const bet = bets.river[b.side] || 0;
             const style = locked ? GOLD_DIM : GOLD_ACTIVE;
-
             return (
               <button
                 key={b.side}

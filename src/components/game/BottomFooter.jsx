@@ -1,4 +1,5 @@
 import React from 'react';
+import Chip from '@/components/game/Chip';
 import { RotateCcw } from 'lucide-react';
 import { CHIPS } from '@/lib/game/useGame';
 import { formatMoney } from '@/lib/game/cards';
@@ -31,29 +32,25 @@ export default function BottomFooter({
         borderTop: '2px solid #C5A059'
       }}
     >
-      {/* Chips */}
-      <div className="flex items-center" style={{ gap: 8 }}>
+      {/* Chips — real 3D casino chip rendering */}
+      <div className="flex items-center" style={{ gap: 6 }}>
         {CHIPS.map((chip) => {
           const active = selectedChip === chip.value;
           return (
             <button
               key={chip.value}
               onClick={() => onChipSelect(chip.value)}
-              className="rounded-full flex items-center justify-center transition-transform"
               style={{
-                width: 44,
-                height: 44,
-                background: chipBg(chip.value),
-                border: `2px dashed ${active ? '#FFFFFF' : 'rgba(255,255,255,0.4)'}`,
-                boxShadow: active ? '0 0 10px rgba(229,182,78,0.8)' : '0 2px 4px rgba(0,0,0,0.5)',
-                transform: active ? 'scale(1.12)' : 'scale(1)',
-                color: chipTextColor(chip.value),
-                fontWeight: 800,
-                fontSize: 11,
-                cursor: 'pointer'
+                background: 'none', border: 'none', padding: 0,
+                cursor: 'pointer',
+                transform: active ? 'scale(1.15) translateY(-3px)' : 'scale(1)',
+                transition: 'transform 0.15s',
+                filter: active ? 'drop-shadow(0 0 6px rgba(229,182,78,0.9))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))',
+                outline: 'none',
               }}
+              title={chip.label}
             >
-              {chip.label}
+              <Chip amount={chip.value} scale={0.78} />
             </button>
           );
         })}
@@ -142,17 +139,4 @@ function StatBox({ label, value }) {
       <div style={{ color: '#FFD700', fontSize: 16, fontWeight: 800 }}>{value}</div>
     </div>
   );
-}
-
-function chipBg(value) {
-  if (value >= 1) return 'linear-gradient(135deg, #2a2a2a 0%, #000000 100%)';
-  if (value >= 0.5) return 'linear-gradient(135deg, #5a3a8a 0%, #2a1a4a 100%)';
-  if (value >= 0.25) return 'linear-gradient(135deg, #2a6a4a 0%, #0a3a2a 100%)';
-  if (value >= 0.10) return 'linear-gradient(135deg, #c93a3a 0%, #6a1a1a 100%)';
-  if (value >= 0.05) return 'linear-gradient(135deg, #3a7ac9 0%, #1a3a6a 100%)';
-  return 'linear-gradient(135deg, #d9d9d9 0%, #8a8a8a 100%)';
-}
-
-function chipTextColor(value) {
-  return value <= 0.01 ? '#1a1a1a' : '#FFFFFF';
 }
