@@ -244,42 +244,50 @@ export function useGame() {
     if (board !== 'river' && phase !== 'postflop') return;
     const amount = selectedChip;
     if (!amount || amount <= 0) return;  // No chip selected — can't place bet
-    const cap = board === 'river'
-      ? (boardTotals.card + boardTotals.rank + boardTotals.color)
-      : ante;
-    let boardCurrent, positionCurrent;
-    if (board === 'river') {
-      positionCurrent = bets.river[position] || 0;
-      boardCurrent = bets.river.low + bets.river.high;
-    } else {
-      positionCurrent = bets[board][position] || 0;
-      boardCurrent = Object.values(bets[board]).reduce((a, b) => a + b, 0);
-    }
-    if (boardCurrent + amount > cap + 1e-9) return;
-    if (amount > bank) return;
-    setBank(+(bank - amount).toFixed(2));
-    if (board === 'river') {
-      setBets({ ...bets, river: { ...bets.river, [position]: +(positionCurrent + amount).toFixed(2) } });
-    } else {
-      setBets({ ...bets, [board]: { ...bets[board], [position]: +(positionCurrent + amount).toFixed(2) } });
-    }
-  }, [phase, selectedChip, ante, bank, bets, boardTotals]);
+
+    // Use functional updaters to avoid stale closure issues — reads fresh state every time
+    setBets(prevBets => {
+      const cap = board === 'river'
+        ? (Object.values(prevBets.card).reduce((a,b)=>a+b,0) +
+           Object.values(prevBets.rank).reduce((a,b)=>a+b,0) +
+           Object.values(prevBets.color).reduce((a,b)=>a+b,0))
+        : ante;
+      let boardCurrent, positionCurrent;
+      if (board === 'river') {
+        positionCurrent = prevBets.river[position] || 0;
+        boardCurrent = (prevBets.river.low || 0) + (prevBets.river.high || 0);
+      } else {
+        positionCurrent = prevBets[board][position] || 0;
+        boardCurrent = Object.values(prevBets[board]).reduce((a, b) => a + b, 0);
+      }
+      if (boardCurrent + amount > cap + 1e-9) return prevBets; // over cap — no change
+      // Deduct from bank only when bet is actually accepted
+      setBank(b => +(b - amount).toFixed(2));
+      if (board === 'river') {
+        return { ...prevBets, river: { ...prevBets.river, [position]: +(positionCurrent + amount).toFixed(2) } };
+      }
+      return { ...prevBets, [board]: { ...prevBets[board], [position]: +(positionCurrent + amount).toFixed(2) } };
+    });
+  }, [phase, selectedChip, ante]);
 
   const removeBet = useCallback((board, position) => {
     // Phase guard: can only remove bets during the phase they were placed
     if (board === 'river' && phase !== 'postturn') return;
     if (board !== 'river' && phase !== 'postflop') return;
-    const current = board === 'river' ? (bets.river[position] || 0) : (bets[board][position] || 0);
-    if (!current) return;
-    setBank(+(bank + current).toFixed(2));
-    if (board === 'river') {
-      setBets({ ...bets, river: { ...bets.river, [position]: 0 } });
-    } else {
-      const nextBoard = { ...bets[board] };
+    setBets(prevBets => {
+      const current = board === 'river'
+        ? (prevBets.river[position] || 0)
+        : (prevBets[board][position] || 0);
+      if (!current) return prevBets;
+      setBank(b => +(b + current).toFixed(2));
+      if (board === 'river') {
+        return { ...prevBets, river: { ...prevBets.river, [position]: 0 } };
+      }
+      const nextBoard = { ...prevBets[board] };
       delete nextBoard[position];
-      setBets({ ...bets, [board]: nextBoard });
-    }
-  }, [phase, bank, bets]);
+      return { ...prevBets, [board]: nextBoard };
+    });
+  }, [phase]);
 
   const clearBets = useCallback(() => {
     const refund = boardTotals.card + boardTotals.rank + boardTotals.color + boardTotals.river;
