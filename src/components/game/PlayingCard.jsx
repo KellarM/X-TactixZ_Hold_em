@@ -6,6 +6,15 @@ import { SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
 const CARD_IMAGES = {
   'A_diamonds':  'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/906a8f36c_image.png',
   '10_hearts':   'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/05d9e3ffe_image.png',
+  // ── Spades suit — Michael's real card images (July 28, 2026) ──
+  'A_spades':    'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/b7825e12d_A_spades.png',
+  '2_spades':    'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/aa6c92bdc_2_spades.png',
+  '3_spades':    'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/4be707abe_3_spades.png',
+  '4_spades':    'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/288f26560_4_spades.png',
+  '5_spades':    'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/85fbbc6aa_5_spades.png',
+  '6_spades':    'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/120edb5c2_6_spades.png',
+  '8_spades':    'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/26cc0b9b6_8_spades.png',
+  '9_spades':    'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/f575db9dc_9_spades.png',
   // ── Diamonds suit — Michael's real card images (July 28, 2026) ──
   '2_diamonds':  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/44b0a3106_2_diamonds.png',
   '3_diamonds':  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/70012137b_3_diamonds.png',
