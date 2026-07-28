@@ -20,6 +20,14 @@ if (typeof document !== 'undefined' && !document.getElementById('rf-ante-glow-st
   document.head.appendChild(s);
 }
 
+// ── Fixed widths — nothing ever moves ──
+const W = {
+  bank:   130,   // $99,999.99 = 10 chars, sized to fit without expansion
+  betSum: 100,   // same as original, locked
+  deal:   280,   // longest subtitle: "SELECT A CHIP, THEN PLACE AN ANTE, THEN DEAL" = ~46 chars at 9px
+  gear:   36,
+};
+
 export default function BottomFooter({
   bank, ante, totalWagered, selectedChip,
   phase, canDeal, dealLabel, subLabel,
@@ -37,11 +45,12 @@ export default function BottomFooter({
         display: 'flex',
         alignItems: 'center',
         padding: '10px 14px',
-        gap: 10,
+        gap: 8,
         boxSizing: 'border-box',
+        overflow: 'hidden',
       }}
     >
-      {/* ■■ Chips ■■ */}
+      {/* ── 1. CHIPS ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
         {CHIPS.map((chip) => {
           const active = selectedChip === chip.value;
@@ -51,14 +60,9 @@ export default function BottomFooter({
               onClick={() => onChipSelect(chip.value)}
               title={chip.label}
               style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                flexShrink: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                background: 'none', border: 'none', padding: 0,
+                cursor: 'pointer', flexShrink: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transform: active ? 'scale(1.18) translateY(-3px)' : 'scale(1)',
                 filter: active
                   ? 'drop-shadow(0 0 8px rgba(255,215,0,0.9)) drop-shadow(0 0 3px rgba(255,215,0,0.6))'
@@ -72,34 +76,23 @@ export default function BottomFooter({
         })}
       </div>
 
-      {/* ■■ Players Bank ■■ */}
-      <StatBox label="PLAYERS BANK" value={formatMoney(bank)} />
-
-      {/* ■■ Ante — bold gold circular display, fills footer height ■■ */}
+      {/* ── 2. ANTE — bold gold circular display ── */}
       <div
         onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined}
         title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}
         style={{
           cursor: phase === 'ante' && ante > 0 ? 'pointer' : 'default',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
-          width: 56,
-          height: 56,
-          borderRadius: '50%',
-          border: ante > 0
-            ? '3px solid #FFD700'
-            : '3px solid #C5A059',
+          width: 56, height: 56, borderRadius: '50%',
+          border: ante > 0 ? '3px solid #FFD700' : '3px solid #C5A059',
           background: ante > 0
             ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
             : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%, #e8c22a 100%)',
           boxShadow: ante > 0
             ? '0 0 12px 4px rgba(255,215,0,0.7), inset 0 0 10px rgba(255,215,0,0.2), 0 2px 6px rgba(0,0,0,0.6)'
             : 'inset 0 1px 2px rgba(255,255,200,0.6), inset 0 -1px 2px rgba(100,60,0,0.5), 0 2px 4px rgba(0,0,0,0.5)',
-          animation: ante > 0
-            ? 'rf-ante-glow 1.6s ease-in-out infinite'
-            : 'none',
+          animation: ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
           transition: 'all 0.2s ease',
         }}
       >
@@ -107,20 +100,30 @@ export default function BottomFooter({
           <Chip amount={ante} scale={0.58} />
         ) : (
           <span style={{
-            color: '#000',
-            fontSize: 11,
-            fontWeight: 900,
-            letterSpacing: '1px',
-            textAlign: 'center',
-            lineHeight: 1,
+            color: '#000', fontSize: 11, fontWeight: 900,
+            letterSpacing: '1px', textAlign: 'center', lineHeight: 1,
           }}>
             ANTE
           </span>
         )}
       </div>
 
-      {/* ■■ Deal / New Hand (flex-1 to fill space) ■■ */}
-      <div style={{ flex: '1 1 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 0 }}>
+      {/* ── 3. BET SUM COUNT — right beside Ante, locked ── */}
+      <div style={{ width: W.betSum, flexShrink: 0 }}>
+        <StatBox label="BET SUM" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
+      </div>
+
+      {/* ── 4. PLAYERS BANK — locked at 7-digit width ── */}
+      <div style={{ width: W.bank, flexShrink: 0 }}>
+        <StatBox label="PLAYERS BANK" value={formatMoney(bank)} />
+      </div>
+
+      {/* ── 5. DEAL BUTTON — locked width, never shifts ── */}
+      <div style={{
+        width: W.deal, flexShrink: 0,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: 3,
+      }}>
         {phase === 'resolved' ? (
           <button
             onClick={onNewHand}
@@ -152,52 +155,21 @@ export default function BottomFooter({
             {dealLabel}
           </button>
         )}
-        <span style={{ color: '#F7C25A', fontSize: 9, fontWeight: 600, letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+        <span style={{
+          color: '#F7C25A', fontSize: 9, fontWeight: 600,
+          letterSpacing: '0.5px', whiteSpace: 'nowrap',
+          display: 'block', textAlign: 'center',
+        }}>
           {subLabel}
         </span>
       </div>
 
-      {/* ■■ Bet Sum Count ■■ */}
-      <div
-        onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined}
-        title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}
-        style={{ cursor: phase === 'ante' && ante > 0 ? 'pointer' : 'default' }}
-      >
-        <StatBox label="BET SUM COUNT" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
-      </div>
-
-      {/* ■■ Clear Bets / Fold ■■ */}
-      {showActions && (
-        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-          <button
-            onClick={onClearBets}
-            style={{
-              background: '#1a1030', border: '1px solid #C5A059', color: '#C5A059',
-              fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
-              borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
-            }}
-          >
-            CLEAR BETS
-          </button>
-          <button
-            onClick={onFold}
-            style={{
-              background: '#3a1020', border: '1px solid #C5A059', color: '#FF6B6B',
-              fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
-              borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
-            }}
-          >
-            FOLD
-          </button>
-        </div>
-      )}
-
-      {/* ■■ Settings gear — ALWAYS visible, flexShrink:0 ■■ */}
+      {/* ── 6. GEAR — far right, locked ── */}
       <button
         onClick={onSettings}
         title="Settings"
         style={{
-          width: 36, height: 36, borderRadius: '50%',
+          width: W.gear, height: 36, borderRadius: '50%',
           border: '1px solid #C5A059', color: '#C5A059',
           background: 'transparent', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -215,25 +187,12 @@ function StatBox({ label, value }) {
     <div
       style={{
         background: '#050d21', border: '1px solid #C5A059',
-        borderRadius: 6, padding: '5px 14px', textAlign: 'center',
-        minWidth: 100, flexShrink: 0,
+        borderRadius: 6, padding: '5px 10px', textAlign: 'center',
+        width: '100%', boxSizing: 'border-box',
       }}
     >
       <div style={{ color: '#C5A059', fontSize: 8, fontWeight: 700, letterSpacing: '1px' }}>{label}</div>
-      <div style={{ color: '#FFD700', fontSize: 16, fontWeight: 800 }}>{value}</div>
+      <div style={{ color: '#FFD700', fontSize: 16, fontWeight: 800, whiteSpace: 'nowrap' }}>{value}</div>
     </div>
   );
-}
-
-function chipBg(value) {
-  if (value >= 1)    return 'linear-gradient(135deg, #2a2a2a 0%, #000000 100%)';
-  if (value >= 0.5)  return 'linear-gradient(135deg, #5a3a8a 0%, #2a1a4a 100%)';
-  if (value >= 0.25) return 'linear-gradient(135deg, #2a6a4a 0%, #0a3a2a 100%)';
-  if (value >= 0.10) return 'linear-gradient(135deg, #c93a3a 0%, #6a1a1a 100%)';
-  if (value >= 0.05) return 'linear-gradient(135deg, #3a7ac9 0%, #1a3a6a 100%)';
-  return 'linear-gradient(135deg, #d9d9d9 0%, #8a8a8a 100%)';
-}
-
-function chipTextColor(value) {
-  return value <= 0.01 ? '#1a1a1a' : '#FFFFFF';
 }
