@@ -197,10 +197,10 @@ export function useGame() {
   const caps = useMemo(() => {
     if (phase === 'ante' || ante === 0) return { card: 0, rank: 0, color: 0, river: 0 };
     return {
-      card: ante,
-      rank: ante,
-      color: ante,
-      river: boardTotals.card + boardTotals.rank + boardTotals.color
+      card: Math.max(0, ante - boardTotals.card),
+      rank: Math.max(0, ante - boardTotals.rank),
+      color: Math.max(0, ante - boardTotals.color),
+      river: Math.max(0, (boardTotals.card + boardTotals.rank + boardTotals.color) - boardTotals.river)
     };
   }, [ante, phase, boardTotals]);
 
