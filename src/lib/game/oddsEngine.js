@@ -4,13 +4,20 @@
 import { bestHand, evaluate5, compare5, combinations } from './pokerEvaluator';
 import { cardColor, isLowRank, cardKey, CAT_TO_LABEL } from './cards';
 
-export const HOUSE_EDGE = 0.05;        // 5% house edge
-export const LOCKOUT_THRESHOLD = 0.90; // dominant lockout (configurable)
+// Tiered house edges — higher for boards where player has more post-flop information
+export const HOUSE_EDGE_CARD  = 0.15;  // Card Board: player sees exact hand matchups post-flop
+export const HOUSE_EDGE_RANK  = 0.12;  // Rank Board: player sees rank distribution
+export const HOUSE_EDGE_COLOR = 0.10;  // Color Board: player sees color distribution
+export const HOUSE_EDGE_RIVER = 0.08;  // River Board: only 1 card unknown, least info
+export const LOCKOUT_THRESHOLD = 0.80; // Lockout dominant positions at 80% (tightened from 90%)
 
-function payoutFromProb(p) {
+// Correct flat house-edge formula: EV = -HE regardless of probability
+// payout = (1 - HE) / p - 1
+// This ensures the casino holds exactly HE per dollar bet at every probability.
+// (The old formula (1/p-1)*(1-HE) only held ~HE*(1-p), which nearly vanished at high probs.)
+function payoutFromProb(p, houseEdge) {
   if (p <= 0) return null;
-  const fair = (1 / p) - 1;
-  return fair * (1 - HOUSE_EDGE);
+  return (1 - houseEdge) / p - 1;
 }
 
 // Compute exact odds for every position after the flop (3 community cards).
@@ -68,7 +75,7 @@ export function computePostFlopOdds(flop, stock, hands) {
       handId: h.id,
       wins,
       probability: p,
-      payout: payoutFromProb(p),
+      payout: payoutFromProb(p, HOUSE_EDGE_CARD),
       locked: p === 0 || p > LOCKOUT_THRESHOLD,
       reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : null)
     };
@@ -82,7 +89,7 @@ export function computePostFlopOdds(flop, stock, hands) {
     rankOdds[label] = {
       wins,
       probability: p,
-      payout: payoutFromProb(p),
+      payout: payoutFromProb(p, HOUSE_EDGE_RANK),
       locked: p === 0 || p > LOCKOUT_THRESHOLD,
       reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : null)
     };
@@ -95,7 +102,7 @@ export function computePostFlopOdds(flop, stock, hands) {
     colorOdds[k] = {
       wins,
       probability: p,
-      payout: payoutFromProb(p),
+      payout: payoutFromProb(p, HOUSE_EDGE_COLOR),
       locked: p === 0 || p > LOCKOUT_THRESHOLD,
       reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : null)
     };
@@ -119,8 +126,8 @@ export function computeRiverOdds(board4, stock) {
   const pLow = lowCount / remaining.length;
   const pHigh = highCount / remaining.length;
   return {
-    low: { count: lowCount, probability: pLow, payout: payoutFromProb(pLow), locked: pLow === 0 || pLow > LOCKOUT_THRESHOLD },
-    high: { count: highCount, probability: pHigh, payout: payoutFromProb(pHigh), locked: pHigh === 0 || pHigh > LOCKOUT_THRESHOLD },
+    low: { count: lowCount, probability: pLow, payout: payoutFromProb(pLow, HOUSE_EDGE_RIVER), locked: pLow === 0 || pLow > LOCKOUT_THRESHOLD },
+    high: { count: highCount, probability: pHigh, payout: payoutFromProb(pHigh, HOUSE_EDGE_RIVER), locked: pHigh === 0 || pHigh > LOCKOUT_THRESHOLD },
     remaining: remaining.length
   };
 }
