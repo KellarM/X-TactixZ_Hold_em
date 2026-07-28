@@ -250,7 +250,7 @@ export default function ResultOverlay({ result, ante = 0, onClose }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(3px)' }}
+      style={{ background: 'rgba(0,0,0,0.0)' }}
       onClick={onClose}
     >
       {/* ── NO WIN / BOARD WIN — compact red modal ─────────────────────── */}
