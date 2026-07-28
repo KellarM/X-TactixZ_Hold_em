@@ -61,43 +61,30 @@ export default function BottomFooter({
       {/* ■■ Players Bank ■■ */}
       <StatBox label="PLAYERS BANK" value={formatMoney(bank)} />
 
-      {/* ■■ Ante — circular chip display ■■ */}
+      {/* ■■ Ante — circular chip display, no label below ■■ */}
       <div
         onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined}
         title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}
         style={{
           cursor: phase === 'ante' && ante > 0 ? 'pointer' : 'default',
           display: 'flex',
-          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 1,
           flexShrink: 0,
+          width: 50,
+          height: 50,
+          borderRadius: '50%',
+          border: '2px dashed rgba(197,160,89,0.5)',
+          background: 'rgba(0,0,0,0.3)',
         }}
       >
         {ante > 0 ? (
-          <Chip amount={ante} scale={0.62} />
+          <Chip amount={ante} scale={0.55} />
         ) : (
-          <div
-            style={{
-              width: 34,
-              height: 34,
-              borderRadius: '50%',
-              border: '2px dashed rgba(197,160,89,0.5)',
-              background: 'rgba(0,0,0,0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <span style={{ color: 'rgba(197,160,89,0.6)', fontSize: 8, fontWeight: 800, letterSpacing: '0.5px' }}>
-              ANTE
-            </span>
-          </div>
+          <span style={{ color: 'rgba(197,160,89,0.6)', fontSize: 9, fontWeight: 800, letterSpacing: '0.5px' }}>
+            ANTE
+          </span>
         )}
-        <span style={{ color: '#C5A059', fontSize: 8, fontWeight: 700, letterSpacing: '1px' }}>
-          ANTE
-        </span>
       </div>
 
       {/* ■■ Deal / New Hand (flex-1 to fill space) ■■ */}
