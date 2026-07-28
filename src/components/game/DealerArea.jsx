@@ -1,20 +1,6 @@
 import React from 'react';
 import PlayingCard from './PlayingCard';
 
-// ── Design tokens matched to original RapidFireGame.jsx ──────────────────────
-//
-// Dealer Announcement bar:
-//   height: 32px, border: 1px solid rgba(202,138,4,0.4)
-//   bg: linear-gradient(90deg, rgba(78,47,0,0.5) 0%, rgba(83,37,0,0.5) 100%)
-//   font: Oswald, 1.2rem, 700, italic, skewX(-8deg), color: #f6d860
-//   textShadow: 0 1px 2px rgba(0,0,0,0.8), 0 0 6px rgba(180,130,40,0.4)
-//
-// Community Cards area:
-//   height: 152px (fixed), border: 3px solid, rounded-xl
-//   bg: rgba(0,0,0,0.35), paddingTop/Bottom: 8px, paddingLeft/Right: 16px
-//   Cards: CARD_W=56, CARD_H=80, GAP=6, GROUP_GAP=14
-//   Label: Oswald 0.65rem 700 italic #e8b84b, letterSpacing 0.12em
-
 const CARD_TOKEN_REGEX = /(10|[2-9]|[AKQJ])([♠♥♦♣])/g;
 const RED_SUITS = new Set(['♥', '♦']);
 
@@ -43,11 +29,12 @@ function renderColoredMessage(text) {
   return nodes;
 }
 
-// Card slot — exact dimensions from original CommunityCards.jsx
-const CARD_W = 56;
-const CARD_H = 80;
-const GAP = 6;
-const GROUP_GAP = 14;
+// ── Community card layout ────────────────────────────────────────────────────
+// 25% larger than original (56×80 → 70×100), content stays same size
+const CARD_W = 70;
+const CARD_H = 100;
+const GAP = 10;        // gap between cards within the flop group (was 6)
+const GROUP_GAP = 20;  // gap between flop/turn/river groups (was 14)
 const LABEL_H = 18;
 const LABEL_TOP_GAP = 6;
 
@@ -65,7 +52,7 @@ function CardSlot({ card, faceDown }) {
   }
   return (
     <div style={{ width: CARD_W, height: CARD_H, flexShrink: 0 }}>
-      <PlayingCard card={card} size="md" />
+      <PlayingCard card={card} size="community" />
     </div>
   );
 }
@@ -100,7 +87,6 @@ function CardGroup({ cards, indices, label }) {
   );
 }
 
-// Brand logo — matches original game logo placement
 function BrandLogo() {
   return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}>
@@ -120,7 +106,7 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
 
-      {/* ── Dealer Announcement bar — height: 32px exactly (from original) ── */}
+      {/* ── Dealer Announcement bar — height: 32px exactly ── */}
       <div style={{
         height: 32,
         minHeight: 32,
@@ -159,7 +145,7 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
         )}
       </div>
 
-      {/* ── Community Cards area — height: 152px exactly (from original) ── */}
+      {/* ── Community Cards area — height: 152px (unchanged), cards centred ── */}
       <div style={{
         height: 152,
         minHeight: 152,
@@ -167,8 +153,8 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
         width: '100%',
         flexShrink: 0,
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: 'center',    // vertically centred — equal top/bottom spacing
+        justifyContent: 'center', // horizontally centred — equal left/right spacing
         gap: '1rem',
         paddingLeft: 16,
         paddingRight: 16,
@@ -183,7 +169,7 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
       }}>
         <BrandLogo />
 
-        {/* Card groups — Flop (3) + Turn (1) + River (1) */}
+        {/* Card groups — Flop (3) + Turn (1) + River (1) — centred with proportional gaps */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: GROUP_GAP, flexShrink: 0 }}>
           <CardGroup cards={cards} indices={[0, 1, 2]} label="Flop" />
           <CardGroup cards={cards} indices={[3]} label="Turn" />

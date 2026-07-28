@@ -31,6 +31,7 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
   const dims = {
     sm: { w: 62, h: 88,  rank: '16px', suit: '14px', big: 28, pad: '4px' },
     md: { w: 66, h: 92,  rank: '22px', suit: '20px', big: 32, pad: '5px' },
+    community: { w: 70, h: 100, rank: '22px', suit: '20px', big: 32, pad: '5px' },
     lg: { w: 80, h: 112, rank: '26px', suit: '24px', big: 40, pad: '6px' },
   }[size];
 
@@ -56,7 +57,7 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
         />
         <div className="relative flex flex-col items-center justify-center" style={{ gap: 1 }}>
           <Flame size={size === 'sm' ? 12 : 18} color="#E5B64E" strokeWidth={2} />
-          <div style={{ fontSize: size === 'sm' ? 5 : 7, fontWeight: 800, color: '#E5B64E', letterSpacing: '0.5px', lineHeight: 1 }}>
+          <div style={{ fontSize: (size === 'sm') ? 5 : 7, fontWeight: 800, color: '#E5B64E', letterSpacing: '0.5px', lineHeight: 1 }}>
             RAPID FIRE
           </div>
           {size !== 'sm' && (
