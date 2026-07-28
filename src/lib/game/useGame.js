@@ -287,13 +287,19 @@ export function useGame() {
   }, []);
 
   const dealRiver = useCallback(() => {
+    // Reveal the River card immediately so players can see it
     setRevealed(5);
     const community5 = deck.slice(0, 5);
     const settlement = settleRound(community5, FIXED_HANDS, bets, flopOdds, riverOdds);
+    // Bank and history update immediately
     setBank(b => +(b + settlement.winnings).toFixed(2));
     setResult(settlement);
     setHistory(prev => [settlement.historyEntry, ...prev].slice(0, 20));
-    setPhase('resolved');
+    // ── 5-second delay before result overlay appears ──────────────────
+    // Gives players time to see the full board clearly before the modal
+    setTimeout(() => {
+      setPhase('resolved');
+    }, 5000);
   }, [deck, bets, flopOdds, riverOdds]);
 
   const fold = useCallback(() => {
