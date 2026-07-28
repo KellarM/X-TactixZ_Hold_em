@@ -168,6 +168,26 @@ export function BettingSlot({
       }}
       onClick={() => { if (!locked) onPlace(); }}
     >
+      {/* WIN badge — shows on winning positions at resolution */}
+      {isWinner && isResolved && (
+        <div style={{
+          position: 'absolute',
+          top: 2,
+          right: 4,
+          background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          color: '#000',
+          fontSize: 9,
+          fontWeight: 900,
+          padding: '1px 5px',
+          borderRadius: 3,
+          zIndex: 20,
+          letterSpacing: '0.5px',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.8)',
+          pointerEvents: 'none',
+        }}>
+          WIN
+        </div>
+      )}
       {/* Odds label — top */}
       <div style={{
         color: '#FFD700',

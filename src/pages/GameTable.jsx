@@ -16,6 +16,9 @@ export default function GameTable() {
   const sounds = useGameSounds();
 
   const [showSettings, setShowSettings] = useState(false);
+  // ── Result overlay delay — 5 seconds after resolution before modal appears ──
+  // Winner indicators light up immediately; the modal waits so players can read the board.
+  const [showResult, setShowResult] = useState(false);
   const [playerStats, setPlayerStats] = useState({
     totalBets: 0, totalWins: 0,
     roundsPlayed: 0, roundsWon: 0,
@@ -29,6 +32,19 @@ export default function GameTable() {
     window.addEventListener('pointerdown', handler, { once: true });
     return () => window.removeEventListener('pointerdown', handler);
   }, []);
+
+  // ── Result overlay delay ──────────────────────────────────────────────
+  // When phase becomes 'resolved', wait 5 seconds before showing the modal.
+  // Winner indicators (gold pulses) appear immediately; the modal follows.
+  useEffect(() => {
+    if (phase === 'resolved' && game.result) {
+      setShowResult(false);
+      const timer = setTimeout(() => setShowResult(true), 5000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowResult(false);
+    }
+  }, [phase, game.result]);
 
   // Track stats per resolved hand
   useEffect(() => {
@@ -178,7 +194,7 @@ export default function GameTable() {
         />
       </div>
 
-      {phase === 'resolved' && game.result && (
+      {showResult && game.result && (
         <ResultOverlay result={game.result} ante={game.ante} onClose={actions.newHand} />
       )}
 
