@@ -229,6 +229,7 @@ export function useGame() {
     setBets(emptyBets());
     setResult(null);
     setFlopOdds(null);
+    setSelectedChip(ante);  // Auto-select the ante amount as the default betting chip
     setPhase('postflop');
   }, [ante, bank]);
 
