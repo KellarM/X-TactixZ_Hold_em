@@ -164,6 +164,32 @@ export default function BottomFooter({
         <StatBox label="BET SUM" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
       </div>
 
+      {/* ── CLEAR BETS / FOLD — visible during postflop/postturn ── */}
+      {showActions && (
+        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+          <button
+            onClick={onClearBets}
+            style={{
+              background: '#1a1030', border: '1px solid #C5A059', color: '#C5A059',
+              fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
+              borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
+            }}
+          >
+            CLEAR BETS
+          </button>
+          <button
+            onClick={onFold}
+            style={{
+              background: '#3a1020', border: '1px solid #C5A059', color: '#FF6B6B',
+              fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
+              borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
+            }}
+          >
+            FOLD
+          </button>
+        </div>
+      )}
+
       {/* ── SPACER — pushes Gear to far right ── */}
       <div style={{ flex: '1 1 0', minWidth: 0 }} />
 

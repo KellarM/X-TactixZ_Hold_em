@@ -92,7 +92,9 @@ export default function GameTable() {
     canDeal = game.ante > 0 && game.ante <= game.bank;
   } else if (phase === 'postflop') {
     dealLabel = 'DEAL TURN';
-    subLabel  = 'CONFIRM BETS — DEAL THE TURN';
+    subLabel  = game.selectedChip
+      ? 'PLACE BETS ON ANY BOARD — THEN DEAL TURN'
+      : 'SELECT A CHIP, THEN PLACE BETS ON ANY BOARD';
     canDeal   = !game.computing;
   } else if (phase === 'postturn') {
     dealLabel = 'DEAL RIVER';
