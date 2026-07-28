@@ -76,7 +76,12 @@ export default function BottomFooter({
         })}
       </div>
 
-      {/* ── 2. ANTE — bold gold circular display ── */}
+      {/* ── 2. BET SUM — immediately beside chips, locked ── */}
+      <div style={{ width: W.betSum, flexShrink: 0 }}>
+        <StatBox label="BET SUM" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
+      </div>
+
+      {/* ── 3. ANTE — bold gold circular display ── */}
       <div
         onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined}
         title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}
@@ -106,11 +111,6 @@ export default function BottomFooter({
             ANTE
           </span>
         )}
-      </div>
-
-      {/* ── 3. BET SUM — immediately beside Ante, locked ── */}
-      <div style={{ width: W.betSum, flexShrink: 0 }}>
-        <StatBox label="BET SUM" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
       </div>
 
       {/* ── 4. PLAYERS BANK — locked at 7-digit width ── */}
