@@ -48,7 +48,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
     <div
       className="rounded-lg p-3 flex flex-col"
       style={{
-        background: '#051532',
+        background: 'rgba(0,0,0,0.35)',
         border: '1.5px solid #C5A059',
         flex: '1 1 0',
         minHeight: 0,

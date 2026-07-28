@@ -40,7 +40,7 @@ const capBadgeStyle = {
   whiteSpace: 'nowrap',
 };
 const boardPanelStyle = {
-  background: '#051532',
+  background: 'rgba(0,0,0,0.35)',
   border: '1.5px solid #C5A059',
   borderRadius: 10,
   padding: 6,
