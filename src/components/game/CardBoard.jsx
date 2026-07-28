@@ -1,11 +1,34 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import PlayingCard from './PlayingCard';
 import { FIXED_HANDS, formatPayout } from '@/lib/game/cards';
 import Chip from '@/components/game/Chip';
 
-// ── CardBoard — hand slots with live rank labels and leader/winner highlights ──
+// ── Inject keyframe animations once into the document head ──────────────────
+const STYLE_ID = 'rf-card-board-animations';
+function injectStyles() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = `
+    @keyframes rf-leader-pulse {
+      0%   { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); background-color: #1a1400; }
+      50%  { box-shadow: 0 0 28px 10px rgba(255,220,50,0.85), inset 0 0 40px rgba(255,220,50,0.30); background-color: #2a2000; }
+      100% { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); background-color: #1a1400; }
+    }
+    @keyframes rf-winner-pulse {
+      0%   { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); background-color: #3a2a00; }
+      50%  { box-shadow: 0 0 48px 18px rgba(255,230,0,1.0),  inset 0 0 70px rgba(255,230,0,0.55); background-color: #c8960a; }
+      100% { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); background-color: #3a2a00; }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
 export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
   handEvals = {}, leadingHandIds = [], winnerHandIds = [] }) {
+
+  useEffect(() => { injectStyles(); }, []);
 
   const locked = (id) => {
     if (!odds) return true;
@@ -104,28 +127,34 @@ export function BettingSlot({
   oddsLabel, locked, bet, onPlace, onRemove, children,
   rankLabel = null, isLeading = false, isWinner = false, isResolved = false,
 }) {
-  // Border: winner = bright gold pulse, leader = soft gold, normal = dim
+  // ── Border colour ──────────────────────────────────────────────────────────
   let borderColor = locked ? '#3a4a6a' : '#C5A059';
-  let boxShadow   = 'none';
-  let background  = '#04122b';
+  let borderWidth = '1px';
+  if (isWinner)                   { borderColor = '#FFD700'; borderWidth = '2.5px'; }
+  else if (isLeading && !isResolved) { borderColor = '#e5c158'; borderWidth = '2px'; }
 
+  // ── Animation ──────────────────────────────────────────────────────────────
+  // Winner pulses bright gold; leader pulses softer gold; else static
+  let animation = 'none';
+  let background = '#04122b';
   if (isWinner) {
-    borderColor = '#FFD700';
-    boxShadow   = '0 0 12px 3px rgba(255,215,0,0.6)';
-    background  = 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)';
+    animation  = 'rf-winner-pulse 1.1s ease-in-out infinite';
+    background = '#3a2a00';           // base colour; animation overrides each cycle
   } else if (isLeading && !isResolved) {
-    borderColor = '#e5c158';
-    boxShadow   = '0 0 8px 2px rgba(229,193,88,0.35)';
-    background  = 'linear-gradient(160deg, #121008 0%, #04122b 100%)';
+    animation  = 'rf-leader-pulse 1.6s ease-in-out infinite';
+    background = '#1a1400';
   }
+
+  // ── Rank label colour ──────────────────────────────────────────────────────
+  const rankColor = isWinner ? '#FFD700' : isLeading ? '#e5c158' : '#8a9ab0';
 
   return (
     <div
       className="relative rounded-md"
       style={{
         background,
-        border: `1.5px solid ${borderColor}`,
-        boxShadow,
+        border: `${borderWidth} solid ${borderColor}`,
+        animation,
         opacity: locked ? 0.5 : 1,
         height: '100%',
         minHeight: 0,
@@ -133,7 +162,7 @@ export function BettingSlot({
         flexDirection: 'column',
         alignItems: 'center',
         cursor: locked ? 'not-allowed' : 'pointer',
-        transition: 'border-color 0.25s, box-shadow 0.25s, background 0.25s',
+        transition: 'border-color 0.2s, border-width 0.2s',
         overflow: 'visible',
         userSelect: 'none',
       }}
@@ -165,7 +194,7 @@ export function BettingSlot({
         {children}
       </div>
 
-      {/* Live rank label — bottom of slot */}
+      {/* Live rank label — bottom */}
       {rankLabel && !locked && (
         <div style={{
           fontSize: 9,
@@ -176,14 +205,14 @@ export function BettingSlot({
           width: '100%',
           flexShrink: 0,
           lineHeight: 1,
-          color: isWinner ? '#FFD700' : isLeading ? '#e5c158' : '#8a9ab0',
+          color: rankColor,
           textTransform: 'uppercase',
         }}>
           {rankLabel}
         </div>
       )}
 
-      {/* Chip overlay */}
+      {/* Chip — bottom centre, shifted up if rank label is showing */}
       {bet > 0 && !locked && (
         <span
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
