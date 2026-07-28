@@ -167,6 +167,7 @@ export function BettingSlot({
         userSelect: 'none',
       }}
       onClick={() => { if (!locked) onPlace(); }}
+      onContextMenu={(e) => { e.preventDefault(); if (!locked && bet > 0) onRemove(); }}
     >
       {/* WIN badge — shows on winning positions at resolution */}
       {isWinner && isResolved && (

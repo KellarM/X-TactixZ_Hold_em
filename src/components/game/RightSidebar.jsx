@@ -216,6 +216,7 @@ export default function RightSidebar({
                 key={label}
                 disabled={locked}
                 onClick={() => !locked && onPlace('rank', label)}
+                onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.rank[label]) onRemove('rank', label); }}
                 className="relative flex items-center justify-between flex-1"
                 style={{ ...style, borderRadius: R, padding: '0 12px', minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
@@ -270,6 +271,7 @@ export default function RightSidebar({
                 key={pos.key}
                 disabled={locked}
                 onClick={() => !locked && onPlace('color', pos.key)}
+                onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.color[pos.key]) onRemove('color', pos.key); }}
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
@@ -318,6 +320,7 @@ export default function RightSidebar({
                 key={b.side}
                 disabled={locked}
                 onClick={() => !locked && onPlace('river', b.side)}
+                onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.river[b.side]) onRemove('river', b.side); }}
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
