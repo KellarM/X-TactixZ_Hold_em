@@ -3,7 +3,10 @@ import PlayingCard from './PlayingCard';
 import { FIXED_HANDS, formatPayout } from '@/lib/game/cards';
 import Chip from '@/components/game/Chip';
 
-export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }) {
+// ── CardBoard — hand slots with live rank labels and leader/winner highlights ──
+export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
+  handEvals = {}, leadingHandIds = [], winnerHandIds = [] }) {
+
   const locked = (id) => {
     if (!odds) return true;
     const o = odds.cardOdds.find(x => x.handId === id);
@@ -16,6 +19,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
   };
 
   const isAntePhase = phase === 'ante';
+  const isResolved  = phase === 'resolved';
 
   return (
     <div
@@ -52,15 +56,23 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove }
         style={{ gap: 6, flex: 1, minHeight: 0 }}
       >
         {FIXED_HANDS.map((hand) => {
-          const isLocked = locked(hand.id);
-          const p = payout(hand.id);
-          const bet = bets.card[hand.id] || 0;
+          const isLocked   = locked(hand.id);
+          const p          = payout(hand.id);
+          const bet        = bets.card[hand.id] || 0;
+          const rankLabel  = handEvals[hand.id] || null;
+          const isLeading  = leadingHandIds.includes(hand.id);
+          const isWinner   = winnerHandIds.includes(hand.id);
+
           return (
             <BettingSlot
               key={hand.id}
               oddsLabel={formatPayout(p)}
               locked={isLocked}
               bet={bet}
+              rankLabel={rankLabel}
+              isLeading={isLeading}
+              isWinner={isWinner}
+              isResolved={isResolved}
               onPlace={() => onPlace('card', hand.id)}
               onRemove={() => onRemove('card', hand.id)}
             >
@@ -88,13 +100,32 @@ export function SectionTitle({ children }) {
   );
 }
 
-export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, children }) {
+export function BettingSlot({
+  oddsLabel, locked, bet, onPlace, onRemove, children,
+  rankLabel = null, isLeading = false, isWinner = false, isResolved = false,
+}) {
+  // Border: winner = bright gold pulse, leader = soft gold, normal = dim
+  let borderColor = locked ? '#3a4a6a' : '#C5A059';
+  let boxShadow   = 'none';
+  let background  = '#04122b';
+
+  if (isWinner) {
+    borderColor = '#FFD700';
+    boxShadow   = '0 0 12px 3px rgba(255,215,0,0.6)';
+    background  = 'linear-gradient(160deg, #1a1200 0%, #0d0900 100%)';
+  } else if (isLeading && !isResolved) {
+    borderColor = '#e5c158';
+    boxShadow   = '0 0 8px 2px rgba(229,193,88,0.35)';
+    background  = 'linear-gradient(160deg, #121008 0%, #04122b 100%)';
+  }
+
   return (
     <div
       className="relative rounded-md"
       style={{
-        background: '#04122b',
-        border: `1px solid ${locked ? '#3a4a6a' : '#C5A059'}`,
+        background,
+        border: `1.5px solid ${borderColor}`,
+        boxShadow,
         opacity: locked ? 0.5 : 1,
         height: '100%',
         minHeight: 0,
@@ -102,7 +133,7 @@ export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, childre
         flexDirection: 'column',
         alignItems: 'center',
         cursor: locked ? 'not-allowed' : 'pointer',
-        transition: 'opacity 0.2s, border-color 0.2s',
+        transition: 'border-color 0.25s, box-shadow 0.25s, background 0.25s',
         overflow: 'visible',
         userSelect: 'none',
       }}
@@ -113,7 +144,7 @@ export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, childre
         color: '#FFD700',
         fontSize: 11,
         fontWeight: 700,
-        padding: '5px 4px 3px',
+        padding: '4px 4px 2px',
         flexShrink: 0,
         lineHeight: 1,
         textAlign: 'center',
@@ -122,26 +153,44 @@ export function BettingSlot({ oddsLabel, locked, bet, onPlace, onRemove, childre
         {locked ? 'LOCKED' : oddsLabel}
       </div>
 
-      {/* Cards — flex-1, always centred */}
+      {/* Cards — flex-1, centred */}
       <div style={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
-        padding: '0 4px 4px',
+        padding: '0 4px',
       }}>
         {children}
       </div>
 
-      {/* Chip — absolute overlay at bottom-centre */}
+      {/* Live rank label — bottom of slot */}
+      {rankLabel && !locked && (
+        <div style={{
+          fontSize: 9,
+          fontWeight: 800,
+          letterSpacing: '0.5px',
+          textAlign: 'center',
+          padding: '2px 4px 3px',
+          width: '100%',
+          flexShrink: 0,
+          lineHeight: 1,
+          color: isWinner ? '#FFD700' : isLeading ? '#e5c158' : '#8a9ab0',
+          textTransform: 'uppercase',
+        }}>
+          {rankLabel}
+        </div>
+      )}
+
+      {/* Chip overlay */}
       {bet > 0 && !locked && (
         <span
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
           title="Click to remove bet"
           style={{
             position: 'absolute',
-            bottom: 5,
+            bottom: rankLabel ? 18 : 5,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 10,

@@ -126,6 +126,9 @@ export default function GameTable() {
               phase={phase}
               onPlace={handlePlaceBet}
               onRemove={handleRemoveBet}
+              handEvals={game.handEvals}
+              leadingHandIds={game.leadingHandIds}
+              winnerHandIds={game.winnerHandIds}
             />
           </div>
         </div>
