@@ -127,7 +127,7 @@ function SectionHeader({ children, capValue }) {
         {children}
       </span>
       {capValue !== undefined && (
-        <span style={capBadgeStyle}>Match Cap: {formatMoney(capValue)}</span>
+        <span style={capBadgeStyle}>Match Ante: {formatMoney(capValue)}</span>
       )}
     </div>
   );
@@ -201,7 +201,7 @@ export default function RightSidebar({
 
       {/* ■■ HAND RANKING BOARD — flex: 5, chip CENTRED, winning rank PULSES ■■ */}
       <div style={{ ...boardPanelStyle, flex: 5 }}>
-        <SectionHeader>HAND RANKING</SectionHeader>
+        <SectionHeader capValue={caps.rank}>HAND RANKING</SectionHeader>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {RANK_LABELS.map((label) => {
             const locked = rankLocked(label);

@@ -55,7 +55,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
         height: '100%',
       }}
     >
-      <SectionTitle>CARD BOARD — HAND POSITIONS</SectionTitle>
+      <SectionTitle capValue={caps ? caps.card : undefined}>CARD BOARD — HAND POSITIONS</SectionTitle>
 
       {isAntePhase && (
         <div
@@ -112,13 +112,33 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
   );
 }
 
-export function SectionTitle({ children }) {
+const capBadgeStyle = {
+  background: 'rgba(0,0,0,0.85)',
+  border: '1px solid rgba(234,179,8,0.5)',
+  color: '#fbbf24',
+  fontSize: 10,
+  fontWeight: 900,
+  borderRadius: 99,
+  padding: '1px 7px',
+  whiteSpace: 'nowrap',
+};
+
+export function SectionTitle({ children, capValue }) {
+  const formatMoney = (v) => v !== undefined ? '$' + v.toFixed(2) : '';
   return (
     <div
-      className="text-center mb-2"
-      style={{ color: '#E5B64E', fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', flexShrink: 0 }}
+      className="flex items-center justify-between flex-shrink-0 mb-2"
+      style={{ padding: '0 2px' }}
     >
-      {children}
+      <span style={{ flex: 1 }} />
+      <span style={{ color: '#E5B64E', fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textAlign: 'center', flex: 'auto' }}>
+        {children}
+      </span>
+      <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+        {capValue !== undefined && capValue > 0 && (
+          <span style={capBadgeStyle}>Match Ante: {formatMoney(capValue)}</span>
+        )}
+      </span>
     </div>
   );
 }
