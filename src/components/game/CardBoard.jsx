@@ -233,23 +233,23 @@ export function BettingSlot({
         </div>
       )}
 
-      {/* Chip — bottom centre, shifted up if rank label is showing */}
+      {/* Chip — centered on top of the cards, at the midpoint between the two cards */}
       {bet > 0 && !locked && (
         <span
           onClick={(e) => { e.stopPropagation(); onRemove(); }}
           title="Click to remove bet"
           style={{
             position: 'absolute',
-            bottom: rankLabel ? 18 : 5,
+            top: '50%',
             left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 10,
+            transform: 'translate(-50%, -50%)',
+            zIndex: 20,
             cursor: 'pointer',
-            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.9))',
+            filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.95))',
             pointerEvents: 'auto',
           }}
         >
-          <Chip amount={bet} scale={0.52} />
+          <Chip amount={bet} scale={0.65} />
         </span>
       )}
     </div>
