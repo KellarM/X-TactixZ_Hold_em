@@ -6,6 +6,15 @@ import { SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
 const CARD_IMAGES = {
   'A_diamonds':  'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/906a8f36c_image.png',
   '10_hearts':   'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/05d9e3ffe_image.png',
+  // ── Diamonds suit — Michael's real card images (July 28, 2026) ──
+  '2_diamonds':  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/44b0a3106_2_diamonds.png',
+  '3_diamonds':  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/70012137b_3_diamonds.png',
+  '4_diamonds':  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/ff0db820f_4_diamonds.png',
+  '9_diamonds':  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/1a7bce88f_9_diamonds.png',
+  '10_diamonds': 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/c00daed53_10_diamonds.png',
+  'J_diamonds':  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/d755b68b9_J_diamonds.png',
+  'Q_diamonds':  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/7b7f9016b_Q_diamonds.png',
+  'K_diamonds':  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/0e7a1d8ec_K_diamonds.png',
   // ── Clubs suit — Michael's real card images (July 28, 2026) ──
   'A_clubs':     'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/eedbf4add_A_clubs.png',
   '2_clubs':     'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/3e1d8d87a_2_clubs.png',
