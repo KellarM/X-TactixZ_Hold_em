@@ -213,15 +213,20 @@ export function useGame() {
   const addToAnte = useCallback((amount) => {
     setAnte(a => {
       const next = +(a + amount).toFixed(2);
-      return next > bank ? bank : next;
+      if (next > bank) return bank;  // Can't ante more than you have
+      setBank(b => +(b - amount).toFixed(2));  // Deduct immediately
+      return next;
     });
   }, [bank]);
 
-  const clearAnte = useCallback(() => setAnte(0), []);
+  const clearAnte = useCallback(() => {
+    setBank(b => +(b + ante).toFixed(2));  // Refund the ante back to bank
+    setAnte(0);
+  }, [ante]);
 
   const deal = useCallback(() => {
-    if (ante <= 0 || ante > bank) return;
-    setBank(b => +(b - ante).toFixed(2));
+    if (ante <= 0) return;
+    // Bank was already deducted in real-time as ante was built — no deduction here
     const shuffled = shuffleDeck(DEALER_STOCK);
     const community5 = dealCommunity(shuffled);
     setDeck(community5);
