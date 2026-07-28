@@ -76,9 +76,9 @@ export default function BottomFooter({
         })}
       </div>
 
-      {/* ── 2. BET SUM — immediately beside chips, locked ── */}
-      <div style={{ width: W.betSum, flexShrink: 0 }}>
-        <StatBox label="BET SUM" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
+      {/* ── 2. PLAYERS BANK — locked at 7-digit width ── */}
+      <div style={{ width: W.bank, flexShrink: 0 }}>
+        <StatBox label="PLAYERS BANK" value={formatMoney(bank)} />
       </div>
 
       {/* ── 3. ANTE — bold gold circular display ── */}
@@ -113,12 +113,7 @@ export default function BottomFooter({
         )}
       </div>
 
-      {/* ── 4. PLAYERS BANK — locked at 7-digit width ── */}
-      <div style={{ width: W.bank, flexShrink: 0 }}>
-        <StatBox label="PLAYERS BANK" value={formatMoney(bank)} />
-      </div>
-
-      {/* ── 5. DEAL BUTTON — locked width, never shifts ── */}
+      {/* ── 4. DEAL BUTTON — locked width, never shifts ── */}
       <div style={{
         width: W.deal, flexShrink: 0,
         display: 'flex', flexDirection: 'column',
@@ -162,6 +157,11 @@ export default function BottomFooter({
         }}>
           {subLabel}
         </span>
+      </div>
+
+      {/* ── 5. BET SUM — locked ── */}
+      <div style={{ width: W.betSum, flexShrink: 0 }}>
+        <StatBox label="BET SUM" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
       </div>
 
       {/* ── SPACER — pushes Gear to far right ── */}
