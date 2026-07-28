@@ -6,6 +6,20 @@ import { formatMoney } from '@/lib/game/cards';
 
 const GOLD_BTN = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
 
+// Inject ante glow animation
+if (typeof document !== 'undefined' && !document.getElementById('rf-ante-glow-style')) {
+  const s = document.createElement('style');
+  s.id = 'rf-ante-glow-style';
+  s.textContent = `
+    @keyframes rf-ante-glow {
+      0%   { box-shadow: 0 0 12px 4px rgba(255,215,0,0.7), inset 0 0 10px rgba(255,215,0,0.2), 0 2px 6px rgba(0,0,0,0.6); }
+      50%  { box-shadow: 0 0 24px 10px rgba(255,230,0,0.95), inset 0 0 20px rgba(255,215,0,0.4), 0 2px 6px rgba(0,0,0,0.6); }
+      100% { box-shadow: 0 0 12px 4px rgba(255,215,0,0.7), inset 0 0 10px rgba(255,215,0,0.2), 0 2px 6px rgba(0,0,0,0.6); }
+    }
+  `;
+  document.head.appendChild(s);
+}
+
 export default function BottomFooter({
   bank, ante, totalWagered, selectedChip,
   phase, canDeal, dealLabel, subLabel,
@@ -61,7 +75,7 @@ export default function BottomFooter({
       {/* ■■ Players Bank ■■ */}
       <StatBox label="PLAYERS BANK" value={formatMoney(bank)} />
 
-      {/* ■■ Ante — circular chip display, no label below ■■ */}
+      {/* ■■ Ante — bold gold circular display, fills footer height ■■ */}
       <div
         onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined}
         title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}
@@ -71,17 +85,35 @@ export default function BottomFooter({
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          width: 50,
-          height: 50,
+          width: 56,
+          height: 56,
           borderRadius: '50%',
-          border: '2px dashed rgba(197,160,89,0.5)',
-          background: 'rgba(0,0,0,0.3)',
+          border: ante > 0
+            ? '3px solid #FFD700'
+            : '3px solid #C5A059',
+          background: ante > 0
+            ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
+            : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%, #e8c22a 100%)',
+          boxShadow: ante > 0
+            ? '0 0 12px 4px rgba(255,215,0,0.7), inset 0 0 10px rgba(255,215,0,0.2), 0 2px 6px rgba(0,0,0,0.6)'
+            : 'inset 0 1px 2px rgba(255,255,200,0.6), inset 0 -1px 2px rgba(100,60,0,0.5), 0 2px 4px rgba(0,0,0,0.5)',
+          animation: ante > 0
+            ? 'rf-ante-glow 1.6s ease-in-out infinite'
+            : 'none',
+          transition: 'all 0.2s ease',
         }}
       >
         {ante > 0 ? (
-          <Chip amount={ante} scale={0.55} />
+          <Chip amount={ante} scale={0.58} />
         ) : (
-          <span style={{ color: 'rgba(197,160,89,0.6)', fontSize: 9, fontWeight: 800, letterSpacing: '0.5px' }}>
+          <span style={{
+            color: '#000',
+            fontSize: 11,
+            fontWeight: 900,
+            letterSpacing: '1px',
+            textAlign: 'center',
+            lineHeight: 1,
+          }}>
             ANTE
           </span>
         )}
