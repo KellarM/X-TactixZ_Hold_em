@@ -129,7 +129,7 @@ export function useGame() {
   const [deck, setDeck] = useState(saved.current?.deck ?? []);
   const [revealed, setRevealed] = useState(saved.current?.revealed ?? 0);
   const [bets, setBets] = useState(saved.current?.bets ?? emptyBets());
-  const [selectedChip, setSelectedChip] = useState(saved.current?.selectedChip ?? 0.01);
+  const [selectedChip, setSelectedChip] = useState(null);  // No pre-selection — player must click a chip
   const [history, setHistory] = useState(saved.current?.history ?? []);
   const [result, setResult] = useState(saved.current?.result ?? null);
   const [flopOdds, setFlopOdds] = useState(null);
@@ -237,7 +237,7 @@ export function useGame() {
     if (board === 'river' && phase !== 'postturn') return;
     if (board !== 'river' && phase !== 'postflop') return;
     const amount = selectedChip;
-    if (amount <= 0) return;
+    if (!amount || amount <= 0) return;  // No chip selected — can't place bet
     const cap = board === 'river'
       ? (boardTotals.card + boardTotals.rank + boardTotals.color)
       : ante;
@@ -315,6 +315,7 @@ export function useGame() {
     setAnte(0);
     setResult(null);
     setFlopOdds(null);
+    setSelectedChip(null);  // No chip pre-selected on fold/new round
     setPhase('ante');
   }, [boardTotals]);
 
@@ -325,6 +326,7 @@ export function useGame() {
     setAnte(0);
     setResult(null);
     setFlopOdds(null);
+    setSelectedChip(null);  // No chip pre-selected on new round
     setPhase('ante');
   }, []);
 
