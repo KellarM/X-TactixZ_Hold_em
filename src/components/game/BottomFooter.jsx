@@ -108,7 +108,7 @@ export default function BottomFooter({
         )}
       </div>
 
-      {/* ── 3. BET SUM COUNT — right beside Ante, locked ── */}
+      {/* ── 3. BET SUM — immediately beside Ante, locked ── */}
       <div style={{ width: W.betSum, flexShrink: 0 }}>
         <StatBox label="BET SUM" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
       </div>
@@ -164,7 +164,10 @@ export default function BottomFooter({
         </span>
       </div>
 
-      {/* ── 6. GEAR — far right, locked ── */}
+      {/* ── SPACER — pushes Gear to far right ── */}
+      <div style={{ flex: '1 1 0', minWidth: 0 }} />
+
+      {/* ── 6. GEAR — pinned to far right border ── */}
       <button
         onClick={onSettings}
         title="Settings"
