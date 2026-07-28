@@ -40,7 +40,7 @@ export default function BottomFooter({
     <div
       style={{
         width: '100%',
-        background: 'rgba(0,0,0,0.55)',
+        background: 'linear-gradient(180deg, #0a1838 0%, #050d21 100%)',
         borderTop: '2px solid #C5A059',
         display: 'flex',
         alignItems: 'center',

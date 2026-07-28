@@ -6,7 +6,7 @@ export default function PreviousHands({ history }) {
     <div
       className="flex flex-col rounded-lg overflow-hidden h-full"
       style={{
-        background: 'rgba(0,0,0,0.35)',
+        background: '#050d21',
         border: '1px solid #C5A059',
         minHeight: 0
       }}
@@ -19,7 +19,7 @@ export default function PreviousHands({ history }) {
           fontSize: 13,
           letterSpacing: '1px',
           borderBottom: '1px solid #C5A059',
-          background: 'rgba(0,0,0,0.45)'
+          background: 'linear-gradient(180deg, #0a1838 0%, #050d21 100%)'
         }}
       >
         PREVIOUS HANDS
