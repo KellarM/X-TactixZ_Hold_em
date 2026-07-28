@@ -179,7 +179,7 @@ export default function GameTable() {
       </div>
 
       {phase === 'resolved' && game.result && (
-        <ResultOverlay result={game.result} onClose={actions.newHand} />
+        <ResultOverlay result={game.result} ante={game.ante} onClose={actions.newHand} />
       )}
 
       <SettingsModal
