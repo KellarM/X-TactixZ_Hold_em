@@ -3,6 +3,12 @@ import { X, Volume2, VolumeX, BarChart2 } from 'lucide-react';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import { formatMoney } from '@/lib/game/cards';
 
+const COLORS = [
+  { id: 'red',   label: 'Red',   dot: '#b30000' },
+  { id: 'blue',  label: 'Blue',  dot: '#0a2a6e' },
+  { id: 'green', label: 'Green', dot: '#0a4a1e' },
+];
+
 const OVERLAY = {
   position: 'fixed', inset: 0,
   background: 'rgba(0,0,0,0.7)',
@@ -34,7 +40,7 @@ function StatRow({ label, value, highlight }) {
   );
 }
 
-export default function SettingsModal({ isOpen, onClose, playerStats = {} }) {
+export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme }) {
   const sounds = useGameSounds();
   const [soundOn, setSoundOn] = useState(true);
   const [volume, setVolume] = useState(40);
@@ -82,6 +88,36 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {} }) {
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: GOLD }}>
             <X size={20} />
           </button>
+        </div>
+
+        {/* Board Color */}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(197,160,89,0.6)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 8 }}>
+            BOARD COLOR
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            {COLORS.map(t => (
+              <button key={t.id}
+                onClick={() => setBoardTheme && setBoardTheme(t.id)}
+                style={{
+                  flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
+                  padding: '10px 4px', borderRadius: 10, cursor: 'pointer',
+                  fontWeight: 700, fontSize: 12,
+                  color: boardTheme === t.id ? '#fde047' : '#94a3b8',
+                  border: boardTheme === t.id ? '2px solid #facc15' : '1px solid rgba(197,160,89,0.3)',
+                  background: boardTheme === t.id ? 'rgba(100,60,0,0.55)' : 'rgba(0,0,0,0.3)',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{
+                  width: 18, height: 18, borderRadius: '50%',
+                  background: t.dot, border: '2px solid rgba(255,255,255,0.25)',
+                  display: 'block',
+                }} />
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Tabs */}

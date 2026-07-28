@@ -16,6 +16,14 @@ export default function GameTable() {
   const sounds = useGameSounds();
 
   const [showSettings, setShowSettings] = useState(false);
+  const [boardTheme, setBoardThemeState] = useState(() => {
+    try { return localStorage.getItem('rfpf_theme') || 'blue'; } catch { return 'blue'; }
+  });
+
+  const setBoardTheme = (t) => {
+    setBoardThemeState(t);
+    try { localStorage.setItem('rfpf_theme', t); } catch {}
+  };
   // ── Result overlay delay — 5 seconds after resolution before modal appears ──
   // Winner indicators light up immediately; the modal waits so players can read the board.
   const [showResult, setShowResult] = useState(false);
@@ -104,8 +112,8 @@ export default function GameTable() {
 
   return (
     <div
+      className={`velvet-board theme-${boardTheme}`}
       style={{
-        background: '#051025',
         color: '#FFFFFF',
         height: '100vh',
         display: 'flex',
@@ -204,6 +212,8 @@ export default function GameTable() {
         isOpen={showSettings}
         onClose={() => setShowSettings(false)}
         playerStats={playerStats}
+        boardTheme={boardTheme}
+        setBoardTheme={setBoardTheme}
       />
     </div>
   );

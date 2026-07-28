@@ -90,3 +90,42 @@
     @apply bg-background text-foreground font-body;
   }
 }
+
+/* ── Velvet Board — Post-Flop Edition ─────────────────────────── */
+.velvet-board {
+  background: radial-gradient(circle at center, #0d3b8c 0%, #071e52 60%, #020b2a 100%);
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.8);
+  position: relative;
+}
+
+.velvet-board::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  mix-blend-mode: overlay;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* ── Board Color Themes ──────────────────────────────────────── */
+/* BLUE (default for post-flop) */
+.velvet-board.theme-blue,
+body.theme-blue .velvet-board {
+  background: radial-gradient(circle at center, #0d3b8c 0%, #071e52 60%, #020b2a 100%);
+}
+
+/* RED */
+.velvet-board.theme-red,
+body.theme-red .velvet-board {
+  background: radial-gradient(circle at center, #b30000 0%, #7a0000 60%, #3d0000 100%);
+}
+
+/* GREEN */
+.velvet-board.theme-green,
+body.theme-green .velvet-board {
+  background: radial-gradient(circle at center, #0d6e2e 0%, #074a1c 60%, #022610 100%);
+}
