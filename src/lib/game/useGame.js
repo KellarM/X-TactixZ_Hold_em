@@ -5,6 +5,8 @@ import {
   RANK_LABELS,
   COLOR_POSITIONS,
   SUIT_SYMBOL,
+  SUIT_COLOR,
+  CAT_TO_LABEL,
   formatMoney
 } from './cards';
 import { shuffleDeck, dealCommunity } from './shuffle';
@@ -162,7 +164,7 @@ export function useGame() {
   // ■■ Winner hand(s) after resolution ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
   const winnerHandIds = useMemo(() => {
     if (phase !== 'resolved' || !result) return [];
-    return result.resolution?.winnerHandIds || [];
+    return result.resolution?.winners || [];
   }, [phase, result]);
 
   // Compute post-flop odds after flop
@@ -367,6 +369,67 @@ export function useGame() {
     return '';
   }, [phase, ante, computing, result, flop, turn, river, leadingRankName, leadingHandIds, winnerHandIds]);
 
+  // ■■ Leading rank label mapped to RANK_LABELS format ■■■■■■■■■■■■■■■■■■■■
+  const leadingRankLabel = useMemo(() => {
+    if (!leadingRankName || revealed < 3) return null;
+    const nameMap = {
+      'Four of a Kind': '4 Of A Kind',
+      'Full House':     'Full House',
+      'Flush':          'Flush',
+      'Straight':       'Straight',
+      'Three of a Kind':'3 Of A Kind',
+      'Two Pair':      '2 Pair',
+      'One Pair':      '1 Pair',
+      'High Card':     null,  // not bettable
+    };
+    return nameMap[leadingRankName] || null;
+  }, [leadingRankName, revealed]);
+
+  // ■■ Winner rank label from resolution ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  const winnerRankLabel = useMemo(() => {
+    if (phase !== 'resolved' || !result?.resolution) return null;
+    if (result.resolution.boardWin) return null;  // board wins — no rank pays
+    const cat = result.resolution.winningCategory;
+    return CAT_TO_LABEL[cat] || null;
+  }, [phase, result]);
+
+  // ■■ Leading color keys — which color positions match current community count ■■
+  const leadingColorKeys = useMemo(() => {
+    if (revealed < 3) return [];
+    const reds = community.filter(c => SUIT_COLOR[c.suit] === 'red').length;
+    const blacks = community.filter(c => SUIT_COLOR[c.suit] === 'black').length;
+    const keys = [];
+    if (reds >= 3) keys.push(`${reds}R`);
+    if (blacks >= 3) keys.push(`${blacks}B`);
+    return keys;
+  }, [community, revealed]);
+
+  // ■■ Winner color keys from resolution ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  const winnerColorKeys = useMemo(() => {
+    if (phase !== 'resolved' || !result?.resolution) return [];
+    const r = result.resolution;
+    const keys = [];
+    if (r.reds >= 3)    keys.push(`${r.reds}R`);
+    if (r.blacks >= 3)  keys.push(`${r.blacks}B`);
+    return keys;
+  }, [phase, result]);
+
+  // ■■ Leading river side — lower payout = favourite ■■■■■■■■■■■■■■■■■■■■■
+  const leadingRiverSide = useMemo(() => {
+    if (revealed < 4 || !riverOdds) return null;
+    const pl = riverOdds.low.probability;
+    const ph = riverOdds.high.probability;
+    if (pl > ph) return 'low';
+    if (ph > pl) return 'high';
+    return null;  // exact tie
+  }, [riverOdds, revealed]);
+
+  // ■■ Winner river side from resolution ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  const winnerRiverSide = useMemo(() => {
+    if (phase !== 'resolved' || !result?.resolution) return null;
+    return result.resolution.riverLow ? 'low' : 'high';
+  }, [phase, result]);
+
   return {
     phase,
     bank,
@@ -391,6 +454,12 @@ export function useGame() {
     handEvals,
     leadingHandIds,
     winnerHandIds,
+    leadingRankLabel,
+    winnerRankLabel,
+    leadingColorKeys,
+    winnerColorKeys,
+    leadingRiverSide,
+    winnerRiverSide,
     actions: {
       addToAnte,
       clearAnte,

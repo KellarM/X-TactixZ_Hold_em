@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { RANK_LABELS, formatPayout, formatMoney } from '@/lib/game/cards';
 import Chip from '@/components/game/Chip';
 
@@ -50,7 +50,29 @@ const boardPanelStyle = {
   boxSizing: 'border-box',
 };
 
-// ── Rank board chip: absolute CENTRE of the button ──
+// ── Inject pulse animations once ─────────────────────────────────────────────
+const STYLE_ID = 'rf-sidebar-animations';
+function injectStyles() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = `
+    @keyframes rf-side-leader {
+      0%   { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); }
+      50%  { box-shadow: 0 0 28px 10px rgba(255,220,50,0.85), inset 0 0 40px rgba(255,220,50,0.30); }
+      100% { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); }
+    }
+    @keyframes rf-side-winner {
+      0%   { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); filter: brightness(1.0); }
+      50%  { box-shadow: 0 0 48px 18px rgba(255,230,0,1.0),  inset 0 0 70px rgba(255,230,0,0.55); filter: brightness(1.4); }
+      100% { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); filter: brightness(1.0); }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+// ── Rank board chip: absolute CENTRE ──
 function RankChip({ amount, onClick }) {
   if (!amount) return null;
   return (
@@ -72,7 +94,7 @@ function RankChip({ amount, onClick }) {
   );
 }
 
-// ── Color/River chip: absolute LEFT side of the button, vertically centred ──
+// ── Color/River chip: absolute LEFT side ──
 function LeftChip({ amount, onClick }) {
   if (!amount) return null;
   return (
@@ -125,8 +147,37 @@ function LockIcon({ dim = false }) {
   );
 }
 
-export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, onPlace, onRemove }) {
+// ── Helper: merge highlight styles into a base button style ──
+function withHighlight(baseStyle, isLeading, isWinner, isResolved) {
+  if (isWinner) {
+    return {
+      ...baseStyle,
+      animation: 'rf-side-winner 1.1s ease-in-out infinite',
+      border: '2.5px solid #FFD700',
+      opacity: 1,
+    };
+  }
+  if (isLeading && !isResolved) {
+    return {
+      ...baseStyle,
+      animation: 'rf-side-leader 1.6s ease-in-out infinite',
+      border: '2px solid #e5c158',
+      opacity: 1,
+    };
+  }
+  return baseStyle;
+}
+
+export default function RightSidebar({
+  phase, flopOdds, riverOdds, bets, caps, onPlace, onRemove,
+  leadingRankLabel = null, winnerRankLabel = null,
+  leadingColorKeys = [], winnerColorKeys = [],
+  leadingRiverSide = null, winnerRiverSide = null,
+}) {
+  useEffect(() => { injectStyles(); }, []);
+
   const riverOpen = phase === 'postturn' || phase === 'resolved';
+  const isResolved = phase === 'resolved';
 
   const rankLocked  = (l) => !flopOdds || !flopOdds.rankOdds[l] || flopOdds.rankOdds[l].locked;
   const rankPayout  = (l) => flopOdds?.rankOdds[l]?.payout ?? null;
@@ -148,7 +199,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
   return (
     <div className="flex flex-col h-full" style={{ gap: GAP }}>
 
-      {/* ■■ HAND RANKING BOARD — flex: 5, chip CENTRED ■■ */}
+      {/* ■■ HAND RANKING BOARD — flex: 5, chip CENTRED, winning rank PULSES ■■ */}
       <div style={{ ...boardPanelStyle, flex: 5 }}>
         <SectionHeader>HAND RANKING</SectionHeader>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -156,7 +207,10 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
             const locked = rankLocked(label);
             const p = rankPayout(label);
             const bet = bets.rank[label] || 0;
-            const style = locked ? GOLD_DIM : GOLD_ACTIVE;
+            const isLeading = leadingRankLabel === label;
+            const isWinner  = winnerRankLabel === label;
+            const baseStyle = locked ? GOLD_DIM : GOLD_ACTIVE;
+            const style = withHighlight(baseStyle, isLeading, isWinner, isResolved);
             return (
               <button
                 key={label}
@@ -175,7 +229,6 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
                     </span>
                   )}
                 </span>
-                {/* Real 3D chip — dead centre of the button */}
                 <RankChip amount={bet} onClick={() => onRemove('rank', label)} />
               </button>
             );
@@ -183,7 +236,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ COLOR BOARD — flex: 3, chip on LEFT, text stays CENTRED ■■ */}
+      {/* ■■ COLOR BOARD — flex: 3, chip LEFT, text CENTRED, winning color PULSES ■■ */}
       <div style={{ ...boardPanelStyle, flex: 3 }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -191,9 +244,12 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
             const locked = colorLocked(pos.key);
             const p = colorPayout(pos.key);
             const bet = bets.color[pos.key] || 0;
-            const style = locked
+            const isLeading = leadingColorKeys.includes(pos.key);
+            const isWinner  = winnerColorKeys.includes(pos.key);
+            const baseStyle = locked
               ? (pos.color === 'red' ? RED_LOCKED : BLACK_LOCKED)
               : (pos.color === 'red' ? RED_ACTIVE : BLACK_ACTIVE);
+            const style = withHighlight(baseStyle, isLeading, isWinner, isResolved);
             return (
               <button
                 key={pos.key}
@@ -202,12 +258,10 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {/* Text stays centred — chip overlays on the left */}
                 <span style={{ ...goldEmbossText, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 <span style={{ ...goldEmbossText, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
                   {locked ? 'LOCKED' : formatPayout(p)}
                 </span>
-                {/* Real 3D chip — left side of button, vertically centred */}
                 <LeftChip amount={bet} onClick={() => onRemove('color', pos.key)} />
               </button>
             );
@@ -215,7 +269,7 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
         </div>
       </div>
 
-      {/* ■■ RIVER — LOW / HIGH — flex: 2, chip on LEFT, text stays CENTRED ■■ */}
+      {/* ■■ RIVER — flex: 2, chip LEFT, text CENTRED, winning side PULSES ■■ */}
       <div style={{ ...boardPanelStyle, flex: 2 }}>
         <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
@@ -225,7 +279,10 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
           ].map((b) => {
             const locked = riverLocked(b.side);
             const bet = bets.river[b.side] || 0;
-            const style = locked ? GOLD_DIM : GOLD_ACTIVE;
+            const isLeading = leadingRiverSide === b.side;
+            const isWinner  = winnerRiverSide === b.side;
+            const baseStyle = locked ? GOLD_DIM : GOLD_ACTIVE;
+            const style = withHighlight(baseStyle, isLeading, isWinner, isResolved);
             return (
               <button
                 key={b.side}
@@ -234,13 +291,11 @@ export default function RightSidebar({ phase, flopOdds, riverOdds, bets, caps, o
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {/* Text stays centred — chip overlays on the left */}
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 13, lineHeight: 1 }}>
                   {locked ? (riverOpen ? 'LOCKED' : 'AFTER TURN') : formatPayout(riverPayout(b.side))}
                 </span>
-                {/* Real 3D chip — left side of button, vertically centred */}
                 <LeftChip amount={bet} onClick={() => onRemove('river', b.side)} />
               </button>
             );

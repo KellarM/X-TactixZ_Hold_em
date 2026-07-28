@@ -144,6 +144,12 @@ export default function GameTable() {
             boardTotals={game.boardTotals}
             onPlace={handlePlaceBet}
             onRemove={handleRemoveBet}
+            leadingRankLabel={game.leadingRankLabel}
+            winnerRankLabel={game.winnerRankLabel}
+            leadingColorKeys={game.leadingColorKeys}
+            winnerColorKeys={game.winnerColorKeys}
+            leadingRiverSide={game.leadingRiverSide}
+            winnerRiverSide={game.winnerRiverSide}
           />
         </div>
       </div>
