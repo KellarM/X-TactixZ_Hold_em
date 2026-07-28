@@ -1,6 +1,7 @@
 import React from 'react';
 import { Settings, RotateCcw } from 'lucide-react';
 import { CHIPS } from '@/lib/game/useGame';
+import Chip from '@/components/game/Chip';
 import { formatMoney } from '@/lib/game/cards';
 
 const GOLD_BTN = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
@@ -34,20 +35,24 @@ export default function BottomFooter({
             <button
               key={chip.value}
               onClick={() => onChipSelect(chip.value)}
+              title={chip.label}
               style={{
-                width: 42, height: 42, borderRadius: '50%',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: chipBg(chip.value),
-                border: `2px dashed ${active ? '#FFFFFF' : 'rgba(255,255,255,0.35)'}`,
-                boxShadow: active ? '0 0 10px rgba(229,182,78,0.8)' : '0 2px 4px rgba(0,0,0,0.5)',
-                transform: active ? 'scale(1.12)' : 'scale(1)',
-                color: chipTextColor(chip.value),
-                fontWeight: 800, fontSize: 11,
-                cursor: 'pointer', flexShrink: 0,
-                transition: 'transform 0.1s',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                flexShrink: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transform: active ? 'scale(1.18) translateY(-3px)' : 'scale(1)',
+                filter: active
+                  ? 'drop-shadow(0 0 8px rgba(255,215,0,0.9)) drop-shadow(0 0 3px rgba(255,215,0,0.6))'
+                  : 'drop-shadow(0 2px 4px rgba(0,0,0,0.7))',
+                transition: 'transform 0.12s ease, filter 0.12s ease',
               }}
             >
-              {chip.label}
+              <Chip amount={chip.value} scale={0.72} />
             </button>
           );
         })}
