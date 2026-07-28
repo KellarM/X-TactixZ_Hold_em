@@ -88,7 +88,7 @@ export default function GameTable() {
   if (phase === 'ante') {
     subLabel = game.ante > 0
       ? `ANTE ${formatMoney(game.ante)} — PRESS TO DEAL FLOP`
-      : 'SELECT A CHIP, PLACE AN ANTE, THEN DEAL';
+      : 'SELECT A CHIP, THEN PLACE AN ANTE, THEN DEAL';
     canDeal = game.ante > 0 && game.ante <= game.bank;
   } else if (phase === 'postflop') {
     dealLabel = 'DEAL TURN';
