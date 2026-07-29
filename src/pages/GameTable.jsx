@@ -155,6 +155,7 @@ export default function GameTable() {
               handEvals={game.handEvals}
               leadingHandIds={game.leadingHandIds}
               winnerHandIds={game.winnerHandIds}
+              ante={game.ante}
             />
           </div>
         </div>
