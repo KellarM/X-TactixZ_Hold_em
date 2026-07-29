@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Volume2, VolumeX, BarChart2, BookOpen } from 'lucide-react';
+import { X, Volume2, VolumeX, BarChart2 } from 'lucide-react';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import { formatMoney } from '@/lib/game/cards';
 
@@ -30,81 +30,6 @@ const PANEL = {
 const GOLD     = '#C5A059';
 const GOLD_DARK = '#3d3013';
 const GOLD_BTN = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
-
-const RULES_SECTIONS = [
-  {
-    title: 'OBJECTIVE',
-    body: [
-      'Rapid Fire Texas Hold\u2019em is a fast-paced hybrid casino game.',
-      'You bet on poker hand outcomes \u2014 not against other players or a dealer.',
-      'All bets resolve simultaneously after the River card is dealt.',
-    ],
-  },
-  {
-    title: '1 \u00b7 ANTE PHASE',
-    body: [
-      'Select a chip, then place your Ante to begin.',
-      'Ante is dead money \u2014 it does NOT count toward any win.',
-      'The Flop (3 community cards) is dealt, revealing early odds.',
-      'Three betting boards open: Card, Rank, and Color.',
-      'Each board accepts bets up to your Ante amount.',
-    ],
-  },
-  {
-    title: '2 \u00b7 CARD BOARD',
-    body: [
-      '10 fixed two-card hands are displayed, each with its own odds.',
-      'Bet on which hand will make the best 5-card poker hand using community cards.',
-      'Only the winning hand pays; ties split the payout.',
-      'Betting all 10 hands locks the Card Board.',
-    ],
-  },
-  {
-    title: '3 \u00b7 RANK BOARD',
-    body: [
-      'Bet on the final poker hand rank of the best 5-card hand.',
-      'Options: One Pair, Two Pair, Three of a Kind, Straight, Flush, Full House, Four of a Kind.',
-      'Royal Flush and Straight Flush are NOT bettable \u2014 if either appears, all Rank bets LOSE.',
-      'Your total Rank bets must equal your total Card Board bet to unlock Color and River boards.',
-    ],
-  },
-  {
-    title: '4 \u00b7 COLOR BOARD',
-    body: [
-      'Bet on how many red vs black cards appear in the final 5-card board.',
-      '6 positions: 3 Red, 4 Red, 5 Red, 3 Black, 4 Black, 5 Black.',
-      'Must be an EXACT match to win.',
-      'Unlocks only after Rank bets equal Card Board bets.',
-    ],
-  },
-  {
-    title: '5 \u00b7 TURN & RIVER',
-    body: [
-      'The Turn (4th community card) is dealt \u2014 all pre-deal boards lock.',
-      'The River board opens: bet HIGH or LOW on the final card.',
-      'Low = 2 through 7. High = 8 through Ace.',
-      'River bet max = Snowball Cap (sum of ALL your pre-deal bets).',
-    ],
-  },
-  {
-    title: '6 \u00b7 RESOLUTION',
-    body: [
-      'The River (5th community card) is dealt.',
-      'ALL boards resolve simultaneously.',
-      'Winning bets pay at their displayed odds.',
-      'Losing bets are collected by the house.',
-    ],
-  },
-  {
-    title: '7 \u00b7 LOCKOUT RULES',
-    body: [
-      'Bets are LOCKED when the outcome is near-certain or impossible.',
-      'Probability > 80% = LOCKED (dominant outcome \u2014 no value bet).',
-      'Probability = 0% = LOCKED (dead outcome \u2014 cannot win).',
-      'Locked positions show \u201cLOCKED\u201d text and cannot accept bets.',
-    ],
-  },
-];
 
 function StatRow({ label, value, highlight }) {
   return (
@@ -200,7 +125,6 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
           {[
             { id: 'sound', icon: <Volume2 size={14} />, label: 'Sound' },
             { id: 'stats', icon: <BarChart2 size={14} />, label: 'Player Stats' },
-            { id: 'rules', icon: <BookOpen size={14} />, label: 'Rules' },
           ].map(t => (
             <button
               key={t.id}
@@ -274,24 +198,6 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
             {stats.highestBalance != null && (
               <StatRow label="Peak Balance" value={formatMoney(stats.highestBalance)} highlight="#22c55e" />
             )}
-          </div>
-        )}
-
-        {/* Rules Tab */}
-        {tab === 'rules' && (
-          <div style={{ maxHeight: 320, overflowY: 'auto', paddingRight: 4, display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {RULES_SECTIONS.map((sec, i) => (
-              <div key={i}>
-                <div style={{ color: GOLD, fontWeight: 800, fontSize: 11, letterSpacing: '0.1em', marginBottom: 5 }}>
-                  {sec.title}
-                </div>
-                {sec.body.map((line, j) => (
-                  <div key={j} style={{ color: '#c4d0e0', fontSize: 12, lineHeight: 1.5, paddingLeft: 8, borderLeft: '2px solid rgba(197,160,89,0.2)', marginBottom: 3 }}>
-                    {line}
-                  </div>
-                ))}
-              </div>
-            ))}
           </div>
         )}
 
