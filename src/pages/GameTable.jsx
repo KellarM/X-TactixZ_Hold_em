@@ -9,6 +9,7 @@ import RightSidebar from '@/components/game/RightSidebar';
 import BottomFooter from '@/components/game/BottomFooter';
 import ResultOverlay from '@/components/game/ResultOverlay';
 import SettingsModal from '@/components/game/SettingsModal';
+import HowToPlayModal from '@/components/game/HowToPlayModal';
 
 export default function GameTable() {
   const game = useGame();
@@ -16,6 +17,7 @@ export default function GameTable() {
   const sounds = useGameSounds();
 
   const [showSettings, setShowSettings] = useState(false);
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [boardTheme, setBoardThemeState] = useState(() => {
     try { return localStorage.getItem('rfpf_theme') || 'blue'; } catch { return 'blue'; }
   });
@@ -214,7 +216,9 @@ export default function GameTable() {
         playerStats={playerStats}
         boardTheme={boardTheme}
         setBoardTheme={setBoardTheme}
+        onHowToPlay={() => { setShowSettings(false); setShowHowToPlay(true); }}
       />
+      <HowToPlayModal isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
     </div>
   );
 }

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle } from 'lucide-react';
-import HowToPlayModal from './HowToPlayModal';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import { formatMoney } from '@/lib/game/cards';
 
@@ -42,12 +41,11 @@ function StatRow({ label, value, highlight }) {
   );
 }
 
-export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme }) {
+export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay }) {
   const sounds = useGameSounds();
   const [soundOn, setSoundOn] = useState(true);
   const [volume, setVolume] = useState(40);
   const [tab, setTab] = useState('sound');
-  const [howToPlayOpen, setHowToPlayOpen] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -133,7 +131,7 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
           ].map(t => (
             <button
               key={t.id}
-              onClick={() => t.id === 'howtoplay' ? setHowToPlayOpen(true) : setTab(t.id)}
+              onClick={() => t.id === 'howtoplay' ? (onHowToPlay && onHowToPlay()) : setTab(t.id)}
               style={{
                 flex: '0 0 calc(50% - 4px)', padding: '7px 0', borderRadius: 8,
                 background: tab === t.id ? GOLD_BTN : 'rgba(197,160,89,0.1)',
@@ -230,9 +228,6 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
           CLOSE
         </button>
       </div>
-
-      {/* How To Play Modal */}
-      <HowToPlayModal isOpen={howToPlayOpen} onClose={() => setHowToPlayOpen(false)} />
     </div>
   );
 }
