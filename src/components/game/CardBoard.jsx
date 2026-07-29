@@ -57,23 +57,6 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
     >
       <SectionTitle capValue={caps ? caps.card : undefined}>CARD BOARD — HAND POSITIONS</SectionTitle>
 
-      {isAntePhase && (
-        <div
-          className="text-center rounded-md py-1.5 mb-2"
-          style={{
-            background: 'rgba(197, 160, 89, 0.12)',
-            border: '1px dashed #C5A059',
-            color: '#8a9ab0',
-            fontSize: 10,
-            fontWeight: 600,
-            letterSpacing: '1px',
-            flexShrink: 0,
-          }}
-        >
-          FLOP PENDING — PLACE ANTE &amp; DEAL TO REVEAL ODDS
-        </div>
-      )}
-
       <div
         className="grid grid-cols-5 grid-rows-2"
         style={{ gap: 6, flex: 1, minHeight: 0 }}
