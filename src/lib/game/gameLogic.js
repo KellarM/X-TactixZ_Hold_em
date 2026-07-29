@@ -31,69 +31,85 @@ function formatHandNotation(cards) {
 export function settleRound(community, hands, bets, flopOdds, riverOdds) {
   const res = resolveRound(community, hands);
   let winnings = 0;
-  const details = { card: [], rank: [], color: [], river: null, boardWin: res.boardWin };
+  const details = { card: [], rank: [], color: [], river: [], boardWin: res.boardWin };
 
-  // Card Board
-  if (!res.boardWin && res.winners.length > 0) {
-    const numWinners = res.winners.length;
-    res.winners.forEach(id => {
+  // Card Board — push ALL bets (winners + losers) so the overlay can sum the true wager
+  if (res.boardWin) {
+    Object.keys(bets.card).forEach(id => {
       const amt = bets.card[id] || 0;
-      if (amt > 0) {
-        const oddsEntry = flopOdds && flopOdds.cardOdds ? flopOdds.cardOdds.find(o => o.handId === id) : null;
-        let payout = oddsEntry ? oddsEntry.payout : null;
-        if (payout != null && numWinners > 1) {
-          payout = ((payout + 1) / 2) * 1.05 - 1;
-        }
-        if (payout != null) {
-          winnings += amt * (payout + 1);
-          details.card.push({ id, amt, payout, won: true });
-        } else {
-          details.card.push({ id, amt, payout: null, won: false });
-        }
+      if (amt > 0) details.card.push({ id, amt, payout: null, won: false });
+    });
+  } else {
+    const numWinners = res.winners.length;
+    Object.keys(bets.card).forEach(id => {
+      const amt = bets.card[id] || 0;
+      if (amt <= 0) return;
+      const oddsEntry = flopOdds && flopOdds.cardOdds ? flopOdds.cardOdds.find(o => o.handId === id) : null;
+      const isWinner = res.winners.includes(id);
+      if (isWinner && oddsEntry && oddsEntry.payout != null) {
+        let payout = oddsEntry.payout;
+        if (numWinners > 1) payout = ((payout + 1) / 2) * 1.05 - 1;
+        winnings += amt * (payout + 1);
+        details.card.push({ id, amt, payout, won: true });
+      } else {
+        details.card.push({ id, amt, payout: null, won: false });
       }
     });
   }
 
-  // Rank Board
-  if (!res.boardWin) {
-    const label = CAT_TO_LABEL[res.winningCategory];
-    if (label && TYPE_DISPLAY[label]) {
+  // Rank Board — push ALL bets
+  if (res.boardWin) {
+    Object.keys(bets.rank).forEach(label => {
       const amt = bets.rank[label] || 0;
-      if (amt > 0 && flopOdds && flopOdds.rankOdds[label] && flopOdds.rankOdds[label].payout != null) {
+      if (amt > 0) details.rank.push({ label, amt, payout: null, won: false });
+    });
+  } else {
+    const winLabel = CAT_TO_LABEL[res.winningCategory];
+    Object.keys(bets.rank).forEach(label => {
+      const amt = bets.rank[label] || 0;
+      if (amt <= 0) return;
+      const won = label === winLabel;
+      if (won && flopOdds && flopOdds.rankOdds[label] && flopOdds.rankOdds[label].payout != null) {
         const payout = flopOdds.rankOdds[label].payout;
         winnings += amt * (payout + 1);
         details.rank.push({ label, amt, payout, won: true });
+      } else {
+        details.rank.push({ label, amt, payout: null, won: false });
       }
-    }
+    });
   }
 
-  // Color Board (exact match)
+  // Color Board (exact match) — push ALL bets
   ['3R', '4R', '5R', '3B', '4B', '5B'].forEach(k => {
     const amt = bets.color[k] || 0;
-    if (amt > 0 && flopOdds && flopOdds.colorOdds[k] && flopOdds.colorOdds[k].payout != null) {
-      const targetCount = parseInt(k[0], 10);
-      const targetColor = k[1] === 'R' ? 'red' : 'black';
-      const actual = targetColor === 'red' ? res.reds : res.blacks;
-      if (actual === targetCount) {
-        const payout = flopOdds.colorOdds[k].payout;
-        winnings += amt * (payout + 1);
-        details.color.push({ k, amt, payout, won: true });
-      }
+    if (amt <= 0) return;
+    const targetCount = parseInt(k[0], 10);
+    const targetColor = k[1] === 'R' ? 'red' : 'black';
+    const actual = targetColor === 'red' ? res.reds : res.blacks;
+    const won = actual === targetCount;
+    if (won && flopOdds && flopOdds.colorOdds[k] && flopOdds.colorOdds[k].payout != null) {
+      const payout = flopOdds.colorOdds[k].payout;
+      winnings += amt * (payout + 1);
+      details.color.push({ k, amt, payout, won: true });
+    } else {
+      details.color.push({ k, amt, payout: null, won: false });
     }
   });
 
-  // River Board
+  // River Board — push ALL bets (both low/high can be bet)
   if (riverOdds && community.length >= 5) {
     const riverCard = community[4];
     const riverIsLow = isLowRank(riverCard.rank);
     ['low', 'high'].forEach(side => {
       const amt = bets.river[side] || 0;
-      if (amt > 0 && riverOdds[side] && riverOdds[side].payout != null) {
-        if ((side === 'low' && riverIsLow) || (side === 'high' && !riverIsLow)) {
-          const payout = riverOdds[side].payout;
-          winnings += amt * (payout + 1);
-          details.river = { side, amt, payout, won: true };
-        }
+      if (amt <= 0) return;
+      const won = (side === 'low' && riverIsLow) || (side === 'high' && !riverIsLow);
+      if (won && riverOdds[side] && riverOdds[side].payout != null) {
+        const payout = riverOdds[side].payout;
+        winnings += amt * (payout + 1);
+        details.river.push({ side, amt, payout, won: true });
+      } else {
+        details.river.push({ side, amt, payout: null, won: false });
       }
     });
   }

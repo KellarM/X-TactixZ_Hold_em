@@ -198,7 +198,7 @@ export default function ResultOverlay({ result, ante = 0, onClose }) {
     details.card.reduce((a, b) => a + b.amt, 0) +
     details.rank.reduce((a, b) => a + b.amt, 0) +
     details.color.reduce((a, b) => a + b.amt, 0) +
-    (details.river ? details.river.amt : 0);
+    (Array.isArray(details.river) ? details.river.reduce((a, b) => a + b.amt, 0) : 0);
 
   // Total wagered = ante (dead) + all board bets
   const totalWagered = ante + boardBetTotal;
@@ -216,7 +216,8 @@ export default function ResultOverlay({ result, ante = 0, onClose }) {
   const placedCard  = details.card.map(d => ({ label: getHandLabel(d.id), bet: d.amt }));
   const placedRank  = details.rank.map(d => ({ label: d.label, bet: d.amt }));
   const placedColor = details.color.map(d => ({ label: `Color ${d.k}`, bet: d.amt }));
-  const placedRiver = details.river ? [{ label: `River ${details.river.side?.toUpperCase()}`, bet: details.river.amt }] : [];
+  const placedRiver = (Array.isArray(details.river) ? details.river : [])
+    .map(r => ({ label: `River ${r.side?.toUpperCase()}`, bet: r.amt }));
 
   // ── Build win rows for each quadrant ──
   const cardWins  = details.card
@@ -231,9 +232,9 @@ export default function ResultOverlay({ result, ante = 0, onClose }) {
     .filter(d => d.won)
     .map(d => ({ label: `Color ${d.k}`, amt: d.amt, payout: d.payout }));
 
-  const riverWins = details.river && details.river.won
-    ? [{ label: `River ${details.river.side?.toUpperCase()}`, amt: details.river.amt, payout: details.river.payout }]
-    : [];
+  const riverWins = (Array.isArray(details.river) ? details.river : [])
+    .filter(r => r.won)
+    .map(r => ({ label: `River ${r.side?.toUpperCase()}`, amt: r.amt, payout: r.payout }));
 
   // ── Summary headline ──
   const headlineText = isBoardWin
