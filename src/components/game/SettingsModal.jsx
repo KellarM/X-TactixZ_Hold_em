@@ -22,6 +22,7 @@ const PANEL = {
   width: 380,
   maxWidth: '95vw',
   padding: '24px 24px 20px',
+  minHeight: 520,
   boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
   display: 'flex',
   flexDirection: 'column',
@@ -121,7 +122,7 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
           {[
             { id: 'sound',      icon: <Volume2    size={14} />, label: 'Sound'       },
             { id: 'stats',      icon: <BarChart2  size={14} />, label: 'Player Stats'},
@@ -132,7 +133,7 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
               key={t.id}
               onClick={() => setTab(t.id)}
               style={{
-                flex: 1, padding: '7px 0', borderRadius: 8,
+                flex: '0 0 calc(50% - 4px)', padding: '7px 0', borderRadius: 8,
                 background: tab === t.id ? GOLD_BTN : 'rgba(197,160,89,0.1)',
                 border: `1px solid ${tab === t.id ? GOLD : 'rgba(197,160,89,0.3)'}`,
                 color: tab === t.id ? GOLD_DARK : GOLD,
