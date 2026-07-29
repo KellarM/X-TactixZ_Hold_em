@@ -10,6 +10,7 @@ import BottomFooter from '@/components/game/BottomFooter';
 import ResultOverlay from '@/components/game/ResultOverlay';
 import SettingsModal from '@/components/game/SettingsModal';
 import HowToPlayModal from '@/components/game/HowToPlayModal';
+import OnboardingIndicator from '@/components/game/OnboardingIndicator';
 
 export default function GameTable() {
   const game = useGame();
@@ -219,6 +220,7 @@ export default function GameTable() {
         onHowToPlay={() => { setShowSettings(false); setShowHowToPlay(true); }}
       />
       <HowToPlayModal isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
+      <OnboardingIndicator />
     </div>
   );
 }
