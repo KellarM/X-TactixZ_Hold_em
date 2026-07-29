@@ -148,10 +148,11 @@ export function BettingSlot({
   rankLabel = null, isLeading = false, isWinner = false, isResolved = false,
 }) {
   // ── Border colour ──────────────────────────────────────────────────────────
-  let borderColor = locked ? '#3a4a6a' : '#C5A059';
-  let borderWidth = '1px';
-  if (isWinner)                   { borderColor = '#FFD700'; borderWidth = '2.5px'; }
-  else if (isLeading && !isResolved) { borderColor = '#e5c158'; borderWidth = '2px'; }
+  // All slots get thick bold gold borders. Locked = muted gold. Winner = bright gold. Leader = mid gold.
+  let borderColor = locked ? 'rgba(197,160,89,0.45)' : '#C5A059';
+  let borderWidth = '3px';
+  if (isWinner)                      { borderColor = '#FFD700'; borderWidth = '4px'; }
+  else if (isLeading && !isResolved) { borderColor = '#e5c158'; borderWidth = '3.5px'; }
 
   // ── Animation ──────────────────────────────────────────────────────────────
   // Winner pulses bright gold; leader pulses softer gold; else static
