@@ -3,31 +3,31 @@ import React, { useState } from 'react';
 const STEPS = [
   {
     step: 1,
-    title: 'Step 1 Title',
+    title: 'Place Your Ante',
     icon: '🃏',
-    description: 'Step 1 description — content coming soon.',
-    highlight: 'Step 1 highlight tip — content coming soon.',
+    description: 'The board is open for play. Consider the Max wager amount you want to place per board — this will be the player\'s Ante. Once your Ante value is chosen by clicking the chip denomination values, press the Deal Button.',
+    highlight: 'The Ante is your privilege to see the flop / play the game and is not returned.',
   },
   {
     step: 2,
-    title: 'Step 2 Title',
+    title: 'Bet the Flop',
     icon: '🔓',
-    description: 'Step 2 description — content coming soon.',
-    highlight: 'Step 2 highlight tip — content coming soon.',
+    description: 'The flop is made and 3 cards appear. All open positions on the 3 boards are now available to wager. Choose and place your wagers. Once you are comfortable with your selections, tap the Deal Turn button. Each board indicates with a Match Ante count.',
+    highlight: 'The player can choose to wager from zero to the Max of Ante value on any or all the boards (Card, Rank & Colour), or choose to fold.',
   },
   {
     step: 3,
-    title: 'Step 3 Title',
+    title: 'Bet the River',
     icon: '🌊',
-    description: 'Step 3 description — content coming soon.',
-    highlight: 'Step 3 highlight tip — content coming soon.',
+    description: 'The turn card is shown, and the river board opens. Based on the available cards displayed in the dealer\'s area, player can choose to bet if the next card is Low (2-7) or High (8-Ace), or no bet. Player can bet zero or up to the Max Value of the total sum from all 3 betting boards. Ante is not included in the sum value. Once bet is made, player taps the deal button.',
+    highlight: 'The River bet max equals the combined total of all 3 board bets. The Ante does not count toward this sum.',
   },
   {
     step: 4,
-    title: 'Step 4 Title',
+    title: 'Results',
     icon: '💰',
-    description: 'Step 4 description — content coming soon.',
-    highlight: 'Step 4 highlight tip — content coming soon.',
+    description: 'The river card is turned over and the results are indicated. A display window will appear showing your winning or losing results.',
+    highlight: 'Tap the New Hand button to return to the beginning of the game.',
   },
 ];
 
