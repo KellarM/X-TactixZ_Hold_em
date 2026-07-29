@@ -18,7 +18,7 @@ export default function RankBoard({ odds, bets, caps, onPlace, onRemove, phase }
   };
 
   return (
-    <div className="rounded-lg p-3 flex flex-col h-full" style={{ background: '#0a1224', border: '1.5px solid #C5A059' }}>
+    <div className="rounded-lg p-3 flex flex-col h-full" style={{ background: 'var(--theme-bg-mid, #0a1224)', border: '1.5px solid #C5A059' }}>
       <SectionTitle>HAND RANKING</SectionTitle>
       <div className="flex flex-col flex-1" style={{ gap: 6 }}>
         {RANK_LABELS.map((label) => {
@@ -56,7 +56,7 @@ export default function RankBoard({ odds, bets, caps, onPlace, onRemove, phase }
                 <span
                   onClick={(e) => { e.stopPropagation(); onRemove('rank', label); }}
                   className="absolute -top-2 -right-2 rounded-full px-1.5 py-0.5"
-                  style={{ background: '#051025', color: '#E5B64E', fontSize: 9, fontWeight: 800, border: '1px solid #C5A059' }}
+                  style={{ background: 'var(--theme-bg-deep, #051025)', color: '#E5B64E', fontSize: 9, fontWeight: 800, border: '1px solid #C5A059' }}
                 >
                   {formatMoney(bet)}
                 </span>

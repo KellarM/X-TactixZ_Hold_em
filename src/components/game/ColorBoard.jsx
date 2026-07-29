@@ -26,7 +26,7 @@ export default function ColorBoard({ odds, bets, caps, onPlace, onRemove }) {
   };
 
   return (
-    <div className="rounded-lg p-3 flex flex-col h-full" style={{ background: '#0a162e', border: '1.5px solid #C5A059' }}>
+    <div className="rounded-lg p-3 flex flex-col h-full" style={{ background: 'var(--theme-bg-mid, #0a162e)', border: '1.5px solid #C5A059' }}>
       <div className="flex items-center justify-between mb-2">
         <SectionTitle>COLOR BOARD</SectionTitle>
         <CapBadge value={caps.color} />
@@ -59,7 +59,7 @@ export default function ColorBoard({ odds, bets, caps, onPlace, onRemove }) {
                 <span
                   onClick={(e) => { e.stopPropagation(); onRemove('color', pos.key); }}
                   className="absolute -top-2 -right-2 rounded-full px-1.5 py-0.5"
-                  style={{ background: '#051025', color: '#E5B64E', fontSize: 9, fontWeight: 800, border: '1px solid #C5A059' }}
+                  style={{ background: 'var(--theme-bg-deep, #051025)', color: '#E5B64E', fontSize: 9, fontWeight: 800, border: '1px solid #C5A059' }}
                 >
                   {formatMoney(bet)}
                 </span>
@@ -76,7 +76,7 @@ export function CapBadge({ value }) {
   return (
     <span
       className="rounded-full px-2 py-0.5"
-      style={{ background: '#000000', border: '1px solid #C5A059', color: '#FFD700', fontSize: 9, fontWeight: 700 }}
+      style={{ background: 'var(--theme-bg-deep, #000000)', border: '1px solid #C5A059', color: '#FFD700', fontSize: 9, fontWeight: 700 }}
     >
       Match Cap: {formatMoney(value)}
     </span>

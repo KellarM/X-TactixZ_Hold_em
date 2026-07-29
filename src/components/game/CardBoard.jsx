@@ -48,7 +48,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
     <div
       className="rounded-lg p-3 flex flex-col"
       style={{
-        background: '#051532',
+        background: 'var(--theme-bg-mid, #051532)',
         border: '1.5px solid #C5A059',
         flex: '1 1 0',
         minHeight: 0,
@@ -158,7 +158,7 @@ export function BettingSlot({
   // ── Animation ──────────────────────────────────────────────────────────────
   // Winner pulses bright gold; leader pulses softer gold; else static
   let animation = 'none';
-  let background = '#04122b';
+  let background = 'var(--theme-bg-slot, #04122b)';
   if (isWinner) {
     animation  = 'rf-winner-pulse 1.1s ease-in-out infinite';
     background = '#3a2a00';           // base colour; animation overrides each cycle
