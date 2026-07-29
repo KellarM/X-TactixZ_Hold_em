@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const STEPS = [
   {
@@ -6,7 +6,7 @@ const STEPS = [
     title: 'Place Your Ante',
     icon: '🃏',
     description: 'The board is open for play. Consider the Max wager amount you want to place per board — this will be the player\'s Ante. Once your Ante value is chosen by clicking the chip denomination values, press the Deal Button.',
-    highlight: 'The Ante is your privilege to see the flop / play the game and is not returned.',
+    highlight: 'The Ante is your privilege to see the flop and is not returned.',
   },
   {
     step: 2,
@@ -34,21 +34,28 @@ const STEPS = [
 export default function HowToPlayModal({ isOpen, onClose }) {
   const [step, setStep] = useState(0);
 
+  // Reset to step 1 every time the modal opens
+  useEffect(() => {
+    if (isOpen) setStep(0);
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const current = STEPS[step];
 
   const handleNext = () => {
-    if (step < STEPS.length - 1) setStep(s => s + 1);
-    else { setStep(0); onClose(); }
+    if (step < STEPS.length - 1) {
+      setStep(step + 1);
+    } else {
+      onClose();
+    }
   };
 
   const handleBack = () => {
-    if (step > 0) setStep(s => s - 1);
+    if (step > 0) setStep(step - 1);
   };
 
   const handleClose = () => {
-    setStep(0);
     onClose();
   };
 
@@ -59,7 +66,7 @@ export default function HowToPlayModal({ isOpen, onClose }) {
         background: 'rgba(0,0,0,0.82)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
-      onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
+      // NO onClick on backdrop — only SKIP ✕ and Let's Play! close the modal
     >
       <div style={{
         background: 'linear-gradient(160deg, rgba(20,10,0,0.98) 0%, rgba(40,20,0,0.98) 100%)',
@@ -72,7 +79,7 @@ export default function HowToPlayModal({ isOpen, onClose }) {
         position: 'relative',
       }}>
 
-        {/* SKIP button */}
+        {/* SKIP button — only way to exit other than Let's Play */}
         <button
           onClick={handleClose}
           style={{
