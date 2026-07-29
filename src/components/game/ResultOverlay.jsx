@@ -349,7 +349,11 @@ export default function ResultOverlay({ result, ante = 0, onClose }) {
           style={{
             width: 500,
             maxWidth: '96vw',
-            height: 420,
+            position: 'absolute',
+            top: 'calc(50% - 210px)',
+            bottom: 70,
+            left: '50%',
+            transform: 'translateX(-50%)',
             background: 'linear-gradient(135deg,rgba(60,20,5,0.98) 0%,rgba(25,8,2,0.99) 100%)',
             border: `2px solid ${ACCENT}`,
             borderRadius: 16,
