@@ -3,6 +3,7 @@ import { Settings, RotateCcw } from 'lucide-react';
 import { CHIPS } from '@/lib/game/useGame';
 import Chip from '@/components/game/Chip';
 import { formatMoney } from '@/lib/game/cards';
+import OnboardingIndicator from './OnboardingIndicator';
 
 const GOLD_BTN = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
 
@@ -194,19 +195,21 @@ export default function BottomFooter({
       <div style={{ flex: '1 1 0', minWidth: 0 }} />
 
       {/* ── 6. GEAR — pinned to far right border ── */}
-      <button
-        onClick={onSettings}
-        title="Settings"
-        style={{
-          width: W.gear, height: 36, borderRadius: '50%',
-          border: '1px solid #C5A059', color: '#C5A059',
-          background: 'transparent', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}
-      >
-        <Settings size={18} />
-      </button>
+      <OnboardingIndicator>
+        <button
+          onClick={onSettings}
+          title="Settings"
+          style={{
+            width: W.gear, height: 36, borderRadius: '50%',
+            border: '1px solid #C5A059', color: '#C5A059',
+            background: 'transparent', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <Settings size={18} />
+        </button>
+      </OnboardingIndicator>
     </div>
   );
 }
