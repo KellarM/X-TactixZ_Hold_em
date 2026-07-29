@@ -113,11 +113,11 @@
 
 /* ── Board Color Themes ──────────────────────────────────────── */
 /*
-  CSS custom properties drive the theme across ALL components.
-  --theme-bg-deep   = darkest background (board slots, card boxes)
-  --theme-bg-mid    = mid-tone background (panel containers, rails)
-  --theme-bg-light  = lightest tint (alternating rows, hover states)
-  --theme-bg-slot   = individual betting slot / hand position box
+  ONE unified background color per theme — the lighter trim shade.
+  All panels, rails, slots, and containers use the same value so
+  there are no two-tone mismatches.
+  --theme-bg        = unified panel / board background
+  --theme-bg-slot   = individual card hand box (slightly deeper)
   --theme-strip     = alternating row stripe in Previous Hands
 */
 
@@ -125,11 +125,12 @@
 .velvet-board.theme-blue,
 body.theme-blue .velvet-board,
 .theme-blue {
-  --theme-bg-deep:  #020b2a;
-  --theme-bg-mid:   #050d21;
-  --theme-bg-light: #0a1838;
+  --theme-bg:       #04122b;
+  --theme-bg-deep:  #04122b;
+  --theme-bg-mid:   #04122b;
+  --theme-bg-light: #071e52;
   --theme-bg-slot:  #04122b;
-  --theme-strip:    rgba(10,24,56,0.6);
+  --theme-strip:    rgba(4,18,43,0.7);
   background: radial-gradient(circle at center, #0d3b8c 0%, #071e52 60%, #020b2a 100%);
 }
 
@@ -137,11 +138,12 @@ body.theme-blue .velvet-board,
 .velvet-board.theme-red,
 body.theme-red .velvet-board,
 .theme-red {
-  --theme-bg-deep:  #1a0000;
-  --theme-bg-mid:   #250000;
-  --theme-bg-light: #3a0000;
+  --theme-bg:       #2a0000;
+  --theme-bg-deep:  #2a0000;
+  --theme-bg-mid:   #2a0000;
+  --theme-bg-light: #5a0000;
   --theme-bg-slot:  #2a0000;
-  --theme-strip:    rgba(58,0,0,0.6);
+  --theme-strip:    rgba(42,0,0,0.7);
   background: radial-gradient(circle at center, #b30000 0%, #7a0000 60%, #3d0000 100%);
 }
 
@@ -149,10 +151,11 @@ body.theme-red .velvet-board,
 .velvet-board.theme-green,
 body.theme-green .velvet-board,
 .theme-green {
-  --theme-bg-deep:  #011208;
-  --theme-bg-mid:   #021a0b;
-  --theme-bg-light: #042d13;
-  --theme-bg-slot:  #031a0a;
-  --theme-strip:    rgba(4,45,19,0.6);
+  --theme-bg:       #042d13;
+  --theme-bg-deep:  #042d13;
+  --theme-bg-mid:   #042d13;
+  --theme-bg-light: #0d6e2e;
+  --theme-bg-slot:  #042d13;
+  --theme-strip:    rgba(4,45,19,0.7);
   background: radial-gradient(circle at center, #0d6e2e 0%, #074a1c 60%, #022610 100%);
 }

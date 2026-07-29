@@ -39,8 +39,9 @@ const capBadgeStyle = {
   padding: '1px 7px',
   whiteSpace: 'nowrap',
 };
+// boardPanelStyle is now a function so it reads the CSS variable at render time
 const boardPanelStyle = {
-  background: '#051532',
+  background: 'var(--theme-bg, #051532)',
   border: '1.5px solid #C5A059',
   borderRadius: 10,
   padding: 6,

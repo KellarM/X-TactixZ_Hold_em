@@ -14,7 +14,7 @@ export default function RiverBoard({ odds, bets, caps, phase, onPlace, onRemove 
   const payout = (side) => (odds ? odds[side].payout : null);
 
   return (
-    <div className="rounded-lg p-3 flex flex-col h-full" style={{ background: 'var(--theme-bg-mid, #0a162e)', border: '1px solid #222e4d' }}>
+    <div className="rounded-lg p-3 flex flex-col h-full" style={{ background: 'var(--theme-bg, #0a162e)', border: '1px solid #222e4d' }}>
       <div className="flex items-center justify-between mb-2">
         <SectionTitle>RIVER — LOW / HIGH</SectionTitle>
         <CapBadge value={caps.river} />
@@ -49,7 +49,7 @@ export default function RiverBoard({ odds, bets, caps, phase, onPlace, onRemove 
                 <span
                   onClick={(e) => { e.stopPropagation(); onRemove('river', b.side); }}
                   className="absolute -top-2 -right-2 rounded-full px-1.5 py-0.5"
-                  style={{ background: 'var(--theme-bg-deep, #051025)', color: '#E5B64E', fontSize: 9, fontWeight: 800, border: '1px solid #C5A059' }}
+                  style={{ background: 'var(--theme-bg, #051025)', color: '#E5B64E', fontSize: 9, fontWeight: 800, border: '1px solid #C5A059' }}
                 >
                   {formatMoney(bet)}
                 </span>

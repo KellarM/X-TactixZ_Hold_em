@@ -6,7 +6,7 @@ export default function PreviousHands({ history }) {
     <div
       className="flex flex-col rounded-lg overflow-hidden h-full"
       style={{
-        background: 'var(--theme-bg-mid, #050d21)',
+        background: 'var(--theme-bg, #050d21)',
         border: '1px solid #C5A059',
         minHeight: 0
       }}
@@ -19,7 +19,7 @@ export default function PreviousHands({ history }) {
           fontSize: 13,
           letterSpacing: '1px',
           borderBottom: '1px solid #C5A059',
-          background: 'linear-gradient(180deg, var(--theme-bg-light, #0a1838) 0%, var(--theme-bg-mid, #050d21) 100%)'
+          background: 'var(--theme-bg, #050d21)'
         }}
       >
         PREVIOUS HANDS
@@ -49,7 +49,7 @@ export default function PreviousHands({ history }) {
             key={i}
             className="grid grid-cols-3 px-3 py-1.5 text-center items-center"
             style={{
-              background: i % 2 === 0 ? 'var(--theme-strip, rgba(10,24,56,0.6))' : 'transparent',
+              background: i % 2 === 0 ? 'var(--theme-strip, rgba(4,18,43,0.7))' : 'transparent',
               fontSize: 11,
               borderBottom: '1px solid rgba(197,160,89,0.08)'
             }}

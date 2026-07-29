@@ -40,7 +40,7 @@ export default function BottomFooter({
     <div
       style={{
         width: '100%',
-        background: 'linear-gradient(180deg, var(--theme-bg-light, #0a1838) 0%, var(--theme-bg-mid, #050d21) 100%)',
+        background: 'var(--theme-bg, #050d21)',
         borderTop: '2px solid #C5A059',
         display: 'flex',
         alignItems: 'center',
@@ -215,7 +215,7 @@ function StatBox({ label, value }) {
   return (
     <div
       style={{
-        background: 'var(--theme-bg-mid, #050d21)', border: '1px solid #C5A059',
+        background: 'var(--theme-bg, #050d21)', border: '1px solid #C5A059',
         borderRadius: 6, padding: '5px 10px', textAlign: 'center',
         width: '100%', boxSizing: 'border-box',
       }}
