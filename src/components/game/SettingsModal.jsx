@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Volume2, VolumeX, BarChart2 } from 'lucide-react';
+import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle } from 'lucide-react';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import { formatMoney } from '@/lib/game/cards';
 
@@ -123,8 +123,10 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
         {/* Tabs */}
         <div style={{ display: 'flex', gap: 8 }}>
           {[
-            { id: 'sound', icon: <Volume2 size={14} />, label: 'Sound' },
-            { id: 'stats', icon: <BarChart2 size={14} />, label: 'Player Stats' },
+            { id: 'sound',      icon: <Volume2    size={14} />, label: 'Sound'       },
+            { id: 'stats',      icon: <BarChart2  size={14} />, label: 'Player Stats'},
+            { id: 'gamerules',  icon: <BookOpen   size={14} />, label: 'Game Rules'  },
+            { id: 'howtoplay',  icon: <HelpCircle size={14} />, label: 'How to Play' },
           ].map(t => (
             <button
               key={t.id}
@@ -198,6 +200,22 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
             {stats.highestBalance != null && (
               <StatRow label="Peak Balance" value={formatMoney(stats.highestBalance)} highlight="#22c55e" />
             )}
+          </div>
+        )}
+
+        {/* Game Rules Tab */}
+        {tab === 'gamerules' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '10px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10, minHeight: 80, alignItems: 'center', justifyContent: 'center' }}>
+            <BookOpen size={28} color="rgba(197,160,89,0.4)" />
+            <span style={{ color: 'rgba(197,160,89,0.5)', fontSize: 12, fontWeight: 600 }}>Game Rules — Coming Soon</span>
+          </div>
+        )}
+
+        {/* How To Play Tab */}
+        {tab === 'howtoplay' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '10px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10, minHeight: 80, alignItems: 'center', justifyContent: 'center' }}>
+            <HelpCircle size={28} color="rgba(197,160,89,0.4)" />
+            <span style={{ color: 'rgba(197,160,89,0.5)', fontSize: 12, fontWeight: 600 }}>How To Play — Coming Soon</span>
           </div>
         )}
 
