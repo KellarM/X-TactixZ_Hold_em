@@ -26,7 +26,7 @@ function injectStyles() {
 }
 
 export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
-  handEvals = {}, leadingHandIds = [], winnerHandIds = [], ante = 0 }) {
+  handEvals = {}, leadingHandIds = [], winnerHandIds = [] }) {
 
   useEffect(() => { injectStyles(); }, []);
 
@@ -55,7 +55,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
         height: '100%',
       }}
     >
-      <SectionTitle capValue={caps ? caps.card : undefined} anteValue={ante}>CARD BOARD — HAND POSITIONS</SectionTitle>
+      <SectionTitle capValue={caps ? caps.card : undefined}>CARD BOARD — HAND POSITIONS</SectionTitle>
 
       {isAntePhase && (
         <div
@@ -123,7 +123,7 @@ const capBadgeStyle = {
   whiteSpace: 'nowrap',
 };
 
-export function SectionTitle({ children, capValue, anteValue }) {
+export function SectionTitle({ children, capValue }) {
   const formatMoney = (v) => v !== undefined ? '$' + v.toFixed(2) : '';
   return (
     <div
@@ -135,11 +135,9 @@ export function SectionTitle({ children, capValue, anteValue }) {
         {children}
       </span>
       <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-        {anteValue !== undefined ? (
-          <span style={capBadgeStyle}>Match Ante: {formatMoney(anteValue)}</span>
-        ) : capValue !== undefined && capValue > 0 ? (
+        {capValue !== undefined && (
           <span style={capBadgeStyle}>Match Ante: {formatMoney(capValue)}</span>
-        ) : null}
+        )}
       </span>
     </div>
   );
