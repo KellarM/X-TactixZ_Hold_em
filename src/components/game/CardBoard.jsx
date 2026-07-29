@@ -148,8 +148,9 @@ export function BettingSlot({
   rankLabel = null, isLeading = false, isWinner = false, isResolved = false,
 }) {
   // ── Border colour ──────────────────────────────────────────────────────────
-  // All slots get thick bold gold borders. Locked = muted gold. Winner = bright gold. Leader = mid gold.
-  let borderColor = locked ? 'rgba(197,160,89,0.45)' : '#C5A059';
+  // ALL slots get thick bold gold borders at all times — locked state shown via
+  // the "LOCKED" label text, not by dimming the border.
+  let borderColor = '#C5A059';
   let borderWidth = '3px';
   if (isWinner)                      { borderColor = '#FFD700'; borderWidth = '4px'; }
   else if (isLeading && !isResolved) { borderColor = '#e5c158'; borderWidth = '3.5px'; }
@@ -176,7 +177,7 @@ export function BettingSlot({
         background,
         border: `${borderWidth} solid ${borderColor}`,
         animation,
-        opacity: locked ? 0.5 : 1,
+        opacity: locked ? 0.85 : 1,
         height: '100%',
         minHeight: 0,
         display: 'flex',
