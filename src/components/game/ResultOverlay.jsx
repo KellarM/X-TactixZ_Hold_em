@@ -87,41 +87,18 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
           <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.18)', fontStyle: 'italic' }}>No bet</span>
         </div>
       ) : !hasWin ? (
-        /* Lost bets — show "Bets Did Not Win" label + wagered amounts */
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden', justifyContent: 'center' }}>
-          <div style={{
-            fontSize: '0.65rem',
+        /* Lost bets — show "Bets Did Not Win" label only */
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <span style={{
+            fontSize: '0.72rem',
             fontWeight: 700,
             color: '#f87171',
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
-            textAlign: 'center',
-            marginBottom: 2,
             opacity: 0.85,
           }}>
             Bets Did Not Win
-          </div>
-          {placedBets.map((b, idx) => (
-            <div
-              key={idx}
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                borderRadius: 6,
-                padding: '4px 7px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 4,
-              }}
-            >
-              <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'rgba(255,255,255,0.6)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60%' }}>
-                {b.label}
-              </span>
-              <span style={{ fontSize: '0.76rem', fontWeight: 800, color: '#f87171', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                -{formatMoney(b.bet)}
-              </span>
-            </div>
-          ))}
+          </span>
         </div>
       ) : (
         /* Win rows */
