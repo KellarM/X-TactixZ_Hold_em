@@ -144,14 +144,6 @@ export function useGame() {
     }
   }, [phase, bank, ante, deck, revealed, bets, selectedChip, history, result]);
 
-  // Replenish the player's bank to $100 when fully depleted between rounds.
-  // (Resolved = just lost everything; Ante = starting a fresh round with nothing.)
-  useEffect(() => {
-    if (bank <= 0 && (phase === 'resolved' || phase === 'ante')) {
-      setBank(100);
-    }
-  }, [bank, phase]);
-
   const community = deck.slice(0, revealed);
   const flop = deck.slice(0, 3);
   const turn = revealed >= 4 ? deck[3] : null;
@@ -352,6 +344,19 @@ export function useGame() {
     setPhase('ante');
   }, []);
 
+  // Test-mode helper: full reset to a fresh $100 bankroll + new ante round
+  const resetBank = useCallback(() => {
+    setBank(100);
+    setDeck([]);
+    setRevealed(0);
+    setBets(emptyBets());
+    setAnte(0);
+    setResult(null);
+    setFlopOdds(null);
+    setSelectedChip(null);
+    setPhase('ante');
+  }, []);
+
   // ■■ Dealer status message — rich, card-aware ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
   const statusMessage = useMemo(() => {
     if (phase === 'ante') {
@@ -498,6 +503,7 @@ export function useGame() {
       dealRiver,
       fold,
       newHand,
+      resetBank,
       setSelectedChip
     }
   };

@@ -218,6 +218,7 @@ export default function GameTable() {
         boardTheme={boardTheme}
         setBoardTheme={setBoardTheme}
         onHowToPlay={() => { setShowSettings(false); setShowHowToPlay(true); }}
+        onResetBank={actions.resetBank}
       />
       <HowToPlayModal isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
       <OnboardingIndicator />

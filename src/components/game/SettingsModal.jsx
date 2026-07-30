@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle } from 'lucide-react';
+import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle, RotateCcw } from 'lucide-react';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import { formatMoney } from '@/lib/game/cards';
 
@@ -22,7 +22,7 @@ const PANEL = {
   width: 380,
   maxWidth: '95vw',
   padding: '24px 24px 20px',
-  minHeight: 520,
+  minHeight: 560,
   boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
   display: 'flex',
   flexDirection: 'column',
@@ -41,7 +41,7 @@ function StatRow({ label, value, highlight }) {
   );
 }
 
-export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay }) {
+export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay, onResetBank }) {
   const sounds = useGameSounds();
   const [soundOn, setSoundOn] = useState(true);
   const [volume, setVolume] = useState(40);
@@ -221,6 +221,13 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
         )}
 
         {/* Close */}
+        <button
+          onClick={onResetBank}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(180,40,40,0.25)', color: '#ff6b6b', border: '1px solid #ff6b6b', borderRadius: 8, padding: '9px 0', fontWeight: 800, fontSize: 13, cursor: 'pointer', letterSpacing: '0.5px' }}
+          title="Reset your bankroll to $100 (test mode)"
+        >
+          <RotateCcw size={15} /> RESET BANK TO $100
+        </button>
         <button
           onClick={onClose}
           style={{ background: GOLD_BTN, color: GOLD_DARK, border: 'none', borderRadius: 8, padding: '9px 0', fontWeight: 800, fontSize: 13, cursor: 'pointer', letterSpacing: '0.5px' }}
