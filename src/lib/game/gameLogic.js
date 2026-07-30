@@ -44,8 +44,9 @@ export function settleRound(community, hands, bets, flopOdds, riverOdds) {
     Object.keys(bets.card).forEach(id => {
       const amt = bets.card[id] || 0;
       if (amt <= 0) return;
-      const oddsEntry = flopOdds && flopOdds.cardOdds ? flopOdds.cardOdds.find(o => o.handId === id) : null;
-      const isWinner = res.winners.includes(id);
+      const numId = Number(id);
+      const oddsEntry = flopOdds && flopOdds.cardOdds ? flopOdds.cardOdds.find(o => o.handId === numId) : null;
+      const isWinner = res.winners.includes(numId);
       if (isWinner && oddsEntry && oddsEntry.payout != null) {
         let payout = oddsEntry.payout;
         if (numWinners > 1) payout = ((payout + 1) / 2) * 1.05 - 1;
