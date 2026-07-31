@@ -192,7 +192,7 @@ export default function BottomFooter({
       )}
 
       {/* ── OPERATOR TOOLBAR — right of Fold, locked, never shifts ── */}
-      {showActions && <ToolBar />}
+      <ToolBar />
 
       {/* ── SPACER — pushes Gear to far right ── */}
       <div style={{ flex: '1 1 0', minWidth: 0 }} />
