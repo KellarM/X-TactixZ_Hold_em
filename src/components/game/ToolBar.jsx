@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Wrench } from 'lucide-react';
 
 // ── Inject toolbar animations once ───────────────────────────────────────────
@@ -287,13 +288,29 @@ const configBox = {
 export default function ToolBar() {
   const [open, setOpen] = useState(false);
   const [showCertTest, setShowCertTest] = useState(false);
-  const ref = useRef(null);
+  const [menuPos, setMenuPos] = useState(null);
+  const btnRef = useRef(null);
 
-  // Close menu on outside click
+  // Calculate button position on screen for portal placement
+  useLayoutEffect(() => {
+    if (open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setMenuPos({
+        left: rect.left,
+        bottom: window.innerHeight - rect.top + 8, // 8px gap above button
+      });
+    }
+  }, [open]);
+
+  // Close menu on outside click — checks both button and portal menu
   useEffect(() => {
     if (!open) return;
     const handler = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+      if (btnRef.current && btnRef.current.contains(e.target)) return;
+      // Check if click is inside the portal menu
+      const menuEl = document.getElementById('rf-toolbar-portal-menu');
+      if (menuEl && menuEl.contains(e.target)) return;
+      setOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -301,13 +318,10 @@ export default function ToolBar() {
 
   return (
     <>
-      {/* ── Toolbar trigger + menu container ─────────────────────────────── */}
-      <div
-        ref={ref}
-        style={{ position: 'relative', display: 'flex', alignItems: 'center', flexShrink: 0 }}
-      >
-        {/* Trigger button — wrench icon, same height as Fold/Clear buttons */}
+      {/* ── Toolbar trigger button ─────────────────────────────────────── */}
+      <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
         <button
+          ref={btnRef}
           onClick={() => setOpen(o => !o)}
           title="Operator Tools"
           style={{
@@ -334,61 +348,63 @@ export default function ToolBar() {
             TOOLS
           </span>
         </button>
-
-        {/* ── Upward-scrolling menu ─────────────────────────────────────── */}
-        {open && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: 'calc(100% + 8px)',
-              left: 0,
-              minWidth: 200,
-              background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
-              border: '1px solid rgba(202,138,4,0.6)',
-              borderRadius: 10,
-              padding: '8px',
-              display: 'flex', flexDirection: 'column', gap: 6,
-              boxShadow: '0 -8px 32px rgba(0,0,0,0.9)',
-              zIndex: 500,
-              animation: 'rf-menu-slide-up 0.18s ease-out',
-            }}
-          >
-            {/* Menu header label */}
-            <div style={{
-              color: 'rgba(229,193,88,0.6)', fontSize: 9, fontWeight: 700,
-              letterSpacing: '0.12em', textTransform: 'uppercase',
-              padding: '2px 6px 6px',
-              borderBottom: '1px solid rgba(202,138,4,0.2)',
-              marginBottom: 2,
-            }}>
-              OPERATOR TOOLS
-            </div>
-
-            {/* ── Tool buttons — add more here as tools are built ── */}
-            <button
-              className="rf-tool-btn"
-              onClick={() => { setOpen(false); setShowCertTest(true); }}
-            >
-              <span style={{
-                width: 22, height: 22, borderRadius: 5,
-                background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0, fontSize: 12,
-              }}>⚙</span>
-              CERTIFICATION TEST
-            </button>
-
-            {/* Placeholder for future tools */}
-            <div style={{
-              color: 'rgba(197,160,89,0.3)', fontSize: 9, fontWeight: 600,
-              letterSpacing: '0.08em', textAlign: 'center',
-              padding: '4px 0 2px',
-            }}>
-              MORE TOOLS COMING
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* ── Upward-scrolling menu — PORTAL to document.body ──────────────── */}
+      {open && menuPos && typeof document !== 'undefined' && createPortal(
+        <div
+          id="rf-toolbar-portal-menu"
+          style={{
+            position: 'fixed',
+            left: menuPos.left,
+            bottom: menuPos.bottom,
+            minWidth: 200,
+            background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
+            border: '1px solid rgba(202,138,4,0.6)',
+            borderRadius: 10,
+            padding: '8px',
+            display: 'flex', flexDirection: 'column', gap: 6,
+            boxShadow: '0 -8px 32px rgba(0,0,0,0.9)',
+            zIndex: 9999,
+            animation: 'rf-menu-slide-up 0.18s ease-out',
+          }}
+        >
+          {/* Menu header label */}
+          <div style={{
+            color: 'rgba(229,193,88,0.6)', fontSize: 9, fontWeight: 700,
+            letterSpacing: '0.12em', textTransform: 'uppercase',
+            padding: '2px 6px 6px',
+            borderBottom: '1px solid rgba(202,138,4,0.2)',
+            marginBottom: 2,
+          }}>
+            OPERATOR TOOLS
+          </div>
+
+          {/* ── Tool buttons — add more here as tools are built ── */}
+          <button
+            className="rf-tool-btn"
+            onClick={() => { setOpen(false); setShowCertTest(true); }}
+          >
+            <span style={{
+              width: 22, height: 22, borderRadius: 5,
+              background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, fontSize: 12,
+            }}>⚙</span>
+            CERTIFICATION TEST
+          </button>
+
+          {/* Placeholder for future tools */}
+          <div style={{
+            color: 'rgba(197,160,89,0.3)', fontSize: 9, fontWeight: 600,
+            letterSpacing: '0.08em', textAlign: 'center',
+            padding: '4px 0 2px',
+          }}>
+            MORE TOOLS COMING
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* ── Certification Test Modal ──────────────────────────────────────── */}
       {showCertTest && (
