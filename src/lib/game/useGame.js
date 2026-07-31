@@ -11,8 +11,12 @@ import {
 } from './cards';
 import { shuffleDeck, dealCommunity } from './shuffle';
 import { computePostFlopOdds, computeRiverOdds } from './oddsEngine';
+import { captureHand } from '../captureApi';
 import { settleRound } from './gameLogic';
 import { bestHand, compare5, evaluate5, combinations } from './pokerEvaluator';
+
+const SHORT_SUIT = { spades: "s", hearts: "h", diamonds: "d", clubs: "c" };
+function shortCard(card) { return `${card.rank}${SHORT_SUIT[card.suit]}`; }
 
 // Best 5-card hand from a variable pool (2 hole + 3/4/5 community).
 // Recomputes index combos for the actual pool size (5, 6, or 7 cards).
@@ -123,6 +127,7 @@ function evaluateHandRanks(community) {
 
 export function useGame() {
   const saved = useRef(loadSavedState());
+  const handCounter = useRef(0);
   const [phase, setPhase] = useState(saved.current?.phase ?? 'ante');
   const [bank, setBank] = useState(saved.current?.bank ?? START_BANK);
   const [ante, setAnte] = useState(saved.current?.ante ?? 0);
@@ -311,6 +316,76 @@ export function useGame() {
     setResult(settlement);
     setHistory(prev => [settlement.historyEntry, ...prev].slice(0, 20));
     setPhase('resolved');
+
+    // ── Auto-capture for Certification Test ──────────────────────────────
+    try {
+      handCounter.current += 1;
+      const res = settlement.resolution;
+      const flop = community5.slice(0, 3);
+      const turn = community5[3];
+      const river = community5[4];
+
+      // Card board winners
+      const cardWinners = res.boardWin ? [] : res.winners.map(hid => {
+        const odds = flopOdds?.cardOdds?.find(o => o.handId === hid);
+        return {
+          handIndex: hid,
+          probability: odds ? odds.probability : 0,
+          payout: odds ? odds.payout : 0,
+          rtp: odds ? odds.probability * (odds.payout + 1) : 0,
+        };
+      });
+
+      // Rank board winner
+      const rankLabel = res.boardWin ? null : CAT_TO_LABEL[res.winningCategory];
+      const rankWinner = (rankLabel && flopOdds?.rankOdds?.[rankLabel]) ? [{
+        position: rankLabel,
+        probability: flopOdds.rankOdds[rankLabel].probability,
+        payout: flopOdds.rankOdds[rankLabel].payout,
+        rtp: flopOdds.rankOdds[rankLabel].probability * (flopOdds.rankOdds[rankLabel].payout + 1),
+      }] : [];
+
+      // Color board winner
+      const colorKey = res.reds >= 3 ? `${res.reds}R` : `${res.blacks}B`;
+      const colorWinner = (flopOdds?.colorOdds?.[colorKey]) ? [{
+        position: colorKey,
+        probability: flopOdds.colorOdds[colorKey].probability,
+        payout: flopOdds.colorOdds[colorKey].payout,
+        rtp: flopOdds.colorOdds[colorKey].probability * (flopOdds.colorOdds[colorKey].payout + 1),
+      }] : [];
+
+      // River board winner
+      const riverSide = res.riverLow ? 'low' : 'high';
+      const riverWinner = (riverOdds && riverOdds[riverSide]) ? [{
+        position: riverSide,
+        probability: riverOdds[riverSide].probability,
+        payout: riverOdds[riverSide].payout,
+        rtp: riverOdds[riverSide].probability * (riverOdds[riverSide].payout + 1),
+      }] : [];
+
+      // Blended RTPs
+      const cardRtp = cardWinners.length > 0 ? cardWinners[0].rtp : 0;
+      const rankRtp = rankWinner.length > 0 ? rankWinner[0].rtp : 0;
+      const colorRtp = colorWinner.length > 0 ? colorWinner[0].rtp : 0;
+      const riverRtp = riverWinner.length > 0 ? riverWinner[0].rtp : 0;
+
+      captureHand({
+        handNumber: handCounter.current,
+        sessionDate: new Date().toISOString(),
+        flopCards: flop.map(shortCard).join(' '),
+        turnCard: shortCard(turn),
+        riverCard: shortCard(river),
+        cardBoardWinners: cardWinners,
+        rankBoardWinners: rankWinner,
+        colorBoardWinners: colorWinner,
+        riverBoardWinners: riverWinner,
+        threeBoardBlendedRtp: (cardRtp + rankRtp + colorRtp) / 3,
+        totalBlendedRtp: (cardRtp + rankRtp + colorRtp + riverRtp) / 4,
+      });
+    } catch (captureErr) {
+      console.error('[Capture] Error:', captureErr);
+    }
+
   }, [deck, bets, flopOdds, riverOdds]);
 
   const fold = useCallback(() => {

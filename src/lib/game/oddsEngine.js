@@ -7,7 +7,7 @@ import { cardColor, isLowRank, cardKey, CAT_TO_LABEL } from './cards';
 // Tiered house edges — higher for boards where player has more post-flop information
 export const HOUSE_EDGE_CARD  = 0.15;  // Card Board: player sees exact hand matchups post-flop
 export const HOUSE_EDGE_RANK  = 0.12;  // Rank Board: player sees rank distribution
-export const HOUSE_EDGE_COLOR = 0.10;  // Color Board: player sees color distribution
+export const HOUSE_EDGE_COLOR = 0.04;  // Color Board: LOCKED at 96% RTP (4% HE) — 4 pre-certifiable states
 export const HOUSE_EDGE_RIVER = 0.08;  // River Board: only 1 card unknown, least info
 export const LOCKOUT_THRESHOLD = 0.80; // Lockout dominant positions at 80% (tightened from 90%)
 
