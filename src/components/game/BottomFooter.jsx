@@ -3,6 +3,7 @@ import { Settings, RotateCcw } from 'lucide-react';
 import { CHIPS } from '@/lib/game/useGame';
 import Chip from '@/components/game/Chip';
 import { formatMoney } from '@/lib/game/cards';
+import ToolBar from '@/components/game/ToolBar';
 
 const GOLD_BTN = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
 
@@ -189,6 +190,9 @@ export default function BottomFooter({
           </button>
         </div>
       )}
+
+      {/* ── OPERATOR TOOLBAR — right of Fold, locked, never shifts ── */}
+      {showActions && <ToolBar />}
 
       {/* ── SPACER — pushes Gear to far right ── */}
       <div style={{ flex: '1 1 0', minWidth: 0 }} />
