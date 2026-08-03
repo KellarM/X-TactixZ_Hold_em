@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import { Wrench } from 'lucide-react';
 import { fetchCapturedHands, recalcHandRtp, recalcPayout } from '../../lib/captureApi';
 
@@ -732,6 +733,7 @@ function StatBox({ label, value, color }) {
 
 // ── Main ToolBar Component ────────────────────────────────────────────────────
 export default function ToolBar() {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [showCertTest, setShowCertTest] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
@@ -831,6 +833,19 @@ export default function ToolBar() {
               flexShrink: 0, fontSize: 12,
             }}>⚙</span>
             CERTIFICATION TEST
+          </button>
+
+          <button
+            className="rf-tool-btn"
+            onClick={() => { setOpen(false); navigate('/post-flop-certification'); }}
+          >
+            <span style={{
+              width: 22, height: 22, borderRadius: 5,
+              background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, fontSize: 12,
+            }}>📊</span>
+            POST FLOP POSSIBILITIES
           </button>
 
           <div style={{

@@ -8,6 +8,7 @@ import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
 // Add page imports here
 import GameTable from './pages/GameTable';
+import PostFlopCertification from './pages/PostFlopCertification';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -37,6 +38,7 @@ const AuthenticatedApp = () => {
     <Routes>
       {/* Add your page Route elements here */}
       <Route path="/" element={<GameTable />} />
+      <Route path="/post-flop-certification" element={<PostFlopCertification />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
