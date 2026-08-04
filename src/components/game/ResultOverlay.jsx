@@ -166,7 +166,7 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════
 
-export default function ResultOverlay({ result, ante = 0, onClose }) {
+export default function ResultOverlay({ result, ante = 0, bonus = null, onClose }) {
   if (!result) return null;
   const { resolution, details, winnings, historyEntry } = result;
 
@@ -504,6 +504,57 @@ export default function ResultOverlay({ result, ante = 0, onClose }) {
               </div>
             ))}
           </div>
+
+          {/* ── RNG BONUS summary — shows bonus results if any bonus paid ── */}
+          {bonus && (bonus.cardWon || bonus.sideWon) && (
+            <div style={{
+              flexShrink: 0,
+              background: 'linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,165,0,0.10) 100%)',
+              borderTop: '1px solid rgba(255,215,0,0.4)',
+              padding: '6px 12px',
+              display: 'flex',
+              gap: 12,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              {bonus.cardWon && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: '0.65rem', fontWeight: 700, color: '#fbbf24',
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                    fontFamily: 'Oswald, sans-serif',
+                  }}>
+                    Card Bonus ×{bonus.cardMult}
+                  </div>
+                  <div style={{
+                    fontSize: '1rem', fontWeight: 900, color: '#fbbf24',
+                    fontFamily: 'Oswald, sans-serif',
+                    ...blackOutline,
+                  }}>
+                    +{formatMoney(bonus.cardPayout)}
+                  </div>
+                </div>
+              )}
+              {bonus.sideWon && (
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{
+                    fontSize: '0.65rem', fontWeight: 700, color: '#fbbf24',
+                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                    fontFamily: 'Oswald, sans-serif',
+                  }}>
+                    Side Bet Bonus ×{bonus.sideMult}
+                  </div>
+                  <div style={{
+                    fontSize: '1rem', fontWeight: 900, color: '#fbbf24',
+                    fontFamily: 'Oswald, sans-serif',
+                    ...blackOutline,
+                  }}>
+                    +{formatMoney(bonus.sidePayout)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── NEW HAND button ── */}
           <div style={{ padding: '8px 12px 10px' }}>

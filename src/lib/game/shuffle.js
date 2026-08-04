@@ -1,6 +1,6 @@
 // Cryptographically secure Fisher-Yates shuffle with rejection sampling.
 
-function secureRandInt(max) {
+export function secureRandInt(max) {
   if (max <= 0) return 0;
   let mask = 1;
   while (mask <= max) mask = (mask << 1) | 1;

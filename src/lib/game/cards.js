@@ -85,6 +85,14 @@ export const RANK_LABELS = [
 
 export const COLOR_POSITIONS = ['3R', '4R', '5R', '3B', '4B', '5B'];
 
+// Side bet positions for RNG Bonus (15 total: 7 Rank + 6 Color + 2 River)
+// Index 0-6 = RANK_LABELS, 7-12 = Color positions, 13-14 = River (low, high)
+export const SIDE_BET_POSITIONS = [
+  '4 Of A Kind', 'Full House', 'Flush', 'Straight', '3 Of A Kind', '2 Pair', '1 Pair',
+  '3R', '3B', '4R', '4B', '5R', '5B',
+  'low', 'high',
+];
+
 export function formatMoney(amount) {
   if (amount === null || amount === undefined || isNaN(amount)) return '$0.00';
   return '$' + amount.toFixed(2);

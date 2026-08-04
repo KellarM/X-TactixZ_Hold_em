@@ -21,12 +21,25 @@ function injectStyles() {
       50%  { box-shadow: 0 0 48px 18px rgba(255,230,0,1.0),  inset 0 0 70px rgba(255,230,0,0.55); background-color: #c8960a; }
       100% { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); background-color: #3a2a00; }
     }
+    @keyframes rf-bonus-pulse {
+      0%   { box-shadow: 0 0 15px 4px rgba(255,215,0,0.7),  inset 0 0 25px rgba(255,215,0,0.25); }
+      50%  { box-shadow: 0 0 30px 10px rgba(255,235,0,0.95), inset 0 0 45px rgba(255,235,0,0.40); }
+      100% { box-shadow: 0 0 15px 4px rgba(255,215,0,0.7),  inset 0 0 25px rgba(255,215,0,0.25); }
+    }
+    @keyframes rf-bonus-land-win {
+      0%   { box-shadow: 0 0 20px 8px  rgba(255,215,0,0.9),  inset 0 0 35px rgba(255,215,0,0.35); }
+      100% { box-shadow: 0 0 50px 20px rgba(255,235,0,1.0),  inset 0 0 80px rgba(255,235,0,0.6); }
+    }
+    @keyframes rf-bonus-land-lose {
+      0%   { box-shadow: 0 0 15px 5px  rgba(239,68,68,0.5),  inset 0 0 25px rgba(239,68,68,0.15); }
+      100% { box-shadow: 0 0 25px 8px  rgba(180,40,40,0.3),  inset 0 0 35px rgba(120,20,20,0.10); }
+    }
   `;
   document.head.appendChild(style);
 }
 
 export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
-  handEvals = {}, leadingHandIds = [], winnerHandIds = [] }) {
+  handEvals = {}, leadingHandIds = [], winnerHandIds = [], bonusPulse = null }) {
 
   useEffect(() => { injectStyles(); }, []);
 
@@ -66,7 +79,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
         className="grid grid-cols-5 grid-rows-2"
         style={{ gap: 6, flex: 1, minHeight: 0 }}
       >
-        {FIXED_HANDS.map((hand) => {
+        {FIXED_HANDS.map((hand, handArrayIdx) => {
           const isLocked   = locked(hand.id);
           const p          = payout(hand.id);
           const bet        = bets.card[hand.id] || 0;
@@ -85,6 +98,8 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
               isLeading={isLeading}
               isWinner={isWinner}
               isResolved={isResolved}
+              bonusPulse={bonusPulse}
+              bonusIndex={handArrayIdx}
               onPlace={() => onPlace('card', hand.id)}
               onRemove={() => onRemove('card', hand.id)}
             >
@@ -135,6 +150,7 @@ export function SectionTitle({ children, capValue }) {
 export function BettingSlot({
   oddsLabel, locked, lockReason = null, bet, onPlace, onRemove, children,
   rankLabel = null, isLeading = false, isWinner = false, isResolved = false,
+  bonusPulse = null, bonusIndex = null,
 }) {
   // ── Vault tint locked treatment (Option A) ──────────────────────────────────
   // When locked: dulled gold border, grayscale cards, dark scrim with padlock
@@ -151,7 +167,21 @@ export function BettingSlot({
   // ── Animation ──────────────────────────────────────────────────────────────
   let animation = 'none';
   let background = 'var(--theme-bg, #04122b)';
-  if (isWinner) {
+
+  // Bonus pulse state — overrides normal animations during bonus sequence
+  const isBonusPulsing = bonusPulse?.card === bonusIndex && !bonusPulse?.landed;
+  const isBonusLanded = bonusPulse?.landed && bonusPulse?.card === bonusIndex;
+
+  if (isBonusLanded && bonusPulse?.cardWon) {
+    animation = 'rf-bonus-land-win 0.8s ease-out forwards';
+    background = '#5a3a00';
+  } else if (isBonusLanded && !bonusPulse?.cardWon) {
+    animation = 'rf-bonus-land-lose 0.8s ease-out forwards';
+    background = '#1a0a0a';
+  } else if (isBonusPulsing) {
+    animation = 'rf-bonus-pulse 0.25s ease-in-out';
+    background = '#2a2000';
+  } else if (isWinner) {
     animation  = 'rf-winner-pulse 1.1s ease-in-out infinite';
     background = '#3a2a00';
   } else if (isLeading && !isResolved) {
@@ -191,6 +221,31 @@ export function BettingSlot({
       onClick={() => { if (!locked) onPlace(); }}
       onContextMenu={(e) => { e.preventDefault(); if (!locked && bet > 0) onRemove(); }}
     >
+      {/* BONUS badge — shows when the bonus landed on this position */}
+      {isBonusLanded && (
+        <div style={{
+          position: 'absolute',
+          top: -2,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: bonusPulse.cardWon
+            ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)'
+            : 'linear-gradient(135deg, #555 0%, #333 100%)',
+          color: bonusPulse.cardWon ? '#000' : '#999',
+          fontSize: 9,
+          fontWeight: 900,
+          padding: '2px 8px',
+          borderRadius: 4,
+          zIndex: 25,
+          letterSpacing: '0.5px',
+          boxShadow: '0 1px 6px rgba(0,0,0,0.9)',
+          pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+        }}>
+          {bonusPulse.cardWon ? `×${bonusPulse.cardMult} BONUS` : 'BONUS — NO WIN'}
+        </div>
+      )}
+
       {/* WIN badge — shows on winning positions at resolution */}
       {isWinner && isResolved && (
         <div style={{

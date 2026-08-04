@@ -62,6 +62,19 @@ function injectStyles() {
   const style = document.createElement('style');
   style.id = STYLE_ID;
   style.textContent = `
+    @keyframes rf-bonus-pulse-side {
+      0%   { box-shadow: 0 0 12px 3px rgba(255,215,0,0.6); }
+      50%  { box-shadow: 0 0 24px 8px rgba(255,235,0,0.9); }
+      100% { box-shadow: 0 0 12px 3px rgba(255,215,0,0.6); }
+    }
+    @keyframes rf-bonus-land-win-side {
+      0%   { box-shadow: 0 0 16px 6px rgba(255,215,0,0.8); }
+      100% { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0); }
+    }
+    @keyframes rf-bonus-land-lose-side {
+      0%   { box-shadow: 0 0 12px 4px rgba(239,68,68,0.4); }
+      100% { box-shadow: 0 0 20px 6px rgba(180,40,40,0.2); }
+    }
     @keyframes rf-side-leader {
       0%   { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); }
       50%  { box-shadow: 0 0 28px 10px rgba(255,220,50,0.85), inset 0 0 40px rgba(255,220,50,0.30); }
@@ -164,11 +177,45 @@ export default function RightSidebar({
   leadingColorKeys = [], winnerColorKeys = [],
   leadingRiverSide = null, winnerRiverSide = null,
   ante = 0, boardTotals = { card: 0, rank: 0, color: 0, river: 0 },
+  bonusPulse = null,
 }) {
   useEffect(() => { injectStyles(); }, []);
 
   const riverOpen = phase === 'postturn' || phase === 'resolved';
   const isResolved = phase === 'resolved';
+
+  // ── Bonus pulse state helpers ──
+  // Side bet index mapping: 0-6 = Rank, 7-12 = Color, 13-14 = River
+  const isSidePulsing = (sideIdx) => bonusPulse?.side === sideIdx && !bonusPulse?.landed;
+  const isSideLanded = (sideIdx) => bonusPulse?.landed && bonusPulse?.side === sideIdx;
+
+  const bonusSideStyle = (sideIdx) => {
+    if (isSideLanded(sideIdx) && bonusPulse?.sideWon) return { animation: 'rf-bonus-land-win-side 0.8s ease-out forwards' };
+    if (isSideLanded(sideIdx) && !bonusPulse?.sideWon) return { animation: 'rf-bonus-land-lose-side 0.8s ease-out forwards' };
+    if (isSidePulsing(sideIdx)) return { animation: 'rf-bonus-pulse-side 0.25s ease-in-out' };
+    return {};
+  };
+
+  const bonusBadge = (sideIdx) => {
+    if (!isSideLanded(sideIdx)) return null;
+    return (
+      <span style={{
+        position: 'absolute', top: -2, left: '50%',
+        transform: 'translateX(-50%)',
+        background: bonusPulse.sideWon
+          ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)'
+          : 'linear-gradient(135deg, #555 0%, #333 100%)',
+        color: bonusPulse.sideWon ? '#000' : '#999',
+        fontSize: 8, fontWeight: 900,
+        padding: '1px 6px', borderRadius: 3,
+        zIndex: 25, letterSpacing: '0.5px',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.9)',
+        pointerEvents: 'none', whiteSpace: 'nowrap',
+      }}>
+        {bonusPulse.sideWon ? `×${bonusPulse.sideMult} BONUS` : 'BONUS — NO WIN'}
+      </span>
+    );
+  };
 
   const rankLocked  = (l) => !flopOdds || !flopOdds.rankOdds[l] || flopOdds.rankOdds[l].locked;
   const rankPayout  = (l) => flopOdds?.rankOdds[l]?.payout ?? null;
@@ -196,7 +243,7 @@ export default function RightSidebar({
       <div style={{ ...boardPanelStyle, flex: 5 }}>
         <SectionHeader capValue={caps.rank}>HAND RANKING</SectionHeader>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
-          {RANK_LABELS.map((label) => {
+          {RANK_LABELS.map((label, rankIdx) => {
             const locked = rankLocked(label);
             const p = rankPayout(label);
             const bet = bets.rank[label] || 0;
@@ -211,7 +258,7 @@ export default function RightSidebar({
                 onClick={() => !locked && onPlace('rank', label)}
                 onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.rank[label]) onRemove('rank', label); }}
                 className="relative flex items-center justify-between flex-1"
-                style={{ ...style, borderRadius: R, padding: '0 12px', minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
+                style={{ ...style, ...bonusSideStyle(rankIdx), borderRadius: R, padding: '0 12px', minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
                 <span style={{ color: 'rgba(0,0,0,0.88)', fontWeight: 900, fontSize: 15, lineHeight: 1, WebkitTextStroke: '0.4px currentColor' }}>
                   {label}
@@ -237,6 +284,7 @@ export default function RightSidebar({
                     }}
                   />
                 )}
+                {bonusBadge(rankIdx)}
                 {isWinner && isResolved && (
                   <span style={{
                     position: 'absolute',
@@ -263,7 +311,7 @@ export default function RightSidebar({
       <div style={{ ...boardPanelStyle, flex: 3 }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
-          {colorPositions.map((pos) => {
+          {colorPositions.map((pos, colorIdx) => {
             const locked = colorLocked(pos.key);
             const p = colorPayout(pos.key);
             const bet = bets.color[pos.key] || 0;
@@ -280,8 +328,9 @@ export default function RightSidebar({
                 onClick={() => !locked && onPlace('color', pos.key)}
                 onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.color[pos.key]) onRemove('color', pos.key); }}
                 className="relative flex flex-col items-center justify-center"
-                style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
+                style={{ ...style, ...bonusSideStyle(7 + colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
+                {bonusBadge(7 + colorIdx)}
                 <span style={{ ...goldEmbossText, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 {locked ? (
                   <img
@@ -323,7 +372,7 @@ export default function RightSidebar({
           {[
             { side: 'low',  label: 'LOW',  range: '2–7' },
             { side: 'high', label: 'HIGH', range: '8–A' },
-          ].map((b) => {
+          ].map((b, riverIdx) => {
             const locked = riverLocked(b.side);
             const bet = bets.river[b.side] || 0;
             const isLeading = leadingRiverSide === b.side;
@@ -337,8 +386,9 @@ export default function RightSidebar({
                 onClick={() => !locked && onPlace('river', b.side)}
                 onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.river[b.side]) onRemove('river', b.side); }}
                 className="relative flex flex-col items-center justify-center"
-                style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
+                style={{ ...style, ...bonusSideStyle(13 + riverIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
+                {bonusBadge(13 + riverIdx)}
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
                 {locked ? (

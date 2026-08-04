@@ -8,6 +8,8 @@ import CardBoard from '@/components/game/CardBoard';
 import RightSidebar from '@/components/game/RightSidebar';
 import BottomFooter from '@/components/game/BottomFooter';
 import ResultOverlay from '@/components/game/ResultOverlay';
+import BonusSequence from '@/components/game/BonusSequence';
+import { playWin, playLose } from '@/lib/game/useBonusAudio';
 import SettingsModal from '@/components/game/SettingsModal';
 import HowToPlayModal from '@/components/game/HowToPlayModal';
 import OnboardingIndicator from '@/components/game/OnboardingIndicator';
@@ -30,6 +32,8 @@ export default function GameTable() {
   // ── Result overlay delay — 5 seconds after resolution before modal appears ──
   // Winner indicators light up immediately; the modal waits so players can read the board.
   const [showResult, setShowResult] = useState(false);
+  const [bonusPulse, setBonusPulse] = useState({ card: null, side: null, landed: false, cardWon: false, sideWon: false, cardMult: 2, sideMult: 3 });
+  const [bonusActive, setBonusActive] = useState(false);
   const [playerStats, setPlayerStats] = useState({
     totalBets: 0, totalWins: 0,
     roundsPlayed: 0, roundsWon: 0,
@@ -44,18 +48,64 @@ export default function GameTable() {
     return () => window.removeEventListener('pointerdown', handler);
   }, []);
 
-  // ── Result overlay delay ──────────────────────────────────────────────
-  // When phase becomes 'resolved', wait 5 seconds before showing the modal.
-  // Winner indicators (gold pulses) appear immediately; the modal follows.
+  // ── Bonus sequence + result overlay timing ─────────────────────────────
+  // When phase becomes 'resolved':
+  // 1. Bonus sequence runs (~10 seconds) — pulse waves on card hands + side bets
+  // 2. After bonus completes, show the result overlay (with bonus info)
+  // If no bonus data (safety fallback), show overlay after 5 seconds.
   useEffect(() => {
     if (phase === 'resolved' && game.result) {
       setShowResult(false);
-      const timer = setTimeout(() => setShowResult(true), 5000);
-      return () => clearTimeout(timer);
+      setBonusPulse({ card: null, side: null, landed: false, cardWon: false, sideWon: false, cardMult: 2, sideMult: 3 });
+
+      if (game.bonus) {
+        // Start bonus sequence — BonusSequence component handles the animation
+        setBonusActive(true);
+      } else {
+        // Fallback: no bonus, show after 5 seconds
+        const timer = setTimeout(() => setShowResult(true), 5000);
+        return () => clearTimeout(timer);
+      }
     } else {
       setShowResult(false);
+      setBonusActive(false);
+      setBonusPulse({ card: null, side: null, landed: false, cardWon: false, sideWon: false, cardMult: 2, sideMult: 3 });
     }
-  }, [phase, game.result]);
+  }, [phase, game.result, game.bonus]);
+
+  // Bonus sequence callbacks
+  const handleBonusPulse = useCallback((cardPos, sidePos) => {
+    setBonusPulse(prev => ({
+      ...prev,
+      card: cardPos !== null ? cardPos : prev.card,
+      side: sidePos !== null ? sidePos : prev.side,
+      landed: false,
+    }));
+  }, []);
+
+  const handleBonusLand = useCallback((cardIdx, sideIdx) => {
+    if (!game.bonus) return;
+    setBonusPulse({
+      card: cardIdx,
+      side: sideIdx,
+      landed: true,
+      cardWon: game.bonus.cardWon,
+      sideWon: game.bonus.sideWon,
+      cardMult: game.bonus.cardMult,
+      sideMult: game.bonus.sideMult,
+    });
+    // Play win or lose sound based on whether the bonus paid
+    if (game.bonus.cardWon || game.bonus.sideWon) {
+      playWin();
+    } else {
+      playLose();
+    }
+  }, [game.bonus]);
+
+  const handleBonusComplete = useCallback(() => {
+    setBonusActive(false);
+    setShowResult(true);
+  }, []);
 
   // Track stats per resolved hand
   useEffect(() => {
@@ -158,6 +208,7 @@ export default function GameTable() {
               handEvals={game.handEvals}
               leadingHandIds={game.leadingHandIds}
               winnerHandIds={game.winnerHandIds}
+              bonusPulse={bonusPulse}
             />
           </div>
         </div>
@@ -180,6 +231,7 @@ export default function GameTable() {
             winnerColorKeys={game.winnerColorKeys}
             leadingRiverSide={game.leadingRiverSide}
             winnerRiverSide={game.winnerRiverSide}
+          bonusPulse={bonusPulse}
           />
         </div>
       </div>
@@ -208,8 +260,20 @@ export default function GameTable() {
         />
       </div>
 
+      {/* ── RNG Bonus sequence — runs during resolution, before result overlay ── */}
+      {bonusActive && game.bonus && (
+        <BonusSequence
+          cardIdx={game.bonus.cardIdx}
+          sideIdx={game.bonus.sideIdx}
+          onPulse={handleBonusPulse}
+          onLand={handleBonusLand}
+          onComplete={handleBonusComplete}
+          soundEnabled={sounds.isSoundEnabled()}
+        />
+      )}
+
       {showResult && game.result && (
-        <ResultOverlay result={game.result} ante={game.ante} onClose={actions.newHand} />
+        <ResultOverlay result={game.result} ante={game.ante} bonus={game.bonus} onClose={actions.newHand} />
       )}
 
       <SettingsModal

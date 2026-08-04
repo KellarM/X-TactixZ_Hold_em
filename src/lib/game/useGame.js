@@ -7,9 +7,10 @@ import {
   SUIT_SYMBOL,
   SUIT_COLOR,
   CAT_TO_LABEL,
+  SIDE_BET_POSITIONS,
   formatMoney
 } from './cards';
-import { shuffleDeck, dealCommunity } from './shuffle';
+import { shuffleDeck, dealCommunity, secureRandInt } from './shuffle';
 import { computePostFlopOdds, computeRiverOdds } from './oddsEngine';
 import { captureHand } from '../captureApi';
 import { settleRound } from './gameLogic';
@@ -129,6 +130,7 @@ export function useGame() {
   const saved = useRef(loadSavedState());
   const handCounter = useRef(0);
   const [phase, setPhase] = useState(saved.current?.phase ?? 'ante');
+  const [bonus, setBonus] = useState(null); // { cardIdx, sideIdx, cardMult, sideMult, cardWon, sideWon, cardPayout, sidePayout, bonusWinnings }
   const [bank, setBank] = useState(saved.current?.bank ?? START_BANK);
   const [ante, setAnte] = useState(saved.current?.ante ?? 0);
   const [deck, setDeck] = useState(saved.current?.deck ?? []);
@@ -238,6 +240,7 @@ export function useGame() {
     setRevealed(3);
     setBets(emptyBets());
     setResult(null);
+    setBonus(null);
     setFlopOdds(null);
     setSelectedChip(ante);  // Auto-select the ante amount as the default betting chip
     setPhase('postflop');
@@ -314,6 +317,88 @@ export function useGame() {
     const settlement = settleRound(community5, FIXED_HANDS, bets, flopOdds, riverOdds);
     setBank(b => +(b + settlement.winnings).toFixed(2));
     setResult(settlement);
+
+    // ── RNG BONUS ──────────────────────────────────────────────────────
+    // Two separate CSPRNG calls: one for card hands (0-9), one for side bets (0-14)
+    const bonusCardIdx = secureRandInt(9);
+    const bonusSideIdx = secureRandInt(14);
+    const cardMult = 2;
+    const sideMult = 3;
+
+    // Determine if bonus hits winning positions the player bet on
+    let bonusWinnings = 0;
+    let cardWon = false;
+    let sideWon = false;
+    let cardPayout = 0;
+    let sidePayout = 0;
+
+    // Card hand bonus: check if the bonus card hand is a winner with a bet
+    if (!settlement.resolution.boardWin) {
+      const cardDetail = settlement.details.card.find(
+        d => d.won && Number(d.id) === (bonusCardIdx + 1) // hand ids are 1-10, indices 0-9
+      );
+      if (cardDetail) {
+        cardWon = true;
+        cardPayout = cardDetail.amt * cardDetail.payout * (cardMult - 1);
+        bonusWinnings += cardPayout;
+      }
+    }
+
+    // Side bet bonus: check the 15 side bet positions
+    const sidePosition = SIDE_BET_POSITIONS[bonusSideIdx];
+
+    // Check rank positions (indices 0-6)
+    if (bonusSideIdx < 7 && !settlement.resolution.boardWin) {
+      const rankLabel = SIDE_BET_POSITIONS[bonusSideIdx];
+      const rankDetail = settlement.details.rank.find(
+        d => d.won && d.label === rankLabel
+      );
+      if (rankDetail) {
+        sideWon = true;
+        sidePayout = rankDetail.amt * rankDetail.payout * (sideMult - 1);
+        bonusWinnings += sidePayout;
+      }
+    }
+    // Check color positions (indices 7-12)
+    else if (bonusSideIdx < 13) {
+      const colorKey = SIDE_BET_POSITIONS[bonusSideIdx];
+      const colorDetail = settlement.details.color.find(
+        d => d.won && d.k === colorKey
+      );
+      if (colorDetail) {
+        sideWon = true;
+        sidePayout = colorDetail.amt * colorDetail.payout * (sideMult - 1);
+        bonusWinnings += sidePayout;
+      }
+    }
+    // Check river positions (indices 13-14)
+    else {
+      const riverSide = SIDE_BET_POSITIONS[bonusSideIdx];
+      const riverDetail = (Array.isArray(settlement.details.river) ? settlement.details.river : [])
+        .find(d => d.won && d.side === riverSide);
+      if (riverDetail) {
+        sideWon = true;
+        sidePayout = riverDetail.amt * riverDetail.payout * (sideMult - 1);
+        bonusWinnings += sidePayout;
+      }
+    }
+
+    // Add bonus winnings to bank
+    if (bonusWinnings > 0) {
+      setBank(b => +(b + bonusWinnings).toFixed(2));
+    }
+
+    setBonus({
+      cardIdx: bonusCardIdx,
+      sideIdx: bonusSideIdx,
+      cardMult,
+      sideMult,
+      cardWon,
+      sideWon,
+      cardPayout,
+      sidePayout,
+      bonusWinnings,
+    });
     setHistory(prev => [settlement.historyEntry, ...prev].slice(0, 20));
     setPhase('resolved');
 
@@ -403,6 +488,7 @@ export function useGame() {
     setBets(emptyBets());
     setAnte(0);
     setResult(null);
+    setBonus(null);
     setFlopOdds(null);
     setSelectedChip(null);  // No chip pre-selected on fold/new round
     setPhase('ante');
@@ -414,6 +500,7 @@ export function useGame() {
     setBets(emptyBets());
     setAnte(0);
     setResult(null);
+    setBonus(null);
     setFlopOdds(null);
     setSelectedChip(null);  // No chip pre-selected on new round
     setPhase('ante');
@@ -427,6 +514,7 @@ export function useGame() {
     setBets(emptyBets());
     setAnte(0);
     setResult(null);
+    setBonus(null);
     setFlopOdds(null);
     setSelectedChip(null);
     setPhase('ante');
@@ -567,6 +655,7 @@ export function useGame() {
     winnerColorKeys,
     leadingRiverSide,
     winnerRiverSide,
+    bonus,
     actions: {
       addToAnte,
       clearAnte,
