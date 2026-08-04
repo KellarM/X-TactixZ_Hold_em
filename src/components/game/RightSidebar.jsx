@@ -11,15 +11,14 @@ const GOLD_ACTIVE = {
   border: '1px solid #000',
 };
 const GOLD_DIM = {
-  background: 'linear-gradient(135deg, #c9a820 0%, #b08a14 30%, #d4b830 55%, #8a6504 80%, #b08a14 100%)',
-  boxShadow: 'inset 0 1px 2px rgba(200,170,80,0.3)',
+  background: 'linear-gradient(135deg, #6a5410 0%, #54420a 30%, #6a5818 55%, #3a2d02 80%, #54420a 100%)',
+  boxShadow: 'inset 0 1px 2px rgba(100,80,20,0.3)',
   border: '1px solid #000',
-  opacity: 0.6,
 };
 const RED_ACTIVE   = { background: 'linear-gradient(160deg, #e02020 0%, #8c0e0e 100%)', border: '1px solid #111' };
 const BLACK_ACTIVE = { background: 'linear-gradient(160deg, #222 0%, #000 100%)', border: '1px solid #2a2a2a' };
-const RED_LOCKED   = { background: 'linear-gradient(160deg, #8a1414 0%, #4a0505 100%)', border: '1px solid #111', opacity: 0.45 };
-const BLACK_LOCKED = { background: 'linear-gradient(160deg, #111 0%, #000 100%)', border: '1px solid #1a1a1a', opacity: 0.45 };
+const RED_LOCKED   = { background: 'linear-gradient(160deg, #5a0a0a 0%, #2a0303 100%)', border: '1px solid #111' };
+const BLACK_LOCKED = { background: 'linear-gradient(160deg, #0a0a0a 0%, #000 100%)', border: '1px solid #1a1a1a' };
 
 const goldEmbossText = {
   color: 'transparent',
