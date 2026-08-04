@@ -10,8 +10,8 @@ if (typeof document !== 'undefined' && !document.getElementById(STYLE_ID)) {
   const s = document.createElement('style');
   s.id = STYLE_ID;
   s.textContent = `
-    @keyframes rf-menu-slide-up {
-      from { opacity: 0; transform: translateY(10px); }
+    @keyframes rf-menu-slide-down {
+      from { opacity: 0; transform: translateY(-10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     .rf-tool-btn {
@@ -781,8 +781,8 @@ export default function ToolBar() {
     if (open && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
       setMenuPos({
-        right: window.innerWidth - rect.right,
-        bottom: window.innerHeight - rect.top + 8,
+        left: rect.left,
+        top: rect.bottom + 8,
       });
     }
   }, [open]);
@@ -839,17 +839,17 @@ export default function ToolBar() {
           id="rf-toolbar-portal-menu"
           style={{
             position: 'fixed',
-            right: menuPos.right,
-            bottom: menuPos.bottom,
+            left: menuPos.left,
+            top: menuPos.top,
             minWidth: 200,
             background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
             border: '1px solid rgba(202,138,4,0.6)',
             borderRadius: 10,
             padding: '8px',
             display: 'flex', flexDirection: 'column', gap: 6,
-            boxShadow: '0 -8px 32px rgba(0,0,0,0.9)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.9)',
             zIndex: 9999,
-            animation: 'rf-menu-slide-up 0.18s ease-out',
+            animation: 'rf-menu-slide-down 0.18s ease-out',
           }}
         >
           <div style={{

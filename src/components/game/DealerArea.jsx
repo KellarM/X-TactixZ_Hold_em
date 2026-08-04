@@ -1,5 +1,6 @@
 import React from 'react';
 import PlayingCard from './PlayingCard';
+import ToolBar from './ToolBar';
 
 const CARD_TOKEN_REGEX = /(10|[2-9]|[AKQJ])([♠♥♦♣])/g;
 const RED_SUITS = new Set(['♥', '♦']);
@@ -167,7 +168,18 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
         overflow: 'visible',
         position: 'relative',
       }}>
-        <BrandLogo />
+        {/* ── Left side: ToolBar (hidden by default, summoned via Ctrl+Alt+J+L) ── */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-start',
+          paddingLeft: 8,
+          userSelect: 'none',
+          minHeight: 0,
+        }}>
+          <ToolBar />
+        </div>
 
         {/* Card groups — Flop (3) + Turn (1) + River (1) — centred with proportional gaps */}
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: GROUP_GAP, flexShrink: 0 }}>
