@@ -273,13 +273,13 @@ export function BettingSlot({
           zIndex: 5,
           pointerEvents: 'none',
         }}>
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-            style={{ opacity: 0.55 }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
+            style={{ opacity: 0.95, filter: 'drop-shadow(0 0 5px rgba(255,215,0,0.55))' }}>
             <rect x="4" y="11" width="16" height="10" rx="2"
-              stroke="#d9c088" strokeWidth="1.6" fill="rgba(3,6,14,0.4)" />
+              stroke="#FFD700" strokeWidth="2.2" fill="rgba(10,8,0,0.55)" />
             <path d="M7 11V7a5 5 0 0 1 10 0v4"
-              stroke="#d9c088" strokeWidth="1.6" />
-            <circle cx="12" cy="16" r="1.6" fill="#d9c088" />
+              stroke="#FFD700" strokeWidth="2.2" />
+            <circle cx="12" cy="16" r="2" fill="#FFD700" />
           </svg>
         </div>
       )}
