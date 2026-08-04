@@ -133,20 +133,6 @@ function SectionHeader({ children, capValue }) {
   );
 }
 
-function LockIcon({ dim = false }) {
-  const bodyFill    = `rgba(0,0,0,${dim ? 0.45 : 0.88})`;
-  const shackleColor = `rgba(0,0,0,${dim ? 0.45 : 0.88})`;
-  const keyholeColor = 'rgba(230,180,20,0.9)';
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0, display: 'block' }}>
-      <rect x="3" y="11" width="18" height="12" rx="2.5" fill={bodyFill} />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke={shackleColor} strokeWidth="2.8" strokeLinecap="round" />
-      <circle cx="12" cy="17" r="2" fill={keyholeColor} />
-      <rect x="11" y="17" width="2" height="3" rx="1" fill={keyholeColor} />
-    </svg>
-  );
-}
-
 // ── Helper: merge highlight styles into a base button style ──
 function withHighlight(baseStyle, isLeading, isWinner, isResolved) {
   if (isWinner) {
@@ -227,7 +213,13 @@ export default function RightSidebar({
                   {label}
                 </span>
                 <span className="flex items-center" style={{ gap: 6 }}>
-                  {locked ? <LockIcon dim={true} /> : (
+                  {locked ? (
+                  <img
+                    src="https://media.base44.com/images/public/6a669c10586e3d2dd9f2cdba/0fb1a0900_GoldLock.png"
+                    alt="Locked"
+                    style={{ width: 22, height: 'auto', mixBlendMode: 'screen', filter: 'brightness(1.1) saturate(1.2) drop-shadow(0 1px 3px rgba(0,0,0,0.5))' }}
+                  />
+                ) : (
                     <span style={{ color: 'rgba(0,0,0,0.88)', fontWeight: 900, fontSize: 14, lineHeight: 1, WebkitTextStroke: '0.4px currentColor' }}>
                       {formatPayout(p)}
                     </span>
