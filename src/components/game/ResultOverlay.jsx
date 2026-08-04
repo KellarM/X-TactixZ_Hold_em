@@ -1,5 +1,5 @@
 import React from 'react';
-import { FIXED_HANDS, formatMoney, CAT_TO_LABEL } from '@/lib/game/cards';
+import { FIXED_HANDS, formatMoney, CAT_TO_LABEL, SIDE_BET_POSITIONS } from '@/lib/game/cards';
 import PlayingCard from './PlayingCard';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -173,6 +173,32 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
                     = {formatMoney(total)}
                   </span>
                 </div>
+                {/* Row 3: RNG Bonus badge — only on the winning row that hit the bonus */}
+                {win.bonusMult && (
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4,
+                    marginTop: 2,
+                    padding: '2px 5px',
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, rgba(255,215,0,0.20) 0%, rgba(255,165,0,0.12) 100%)',
+                    border: '1px solid rgba(255,215,0,0.35)',
+                  }}>
+                    <span style={{
+                      fontSize: '0.68rem', fontWeight: 900, color: '#fbbf24',
+                      letterSpacing: '0.06em', whiteSpace: 'nowrap',
+                      textShadow: '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000',
+                    }}>
+                      BONUS x{win.bonusMult}
+                    </span>
+                    <span style={{
+                      fontSize: '0.72rem', fontWeight: 900, color: '#fbbf24',
+                      whiteSpace: 'nowrap',
+                      textShadow: '-0.5px -0.5px 0 #000, 0.5px -0.5px 0 #000, -0.5px 0.5px 0 #000, 0.5px 0.5px 0 #000',
+                    }}>
+                      +{formatMoney(win.bonusPayout)} = {formatMoney(total + win.bonusPayout)}
+                    </span>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -200,11 +226,14 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
   // Total wagered = ante (dead) + all board bets
   const totalWagered = ante + boardBetTotal;
 
-  // Net win = what came back minus everything spent (ante is a cost, never returned)
-  const netWin = winnings - totalWagered;
+  // Bonus winnings fold into the combined total (already credited to bank in useGame.js)
+  const bonusWin = bonus?.bonusWinnings || 0;
 
-  // Total win = winnings returned (board wins only — ante never returned)
-  const totalWin = winnings;
+  // Net win = what came back (board wins + bonus) minus everything spent (ante + bets)
+  const netWin = (winnings + bonusWin) - totalWagered;
+
+  // Total win = board winnings + bonus, combined as one number
+  const totalWin = winnings + bonusWin;
 
   const isBoardWin = resolution.boardWin;
   const hasWin = winnings > 0;
@@ -219,19 +248,47 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
   // ── Build win rows for each quadrant ──
   const cardWins  = details.card
     .filter(d => d.won)
-    .map(d => ({ label: getHandLabel(d.id), cards: getHandCards(d.id), amt: d.amt, payout: d.payout }));
+    .map(d => {
+      const win = { label: getHandLabel(d.id), cards: getHandCards(d.id), amt: d.amt, payout: d.payout };
+      if (bonus?.cardWon && Number(d.id) === (bonus.cardIdx + 1)) {
+        win.bonusMult = bonus.cardMult;
+        win.bonusPayout = bonus.cardPayout;
+      }
+      return win;
+    });
 
   const rankWins  = details.rank
     .filter(d => d.won)
-    .map(d => ({ label: d.label, amt: d.amt, payout: d.payout }));
+    .map(d => {
+      const win = { label: d.label, amt: d.amt, payout: d.payout };
+      if (bonus?.sideWon && bonus.sideIdx < 7 && d.label === SIDE_BET_POSITIONS[bonus.sideIdx]) {
+        win.bonusMult = bonus.sideMult;
+        win.bonusPayout = bonus.sidePayout;
+      }
+      return win;
+    });
 
   const colorWins = details.color
     .filter(d => d.won)
-    .map(d => ({ label: `Color ${d.k}`, amt: d.amt, payout: d.payout }));
+    .map(d => {
+      const win = { label: `Color ${d.k}`, amt: d.amt, payout: d.payout };
+      if (bonus?.sideWon && bonus.sideIdx >= 7 && bonus.sideIdx < 13 && d.k === SIDE_BET_POSITIONS[bonus.sideIdx]) {
+        win.bonusMult = bonus.sideMult;
+        win.bonusPayout = bonus.sidePayout;
+      }
+      return win;
+    });
 
   const riverWins = (Array.isArray(details.river) ? details.river : [])
     .filter(r => r.won)
-    .map(r => ({ label: `River ${r.side?.toUpperCase()}`, amt: r.amt, payout: r.payout }));
+    .map(r => {
+      const win = { label: `River ${r.side?.toUpperCase()}`, amt: r.amt, payout: r.payout };
+      if (bonus?.sideWon && bonus.sideIdx >= 13 && r.side === SIDE_BET_POSITIONS[bonus.sideIdx]) {
+        win.bonusMult = bonus.sideMult;
+        win.bonusPayout = bonus.sidePayout;
+      }
+      return win;
+    });
 
   // ── Summary headline ──
   const headlineText = isBoardWin
@@ -524,57 +581,6 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
               </div>
             ))}
           </div>
-
-          {/* ── RNG BONUS summary — shows bonus results if any bonus paid ── */}
-          {bonus && (bonus.cardWon || bonus.sideWon) && (
-            <div style={{
-              flexShrink: 0,
-              background: 'linear-gradient(135deg, rgba(255,215,0,0.15) 0%, rgba(255,165,0,0.10) 100%)',
-              borderTop: '1px solid rgba(255,215,0,0.4)',
-              padding: '6px 12px',
-              display: 'flex',
-              gap: 12,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-              {bonus.cardWon && (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: '0.65rem', fontWeight: 700, color: '#fbbf24',
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    fontFamily: 'Oswald, sans-serif',
-                  }}>
-                    Card Bonus ×{bonus.cardMult}
-                  </div>
-                  <div style={{
-                    fontSize: '1rem', fontWeight: 900, color: '#fbbf24',
-                    fontFamily: 'Oswald, sans-serif',
-                    ...blackOutline,
-                  }}>
-                    +{formatMoney(bonus.cardPayout)}
-                  </div>
-                </div>
-              )}
-              {bonus.sideWon && (
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{
-                    fontSize: '0.65rem', fontWeight: 700, color: '#fbbf24',
-                    letterSpacing: '0.1em', textTransform: 'uppercase',
-                    fontFamily: 'Oswald, sans-serif',
-                  }}>
-                    Side Bet Bonus ×{bonus.sideMult}
-                  </div>
-                  <div style={{
-                    fontSize: '1rem', fontWeight: 900, color: '#fbbf24',
-                    fontFamily: 'Oswald, sans-serif',
-                    ...blackOutline,
-                  }}>
-                    +{formatMoney(bonus.sidePayout)}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
 
           {/* ── NEW HAND button ── */}
           <div style={{ padding: '8px 12px 10px' }}>
