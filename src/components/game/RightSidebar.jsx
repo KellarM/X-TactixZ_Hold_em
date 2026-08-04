@@ -271,15 +271,15 @@ export default function RightSidebar({
                 {/* Lock — centered overlay (same position as bet chips), only when locked */}
                 {locked && (
                   <img
-                    src="https://media.base44.com/images/public/6a669c10586e3d2dd9f2cdba/0fb1a0900_GoldLock.png"
+                    src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
                     alt="Locked"
                     style={{
                       position: 'absolute',
                       top: '50%', left: '50%',
                       transform: 'translate(-50%, -50%)',
-                      width: 44, height: 'auto',
-                      mixBlendMode: 'screen',
-                      filter: 'brightness(1.1) saturate(1.2) drop-shadow(0 1px 3px rgba(0,0,0,0.5))',
+                      width: 38, height: 'auto',
+                      opacity: 0.95,
+                      filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))',
                       pointerEvents: 'none',
                       zIndex: 6,
                     }}
