@@ -217,7 +217,7 @@ export default function RightSidebar({
                   <img
                     src="https://media.base44.com/images/public/6a669c10586e3d2dd9f2cdba/0fb1a0900_GoldLock.png"
                     alt="Locked"
-                    style={{ width: 22, height: 'auto', mixBlendMode: 'screen', filter: 'brightness(1.1) saturate(1.2) drop-shadow(0 1px 3px rgba(0,0,0,0.5))' }}
+                    style={{ width: 44, height: 'auto', mixBlendMode: 'screen', filter: 'brightness(1.1) saturate(1.2) drop-shadow(0 1px 3px rgba(0,0,0,0.5))' }}
                   />
                 ) : (
                     <span style={{ color: 'rgba(0,0,0,0.88)', fontWeight: 900, fontSize: 14, lineHeight: 1, WebkitTextStroke: '0.4px currentColor' }}>
