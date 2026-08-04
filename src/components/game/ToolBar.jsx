@@ -737,13 +737,51 @@ export default function ToolBar() {
   const [open, setOpen] = useState(false);
   const [showCertTest, setShowCertTest] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
+  const [visible, setVisible] = useState(false); // hidden by default -- summoned via hotkey only
   const btnRef = useRef(null);
+
+  // ── Hotkey: Ctrl+Alt+J+L toggles visibility of the entire Tools button ──────
+  // Tracks 'j'/'l' as physically-held keys (via a Set) and reads ctrlKey/altKey
+  // directly off the event for the modifiers. Fires once per full press (guarded
+  // by toggledRef), resetting the guard as soon as any required key is released.
+  const heldKeysRef = useRef(new Set());
+  const toggledRef = useRef(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      const k = e.key.toLowerCase();
+      if (k === 'j' || k === 'l') heldKeysRef.current.add(k);
+      const comboActive = e.ctrlKey && e.altKey
+        && heldKeysRef.current.has('j') && heldKeysRef.current.has('l');
+      if (comboActive && !toggledRef.current) {
+        toggledRef.current = true;
+        setVisible(v => {
+          const next = !v;
+          if (!next) { setOpen(false); } // hiding the button also closes any open menu
+          return next;
+        });
+      }
+    };
+    const handleKeyUp = (e) => {
+      const k = e.key.toLowerCase();
+      if (k === 'j' || k === 'l') heldKeysRef.current.delete(k);
+      if (!e.ctrlKey || !e.altKey || heldKeysRef.current.size === 0) {
+        toggledRef.current = false;
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     if (open && btnRef.current) {
       const rect = btnRef.current.getBoundingClientRect();
       setMenuPos({
-        left: rect.left,
+        right: window.innerWidth - rect.right,
         bottom: window.innerHeight - rect.top + 8,
       });
     }
@@ -760,6 +798,8 @@ export default function ToolBar() {
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
+
+  if (!visible) return null; // hidden until summoned by Ctrl+Alt+J+L
 
   return (
     <>
@@ -799,7 +839,7 @@ export default function ToolBar() {
           id="rf-toolbar-portal-menu"
           style={{
             position: 'fixed',
-            left: menuPos.left,
+            right: menuPos.right,
             bottom: menuPos.bottom,
             minWidth: 200,
             background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
