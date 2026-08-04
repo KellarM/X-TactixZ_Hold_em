@@ -1,32 +1,51 @@
-// RNG Bonus sequence — pulse wave animation engine.
-// Generates a back-and-forth bounce sequence for card hands (10 positions, 3 passes = 30 touches)
-// and side bets (15 positions, 2 passes = 30 touches), both completing in ~10 seconds.
-// Includes deceleration on the final settle steps, and lands on the RNG-chosen target.
+// RNG Bonus sequence — random jump animation engine.
+// Card hands: 10 positions, random jumps (never neighbor-to-neighbor), 30 touches, ~10 seconds.
+// Side bets: 15 positions, random jumps, 30 touches, ~10 seconds.
+// Both land on the RNG-chosen target with deceleration on the final steps.
 
 import { useEffect, useRef, useCallback } from 'react';
 import { playBing, playLand, playWin, playLose } from '@/lib/game/useBonusAudio';
 
-// Generate a bouncing position sequence that ends on the target index.
-// positionCount = 10 (cards) or 15 (side bets)
-// totalBounceTouches = 30 (both)
-// targetIdx = RNG-chosen landing position
-function generateSequence(positionCount, totalBounceTouches, targetIdx) {
+// Generate a RANDOM JUMP sequence — each position is randomly chosen,
+// but never the same as the previous one or its immediate neighbor.
+// This creates a "jumping around" feel rather than a sequential sweep.
+// The sequence ends on the target with smooth deceleration steps.
+function generateRandomJumpSequence(positionCount, totalTouches, targetIdx) {
   const seq = [];
-  let direction = 1;
-  let pos = 0;
+  let prev = -1; // no previous at start
 
-  for (let i = 0; i < totalBounceTouches; i++) {
-    seq.push(pos);
-    if (pos === positionCount - 1) direction = -1;
-    if (pos === 0) direction = 1;
-    pos += direction;
+  for (let i = 0; i < totalTouches; i++) {
+    let next;
+    let attempts = 0;
+    do {
+      next = Math.floor(Math.random() * positionCount);
+      attempts++;
+      // Avoid: same as previous, or immediate neighbor of previous
+      // (unless we've tried too many times — then allow it)
+    } while (
+      attempts < 20 &&
+      (next === prev ||
+       next === prev - 1 ||
+       next === prev + 1)
+    );
+    seq.push(next);
+    prev = next;
   }
 
-  // After the bounce, add settle steps: smoothly step from the last bounce position
-  // to the target, one position at a time.
-  const lastPos = seq[seq.length - 1];
+  // After the random jumps, add a "settle" phase that smoothly lands on the target.
+  // Pick 3-5 steps that approach the target with decreasing distance.
   const settleSteps = [];
-  let cur = lastPos;
+  let cur = seq[seq.length - 1];
+
+  // If we're already on target, add a couple of fake-out jumps first
+  if (cur === targetIdx) {
+    // Jump to a random spot, then come back to target
+    const fakeOut = Math.floor(Math.random() * positionCount);
+    settleSteps.push(fakeOut);
+    cur = fakeOut;
+  }
+
+  // Step toward target one position at a time
   while (cur !== targetIdx) {
     cur += (targetIdx > cur) ? 1 : -1;
     settleSteps.push(cur);
@@ -35,51 +54,57 @@ function generateSequence(positionCount, totalBounceTouches, targetIdx) {
   return [...seq, ...settleSteps];
 }
 
-// Compute the delay (ms) for each step in the sequence.
-// Bounce phase: evenly spaced to fill bounceDuration ms.
-// Settle phase: each step gets progressively longer (deceleration).
-// Final landing hold: extra delay on the last step.
+// Compute delays for each step — constant during random phase,
+// progressively longer during settle phase (deceleration).
 function computeDelays(seqLen, bounceTouches, bounceDuration = 8000) {
   const delays = [];
-  const baseBounceDelay = bounceDuration / bounceTouches;
+  const baseDelay = bounceDuration / bounceTouches;
 
   for (let i = 0; i < seqLen; i++) {
     if (i < bounceTouches) {
-      // Bounce phase — constant speed, with slight deceleration on last 5 bounces
+      // Random jump phase — mostly constant, slight randomization for organic feel
       if (i >= bounceTouches - 5) {
-        const decelFactor = 1 + (i - (bounceTouches - 5)) * 0.15;
-        delays.push(baseBounceDelay * decelFactor);
+        // Slight deceleration on last 5 jumps before settle
+        const decelFactor = 1 + (i - (bounceTouches - 5)) * 0.2;
+        delays.push(baseDelay * decelFactor);
       } else {
-        delays.push(baseBounceDelay);
+        delays.push(baseDelay * (0.85 + Math.random() * 0.3)); // ±15% randomization
       }
     } else {
       // Settle phase — progressive deceleration
       const settleIdx = i - bounceTouches;
-      delays.push(300 + settleIdx * 120);
+      delays.push(350 + settleIdx * 150);
     }
   }
 
-  // Add a final hold on the landing position
+  // Final landing hold
   if (delays.length > 0) {
-    delays[delays.length - 1] += 800;
+    delays[delays.length - 1] += 900;
   }
 
   return delays;
 }
 
-// Pitch for each touch — creates a "chasing" feel.
-// Maps position index to a frequency that rises and falls, like the sound is moving.
-function pitchForPosition(pos, positionCount, baseFreq = 600, range = 400) {
-  // Sine wave from 0..PI based on position, giving a smooth rise and fall
-  const normalized = pos / (positionCount - 1);
-  const sine = Math.sin(normalized * Math.PI);
-  return baseFreq + sine * range;
+// Pitch for each touch — random jumps get random pitches within a range,
+// settle steps get a descending pitch (winding down toward landing).
+function pitchForStep(pos, stepIdx, totalBounceTouches, seqLen, baseFreq = 700, range = 300) {
+  if (stepIdx >= totalBounceTouches) {
+    // Settle phase — descending pitch
+    const settleProgress = (stepIdx - totalBounceTouches) / Math.max(1, seqLen - totalBounceTouches);
+    return baseFreq + range * (1 - settleProgress);
+  }
+  // Random jump phase — pitch based on position (higher position = higher pitch)
+  const normalized = pos / 10; // approximate
+  return baseFreq + normalized * range + (Math.random() - 0.5) * 80;
 }
 
 /**
  * BonusSequence — renders nothing visible. Orchestrates the pulse animation
  * by calling onPulse(cardPos, sidePos) on each tick, then onLand when both
  * sequences arrive at their targets, then onComplete after a brief hold.
+ *
+ * Card hands use RANDOM JUMPS (never neighbor-to-neighbor).
+ * Side bets use RANDOM JUMPS (never neighbor-to-neighbor).
  *
  * Props:
  *   cardIdx: 0-9  — RNG-chosen card hand bonus position
@@ -100,7 +125,6 @@ export default function BonusSequence({
   const timersRef = useRef([]);
   const completedRef = useRef(false);
 
-  // Clear all pending timers on unmount
   const clearTimers = useCallback(() => {
     timersRef.current.forEach(t => clearTimeout(t));
     timersRef.current = [];
@@ -109,15 +133,13 @@ export default function BonusSequence({
   useEffect(() => {
     completedRef.current = false;
 
-    const cardSeq = generateSequence(10, 30, cardIdx);
-    const sideSeq = generateSequence(15, 30, sideIdx);
+    const cardSeq = generateRandomJumpSequence(10, 30, cardIdx);
+    const sideSeq = generateRandomJumpSequence(15, 30, sideIdx);
     const cardDelays = computeDelays(cardSeq.length, 30, 8000);
     const sideDelays = computeDelays(sideSeq.length, 30, 8000);
 
-    // Cumulative time trackers
     let cardTime = 0;
     let sideTime = 0;
-    let landTime = 0;
 
     // Schedule card pulse touches
     cardDelays.forEach((delay, i) => {
@@ -126,7 +148,7 @@ export default function BonusSequence({
         if (completedRef.current) return;
         onPulse(cardSeq[i], null);
         if (soundEnabled) {
-          const pitch = pitchForPosition(cardSeq[i], 10);
+          const pitch = pitchForStep(cardSeq[i], i, 30, cardSeq.length, 700, 300);
           const isLast = i === cardSeq.length - 1;
           if (isLast) {
             playLand(pitch);
@@ -145,7 +167,7 @@ export default function BonusSequence({
         if (completedRef.current) return;
         onPulse(null, sideSeq[i]);
         if (soundEnabled) {
-          const pitch = pitchForPosition(sideSeq[i], 15, 500, 500);
+          const pitch = pitchForStep(sideSeq[i], i, 30, sideSeq.length, 500, 400);
           const isLast = i === sideSeq.length - 1;
           if (isLast) {
             playLand(pitch);
@@ -157,8 +179,8 @@ export default function BonusSequence({
       timersRef.current.push(t);
     });
 
-    // Schedule landing event — both sequences should be done by now
-    landTime = Math.max(cardTime, sideTime);
+    // Schedule landing event
+    const landTime = Math.max(cardTime, sideTime);
     const landTimer = setTimeout(() => {
       if (completedRef.current) return;
       completedRef.current = true;
@@ -166,7 +188,7 @@ export default function BonusSequence({
     }, landTime);
     timersRef.current.push(landTimer);
 
-    // Schedule completion callback — 1.5 seconds after landing
+    // Schedule completion callback
     const completeTimer = setTimeout(() => {
       onComplete();
     }, landTime + 1500);
@@ -175,5 +197,5 @@ export default function BonusSequence({
     return clearTimers;
   }, [cardIdx, sideIdx, onPulse, onLand, onComplete, soundEnabled, clearTimers]);
 
-  return null; // This component renders nothing — it only orchestrates via callbacks
+  return null;
 }

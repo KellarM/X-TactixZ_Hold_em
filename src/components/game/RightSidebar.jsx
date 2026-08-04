@@ -63,17 +63,18 @@ function injectStyles() {
   style.id = STYLE_ID;
   style.textContent = `
     @keyframes rf-bonus-pulse-side {
-      0%   { box-shadow: 0 0 12px 3px rgba(255,215,0,0.6); }
-      50%  { box-shadow: 0 0 24px 8px rgba(255,235,0,0.9); }
-      100% { box-shadow: 0 0 12px 3px rgba(255,215,0,0.6); }
+      0%   { box-shadow: 0 0 16px 5px rgba(255,215,0,0.7), inset 0 0 20px rgba(255,215,0,0.2); transform: scale(1.0); border-color: rgba(255,215,0,0.6); }
+      40%  { box-shadow: 0 0 36px 14px rgba(255,235,0,1.0), inset 0 0 40px rgba(255,235,0,0.45); transform: scale(1.12); border-color: #FFD700; }
+      100% { box-shadow: 0 0 16px 5px rgba(255,215,0,0.7), inset 0 0 20px rgba(255,215,0,0.2); transform: scale(1.0); border-color: rgba(255,215,0,0.6); }
     }
     @keyframes rf-bonus-land-win-side {
-      0%   { box-shadow: 0 0 16px 6px rgba(255,215,0,0.8); }
-      100% { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0); }
+      0%   { box-shadow: 0 0 20px 10px rgba(255,215,0,0.9), inset 0 0 40px rgba(255,215,0,0.35); transform: scale(1.15); }
+      30%  { box-shadow: 0 0 50px 20px rgba(255,235,0,1.0), inset 0 0 80px rgba(255,235,0,0.6); transform: scale(1.2); }
+      100% { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0), inset 0 0 60px rgba(255,235,0,0.5); transform: scale(1.12); }
     }
     @keyframes rf-bonus-land-lose-side {
-      0%   { box-shadow: 0 0 12px 4px rgba(239,68,68,0.4); }
-      100% { box-shadow: 0 0 20px 6px rgba(180,40,40,0.2); }
+      0%   { box-shadow: 0 0 16px 6px rgba(239,68,68,0.5), inset 0 0 25px rgba(239,68,68,0.15); transform: scale(1.08); }
+      100% { box-shadow: 0 0 24px 8px rgba(180,40,40,0.3), inset 0 0 35px rgba(120,20,20,0.10); transform: scale(1.0); }
     }
     @keyframes rf-side-leader {
       0%   { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); }
@@ -206,10 +207,10 @@ export default function RightSidebar({
           ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)'
           : 'linear-gradient(135deg, #555 0%, #333 100%)',
         color: bonusPulse.sideWon ? '#000' : '#999',
-        fontSize: 8, fontWeight: 900,
-        padding: '1px 6px', borderRadius: 3,
-        zIndex: 25, letterSpacing: '0.5px',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.9)',
+        fontSize: 10, fontWeight: 900,
+        padding: '2px 8px', borderRadius: 4,
+        zIndex: 30, letterSpacing: '0.5px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 12px rgba(255,215,0,0.4)',
         pointerEvents: 'none', whiteSpace: 'nowrap',
       }}>
         {bonusPulse.sideWon ? `×${bonusPulse.sideMult} BONUS` : 'BONUS — NO WIN'}

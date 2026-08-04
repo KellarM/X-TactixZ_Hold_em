@@ -17,15 +17,26 @@ const POOLS = {
 
 const POOL_IDX = { cardDeal: 0, chipPlace: 0, chipRemove: 0 };
 
-// ── Crowd / Ambient — its own independent channel ──
-const AMBIENT = new Audio('https://media.base44.com/files/public/6a1a6f6e670be2c42b2d0a99/033e65cf3_freesound_community-poker-room-33521.mp3');
-AMBIENT.loop = true;
-AMBIENT.volume = 0.4;
-AMBIENT.preload = 'auto';
+// ── Crowd / Ambient — global singleton to survive hot-reloads ──
+// If a previous module evaluation created an AMBIENT, grab it and pause it.
+// This prevents orphaned Audio elements from playing forever.
+function getOrCreateAmbient() {
+  if (typeof window === 'undefined') return null;
+  if (window.__RF_AMBIENT__) {
+    // Kill the old one — we'll create a fresh one with current settings
+    try { window.__RF_AMBIENT__.pause(); } catch (e) {}
+  }
+  const a = new Audio('https://media.base44.com/files/public/6a1a6f6e670be2c42b2d0a99/033e65cf3_freesound_community-poker-room-33521.mp3');
+  a.loop = true;
+  a.volume = 0.4;
+  a.preload = 'auto';
+  window.__RF_AMBIENT__ = a;
+  return a;
+}
+
+const AMBIENT = getOrCreateAmbient();
 
 // ── Two independent channels ──
-// Crowd: ambient poker room background
-// SFX: chips, cards, bonus round — everything else
 let crowdEnabled = true;
 let crowdVolume = 0.4;    // 0..1
 
@@ -47,6 +58,7 @@ function play(key, volume) {
 
 // ── Crowd controls — completely independent from SFX ──
 function startAmbient() {
+  if (!AMBIENT) return;
   if (!crowdEnabled || crowdVolume <= 0) return;
   if (!AMBIENT.paused) return;
   AMBIENT.volume = crowdVolume;
@@ -54,10 +66,12 @@ function startAmbient() {
 }
 
 function stopAmbient() {
+  if (!AMBIENT) return;
   if (!AMBIENT.paused) AMBIENT.pause();
 }
 
 function applyCrowdVolume() {
+  if (!AMBIENT) return;
   if (crowdVolume <= 0 || !crowdEnabled) {
     stopAmbient();
   } else {

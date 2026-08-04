@@ -253,8 +253,12 @@ export default function GameTable() {
           dealLabel={dealLabel}
           subLabel={subLabel}
           onChipSelect={(v) => {
-            if (phase === 'ante') actions.addToAnte(v);
-            else actions.setSelectedChip(v);
+            if (phase === 'ante') {
+              sounds.playChipPlace();
+              actions.addToAnte(v);
+            } else {
+              actions.setSelectedChip(v);
+            }
           }}
           onClearAnte={actions.clearAnte}
           onClearBets={actions.clearBets}

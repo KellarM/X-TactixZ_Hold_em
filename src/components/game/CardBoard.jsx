@@ -22,17 +22,18 @@ function injectStyles() {
       100% { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); background-color: #3a2a00; }
     }
     @keyframes rf-bonus-pulse {
-      0%   { box-shadow: 0 0 15px 4px rgba(255,215,0,0.7),  inset 0 0 25px rgba(255,215,0,0.25); }
-      50%  { box-shadow: 0 0 30px 10px rgba(255,235,0,0.95), inset 0 0 45px rgba(255,235,0,0.40); }
-      100% { box-shadow: 0 0 15px 4px rgba(255,215,0,0.7),  inset 0 0 25px rgba(255,215,0,0.25); }
+      0%   { box-shadow: 0 0 18px 6px rgba(255,215,0,0.7),  inset 0 0 28px rgba(255,215,0,0.25); transform: scale(1.0); border-color: rgba(255,215,0,0.6); }
+      40%  { box-shadow: 0 0 38px 14px rgba(255,235,0,1.0), inset 0 0 50px rgba(255,235,0,0.45); transform: scale(1.10); border-color: #FFD700; }
+      100% { box-shadow: 0 0 18px 6px rgba(255,215,0,0.7),  inset 0 0 28px rgba(255,215,0,0.25); transform: scale(1.0); border-color: rgba(255,215,0,0.6); }
     }
     @keyframes rf-bonus-land-win {
-      0%   { box-shadow: 0 0 20px 8px  rgba(255,215,0,0.9),  inset 0 0 35px rgba(255,215,0,0.35); }
-      100% { box-shadow: 0 0 50px 20px rgba(255,235,0,1.0),  inset 0 0 80px rgba(255,235,0,0.6); }
+      0%   { box-shadow: 0 0 24px 10px rgba(255,215,0,0.9),  inset 0 0 40px rgba(255,215,0,0.35); transform: scale(1.12); }
+      30%  { box-shadow: 0 0 56px 22px rgba(255,235,0,1.0),  inset 0 0 90px rgba(255,235,0,0.6); transform: scale(1.18); }
+      100% { box-shadow: 0 0 44px 18px rgba(255,235,0,1.0),  inset 0 0 70px rgba(255,235,0,0.5); transform: scale(1.10); }
     }
     @keyframes rf-bonus-land-lose {
-      0%   { box-shadow: 0 0 15px 5px  rgba(239,68,68,0.5),  inset 0 0 25px rgba(239,68,68,0.15); }
-      100% { box-shadow: 0 0 25px 8px  rgba(180,40,40,0.3),  inset 0 0 35px rgba(120,20,20,0.10); }
+      0%   { box-shadow: 0 0 18px 6px  rgba(239,68,68,0.5),  inset 0 0 28px rgba(239,68,68,0.15); transform: scale(1.06); }
+      100% { box-shadow: 0 0 28px 8px  rgba(180,40,40,0.3),  inset 0 0 38px rgba(120,20,20,0.10); transform: scale(1.0); }
     }
   `;
   document.head.appendChild(style);
@@ -232,13 +233,13 @@ export function BettingSlot({
             ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)'
             : 'linear-gradient(135deg, #555 0%, #333 100%)',
           color: bonusPulse.cardWon ? '#000' : '#999',
-          fontSize: 9,
+          fontSize: 11,
           fontWeight: 900,
-          padding: '2px 8px',
-          borderRadius: 4,
-          zIndex: 25,
+          padding: '3px 10px',
+          borderRadius: 5,
+          zIndex: 30,
           letterSpacing: '0.5px',
-          boxShadow: '0 1px 6px rgba(0,0,0,0.9)',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 14px rgba(255,215,0,0.4)',
           pointerEvents: 'none',
           whiteSpace: 'nowrap',
         }}>
