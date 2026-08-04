@@ -35,6 +35,11 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
     const o = odds.cardOdds.find(x => x.handId === id);
     return !o || o.locked;
   };
+  const lockReason = (id) => {
+    if (!odds) return null;
+    const o = odds.cardOdds.find(x => x.handId === id);
+    return o ? o.reason : null;
+  };
   const payout = (id) => {
     if (!odds) return null;
     const o = odds.cardOdds.find(x => x.handId === id);
@@ -74,6 +79,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
               key={hand.id}
               oddsLabel={formatPayout(p)}
               locked={isLocked}
+              lockReason={lockReason(hand.id)}
               bet={bet}
               rankLabel={rankLabel}
               isLeading={isLeading}
@@ -127,31 +133,47 @@ export function SectionTitle({ children, capValue }) {
 }
 
 export function BettingSlot({
-  oddsLabel, locked, bet, onPlace, onRemove, children,
+  oddsLabel, locked, lockReason = null, bet, onPlace, onRemove, children,
   rankLabel = null, isLeading = false, isWinner = false, isResolved = false,
 }) {
+  // ── Vault tint locked treatment (Option A) ──────────────────────────────────
+  // When locked: dulled gold border, grayscale cards, dark scrim with padlock
+  // watermark, actual odds shown (not "LOCKED"), rank label at bottom, and a
+  // small reason text telling the player WHY it's locked.
+
+  const reasonText = lockReason === 'threshold-high' ? 'TOO HIGH'
+    : lockReason === 'threshold-low' ? 'TOO LOW'
+    : lockReason === 'dominant' ? 'DOMINANT'
+    : null;
+
   // ── Border colour ──────────────────────────────────────────────────────────
-  // ALL slots get thick bold gold borders at all times — locked state shown via
-  // the "LOCKED" label text, not by dimming the border.
   let borderColor = '#C5A059';
   let borderWidth = '3px';
   if (isWinner)                      { borderColor = '#FFD700'; borderWidth = '4px'; }
   else if (isLeading && !isResolved) { borderColor = '#e5c158'; borderWidth = '3.5px'; }
+  else if (locked)                   { borderColor = '#6b6146'; borderWidth = '3px'; }
 
   // ── Animation ──────────────────────────────────────────────────────────────
-  // Winner pulses bright gold; leader pulses softer gold; else static
   let animation = 'none';
   let background = 'var(--theme-bg, #04122b)';
   if (isWinner) {
     animation  = 'rf-winner-pulse 1.1s ease-in-out infinite';
-    background = '#3a2a00';           // base colour; animation overrides each cycle
+    background = '#3a2a00';
   } else if (isLeading && !isResolved) {
     animation  = 'rf-leader-pulse 1.6s ease-in-out infinite';
     background = '#1a1400';
   }
 
   // ── Rank label colour ──────────────────────────────────────────────────────
-  const rankColor = isWinner ? '#FFD700' : isLeading ? '#e5c158' : '#8a9ab0';
+  const rankColor = isWinner ? '#FFD700'
+    : isLeading ? '#e5c158'
+    : locked ? '#5a5240'
+    : '#8a9ab0';
+
+  // Bottom label: show rank if available, "Dead" if no rank, or nothing pre-flop
+  const bottomLabel = locked
+    ? (rankLabel || 'Dead')
+    : rankLabel;
 
   return (
     <div
@@ -160,7 +182,7 @@ export function BettingSlot({
         background,
         border: `${borderWidth} solid ${borderColor}`,
         animation,
-        opacity: locked ? 0.85 : 1,
+        opacity: locked ? 0.90 : 1,
         height: '100%',
         minHeight: 0,
         display: 'flex',
@@ -194,21 +216,39 @@ export function BettingSlot({
           WIN
         </div>
       )}
-      {/* Odds label — top */}
+
+      {/* Odds label — top (shows actual odds even when locked) */}
       <div style={{
-        color: '#FFD700',
+        color: locked ? '#9a8f6e' : '#FFD700',
         fontSize: 11,
         fontWeight: 700,
-        padding: '4px 4px 2px',
+        padding: '4px 4px 1px',
         flexShrink: 0,
         lineHeight: 1,
         textAlign: 'center',
         width: '100%',
       }}>
-        {locked ? 'LOCKED' : oddsLabel}
+        {oddsLabel}
       </div>
 
-      {/* Cards — flex-1, centred */}
+      {/* Lock reason — small text under odds (only when locked + has reason) */}
+      {locked && reasonText && (
+        <div style={{
+          color: '#6b6146',
+          fontSize: 8,
+          fontWeight: 800,
+          letterSpacing: '0.8px',
+          lineHeight: 1,
+          paddingBottom: 2,
+          flexShrink: 0,
+          textAlign: 'center',
+          width: '100%',
+        }}>
+          {reasonText}
+        </div>
+      )}
+
+      {/* Cards — flex-1, centred (grayscale filter when locked) */}
       <div style={{
         flex: 1,
         display: 'flex',
@@ -216,12 +256,36 @@ export function BettingSlot({
         justifyContent: 'center',
         width: '100%',
         padding: '0 4px',
+        position: 'relative',
+        filter: locked ? 'grayscale(1) brightness(0.6)' : 'none',
       }}>
         {children}
       </div>
 
-      {/* Live rank label — bottom */}
-      {rankLabel && !locked && (
+      {/* Vault tint scrim + padlock watermark (only when locked) */}
+      {locked && (
+        <div style={{
+          position: 'absolute',
+          inset: '28px 0 18px 0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 5,
+          pointerEvents: 'none',
+        }}>
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+            style={{ opacity: 0.55 }}>
+            <rect x="4" y="11" width="16" height="10" rx="2"
+              stroke="#d9c088" strokeWidth="1.6" fill="rgba(3,6,14,0.4)" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"
+              stroke="#d9c088" strokeWidth="1.6" />
+            <circle cx="12" cy="16" r="1.6" fill="#d9c088" />
+          </svg>
+        </div>
+      )}
+
+      {/* Bottom label — rank evaluation (or "Dead"), shown even when locked */}
+      {bottomLabel && (
         <div style={{
           fontSize: 9,
           fontWeight: 800,
@@ -234,11 +298,11 @@ export function BettingSlot({
           color: rankColor,
           textTransform: 'uppercase',
         }}>
-          {rankLabel}
+          {bottomLabel}
         </div>
       )}
 
-      {/* Chip — centered on top of the cards, at the midpoint between the two cards */}
+      {/* Chip — centered on top of the cards */}
       {bet > 0 && !locked && (
         <span
           onClick={(e) => { e.stopPropagation(); onRemove(); }}

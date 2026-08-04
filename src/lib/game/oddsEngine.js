@@ -42,6 +42,16 @@ function payoutFromProb(p, houseEdge) {
   return (1 - houseEdge) / p - 1;
 }
 
+// Determine specific lock reason for display: 'dead', 'dominant', 'threshold-high', 'threshold-low', or null
+function lockReasonFor(p, payout, high, low) {
+  if (p === 0) return 'dead';
+  if (p > LOCKOUT_THRESHOLD) return 'dominant';
+  if (payout === null) return 'dead';
+  if (payout > high) return 'threshold-high';
+  if (payout < low) return 'threshold-low';
+  return null;
+}
+
 // Compute exact odds for every position after the flop (3 community cards).
 // remaining = 29 cards, C(29,2) = 406 turn+river combinations.
 export function computePostFlopOdds(flop, stock, hands) {
@@ -99,7 +109,7 @@ export function computePostFlopOdds(flop, stock, hands) {
       probability: p,
       payout: payoutFromProb(p, HOUSE_EDGE_CARD),
       locked: p === 0 || p > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_CARD), ODDS_THRESHOLD_CARD_HIGH, ODDS_THRESHOLD_CARD_LOW),
-      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : (payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_CARD), ODDS_THRESHOLD_CARD_HIGH, ODDS_THRESHOLD_CARD_LOW) ? 'threshold' : null))
+      reason: lockReasonFor(p, payoutFromProb(p, HOUSE_EDGE_CARD), ODDS_THRESHOLD_CARD_HIGH, ODDS_THRESHOLD_CARD_LOW)
     };
   });
 
@@ -113,7 +123,7 @@ export function computePostFlopOdds(flop, stock, hands) {
       probability: p,
       payout: payoutFromProb(p, HOUSE_EDGE_RANK),
       locked: p === 0 || p > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_RANK), ODDS_THRESHOLD_RANK_HIGH, ODDS_THRESHOLD_RANK_LOW),
-      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : (payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_RANK), ODDS_THRESHOLD_RANK_HIGH, ODDS_THRESHOLD_RANK_LOW) ? 'threshold' : null))
+      reason: lockReasonFor(p, payoutFromProb(p, HOUSE_EDGE_RANK), ODDS_THRESHOLD_RANK_HIGH, ODDS_THRESHOLD_RANK_LOW)
     };
   }
 
