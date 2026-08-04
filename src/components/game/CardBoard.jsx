@@ -172,7 +172,7 @@ export function BettingSlot({
 
   // Bottom label: show rank if available, "Dead" if no rank, or nothing pre-flop
   const bottomLabel = locked
-    ? (rankLabel || 'Dead')
+    ? (rankLabel || 'Dead Hand')
     : rankLabel;
 
   return (
@@ -262,7 +262,7 @@ export function BettingSlot({
         {children}
       </div>
 
-      {/* Vault tint scrim + padlock watermark (only when locked) */}
+      {/* Vault tint scrim + real gold padlock image (only when locked) */}
       {locked && (
         <div style={{
           position: 'absolute',
@@ -273,14 +273,16 @@ export function BettingSlot({
           zIndex: 5,
           pointerEvents: 'none',
         }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none"
-            style={{ opacity: 0.95, filter: 'drop-shadow(0 0 5px rgba(255,215,0,0.55))' }}>
-            <rect x="4" y="11" width="16" height="10" rx="2"
-              stroke="#FFD700" strokeWidth="2.2" fill="rgba(10,8,0,0.55)" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"
-              stroke="#FFD700" strokeWidth="2.2" />
-            <circle cx="12" cy="16" r="2" fill="#FFD700" />
-          </svg>
+          <img
+            src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
+            alt="Locked"
+            style={{
+              width: 34,
+              height: 'auto',
+              opacity: 0.95,
+              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))',
+            }}
+          />
         </div>
       )}
 
