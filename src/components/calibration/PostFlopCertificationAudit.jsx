@@ -382,7 +382,6 @@ function ModulePanel({ module, flopData, flopIndex }) {
                 </table>
               </div>
 
-              {/* RTP at different targets */}
               <div>
                 <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">RTP Comparison by Target</h4>
                 <div className="overflow-x-auto">
@@ -390,28 +389,55 @@ function ModulePanel({ module, flopData, flopIndex }) {
                     <thead>
                       <tr className="border-b border-slate-700">
                         <th className="px-2 py-1.5 text-left font-semibold text-slate-400">Position</th>
-                        <th className="px-2 py-1.5 text-right font-semibold text-slate-400">RTP @ 100%</th>
-                        <th className="px-2 py-1.5 text-right font-semibold text-slate-400">RTP @ 98%</th>
-                        <th className="px-2 py-1.5 text-right font-semibold text-slate-400">RTP @ 96%</th>
+                        <th className="px-2 py-1.5 text-right font-semibold text-slate-400">Current Odds</th>
+                        <th className="px-2 py-1.5 text-right font-semibold text-slate-400">For 100%</th>
+                        <th className="px-2 py-1.5 text-right font-semibold text-slate-400">For 95%</th>
+                        <th className="px-2 py-1.5 text-right font-semibold text-slate-400">For 96.5%</th>
+                        <th className="px-2 py-1.5 text-right font-semibold text-slate-400">For 98%</th>
+                        <th className="px-2 py-1.5 text-center font-semibold text-slate-400">Pass/Fail</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {result.cardResults.filter(r => !r.dead).map((r, i) => (
-                        <tr key={'c'+i} className="border-b border-slate-700/50">
-                          <td className="px-2 py-1 text-slate-300">{HAND_LABELS[r.handId - 1]}</td>
-                          <td className="px-2 py-1 text-right font-mono"><RTPPill rtp={r.rtpAt100.toFixed(2)} low={module.rtpLow} high={module.rtpHigh} /></td>
-                          <td className="px-2 py-1 text-right font-mono"><RTPPill rtp={r.rtpAt98.toFixed(2)} low={module.rtpLow} high={module.rtpHigh} /></td>
-                          <td className="px-2 py-1 text-right font-mono"><RTPPill rtp={r.rtpAt96.toFixed(2)} low={module.rtpLow} high={module.rtpHigh} /></td>
-                        </tr>
-                      ))}
-                      {result.rankResults.filter(r => !r.dead).map((r, i) => (
-                        <tr key={'r'+i} className="border-b border-slate-700/50">
-                          <td className="px-2 py-1 text-slate-300">{RANK_NAMES[r.rankIndex]}</td>
-                          <td className="px-2 py-1 text-right font-mono"><RTPPill rtp={r.rtpAt100.toFixed(2)} low={module.rtpLow} high={module.rtpHigh} /></td>
-                          <td className="px-2 py-1 text-right font-mono"><RTPPill rtp={r.rtpAt98.toFixed(2)} low={module.rtpLow} high={module.rtpHigh} /></td>
-                          <td className="px-2 py-1 text-right font-mono"><RTPPill rtp={r.rtpAt96.toFixed(2)} low={module.rtpLow} high={module.rtpHigh} /></td>
-                        </tr>
-                      ))}
+                      {result.cardResults.filter(r => !r.dead).map((r, i) => {
+                        const odds100 = r.observedProb > 0 ? (1 / r.observedProb) - 1 : null;
+                        const odds95 = r.observedProb > 0 ? (0.95 / r.observedProb) - 1 : null;
+                        const odds965 = r.observedProb > 0 ? (0.965 / r.observedProb) - 1 : null;
+                        const odds98 = r.observedProb > 0 ? (0.98 / r.observedProb) - 1 : null;
+                        const pass = r.observedRtp >= module.rtpLow && r.observedRtp <= module.rtpHigh;
+                        return (
+                          <tr key={'c'+i} className="border-b border-slate-700/50">
+                            <td className="px-2 py-1 text-slate-300">{HAND_LABELS[r.handId - 1]}</td>
+                            <td className="px-2 py-1 text-right font-mono text-amber-300">{formatOdds(r.trueOdds)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-slate-300">{formatOdds(odds100)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds95)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds965)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds98)}</td>
+                            <td className="px-2 py-1 text-center font-mono">
+                              {pass ? <span className="text-emerald-400 font-bold">PASS</span> : <span className="text-red-400 font-bold">FAIL</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {result.rankResults.filter(r => !r.dead).map((r, i) => {
+                        const odds100 = r.observedProb > 0 ? (1 / r.observedProb) - 1 : null;
+                        const odds95 = r.observedProb > 0 ? (0.95 / r.observedProb) - 1 : null;
+                        const odds965 = r.observedProb > 0 ? (0.965 / r.observedProb) - 1 : null;
+                        const odds98 = r.observedProb > 0 ? (0.98 / r.observedProb) - 1 : null;
+                        const pass = r.observedRtp >= module.rtpLow && r.observedRtp <= module.rtpHigh;
+                        return (
+                          <tr key={'r'+i} className="border-b border-slate-700/50">
+                            <td className="px-2 py-1 text-slate-300">{RANK_NAMES[r.rankIndex]}</td>
+                            <td className="px-2 py-1 text-right font-mono text-amber-300">{formatOdds(r.trueOdds)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-slate-300">{formatOdds(odds100)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds95)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds965)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds98)}</td>
+                            <td className="px-2 py-1 text-center font-mono">
+                              {pass ? <span className="text-emerald-400 font-bold">PASS</span> : <span className="text-red-400 font-bold">FAIL</span>}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
