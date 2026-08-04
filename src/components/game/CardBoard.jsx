@@ -141,11 +141,6 @@ export function BettingSlot({
   // watermark, actual odds shown (not "LOCKED"), rank label at bottom, and a
   // small reason text telling the player WHY it's locked.
 
-  const reasonText = lockReason === 'threshold-high' ? 'TOO HIGH'
-    : lockReason === 'threshold-low' ? 'TOO LOW'
-    : lockReason === 'dominant' ? 'DOMINANT'
-    : null;
-
   // ── Border colour ──────────────────────────────────────────────────────────
   let borderColor = '#C5A059';
   let borderWidth = '3px';
@@ -230,23 +225,6 @@ export function BettingSlot({
       }}>
         {oddsLabel}
       </div>
-
-      {/* Lock reason — small text under odds (only when locked + has reason) */}
-      {locked && reasonText && (
-        <div style={{
-          color: '#6b6146',
-          fontSize: 8,
-          fontWeight: 800,
-          letterSpacing: '0.8px',
-          lineHeight: 1,
-          paddingBottom: 2,
-          flexShrink: 0,
-          textAlign: 'center',
-          width: '100%',
-        }}>
-          {reasonText}
-        </div>
-      )}
 
       {/* Cards — flex-1, centred (grayscale filter when locked) */}
       <div style={{
