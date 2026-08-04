@@ -24,7 +24,7 @@ if (typeof document !== 'undefined' && !document.getElementById('rf-ante-glow-st
 const W = {
   bank:   130,   // $99,999.99 = 10 chars, sized to fit without expansion
   betSum: 100,   // same as original, locked
-  deal:   560,   // longest subtitle at 18px (2x): ~46 chars, scaled from 280px@9px basis
+  deal:   500,   // subtitle at 16px (one size lower than 18px), scaled from 560px@18px
   gear:   36,
 };
 
@@ -152,7 +152,7 @@ export default function BottomFooter({
           </button>
         )}
         <span style={{
-          color: '#FFD700', fontSize: 18, fontWeight: 700,
+          color: '#FFD700', fontSize: 16, fontWeight: 700,
           fontFamily: "'Playfair Display', serif",
           letterSpacing: '0.5px', whiteSpace: 'nowrap',
           display: 'block', textAlign: 'center',
