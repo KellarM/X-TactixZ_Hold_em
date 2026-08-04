@@ -43,29 +43,45 @@ function StatRow({ label, value, highlight }) {
 
 export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay, onResetBank }) {
   const sounds = useGameSounds();
-  const [soundOn, setSoundOn] = useState(true);
-  const [volume, setVolume] = useState(40);
+  const [crowdOn, setCrowdOn] = useState(true);
+  const [crowdVolume, setCrowdVolume] = useState(40);
+  const [sfxOn, setSfxOn] = useState(true);
+  const [sfxVolume, setSfxVolumeState] = useState(100);
   const [tab, setTab] = useState('sound');
 
   useEffect(() => {
     if (isOpen) {
-      setVolume(Math.round(sounds.getAmbientVolume() * 100));
-      setSoundOn(sounds.isSoundEnabled());
+      setCrowdVolume(Math.round(sounds.getCrowdVolume() * 100));
+      setCrowdOn(sounds.isCrowdEnabled());
+      setSfxOn(sounds.isSfxEnabled());
+      setSfxVolumeState(Math.round(sounds.getSfxVolume() * 100));
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSoundToggle = () => {
-    const next = !soundOn;
-    setSoundOn(next);
-    sounds.setSoundEnabled(next);
+  const handleCrowdToggle = () => {
+    const next = !crowdOn;
+    setCrowdOn(next);
+    sounds.setCrowdEnabled(next);
   };
 
-  const handleVolumeChange = (e) => {
+  const handleCrowdVolume = (e) => {
     const v = Number(e.target.value);
-    setVolume(v);
-    sounds.setAmbientVolume(v / 100);
+    setCrowdVolume(v);
+    sounds.setCrowdVolume(v / 100);
+  };
+
+  const handleSfxToggle = () => {
+    const next = !sfxOn;
+    setSfxOn(next);
+    sounds.setSfxEnabled(next);
+  };
+
+  const handleSfxVolume = (e) => {
+    const v = Number(e.target.value);
+    setSfxVolumeState(v);
+    sounds.setSfxVolume(v / 100);
   };
 
   const stats = playerStats || {};
@@ -148,41 +164,72 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
 
         {/* Sound Tab */}
         {tab === 'sound' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {/* Toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {soundOn ? <Volume2 size={20} color={GOLD} /> : <VolumeX size={20} color="#6a7a8a" />}
-                <div>
-                  <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>Casino Sounds</div>
-                  <div style={{ color: '#8a9ab0', fontSize: 11 }}>Ambient crowd, chips &amp; cards</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+            {/* ── CROWD / AMBIENT — independent channel ── */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {crowdOn ? <Volume2 size={20} color={GOLD} /> : <VolumeX size={20} color="#6a7a8a" />}
+                  <div>
+                    <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>Crowd Sound</div>
+                    <div style={{ color: '#8a9ab0', fontSize: 11 }}>Ambient poker room background</div>
+                  </div>
                 </div>
+                <button
+                  onClick={handleCrowdToggle}
+                  style={{ width: 46, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: crowdOn ? '#22c55e' : '#374151', position: 'relative', transition: 'background 0.2s' }}
+                >
+                  <div style={{ position: 'absolute', top: 3, left: crowdOn ? 23 : 3, width: 20, height: 20, borderRadius: 10, background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }} />
+                </button>
               </div>
-              <button
-                onClick={handleSoundToggle}
-                style={{ width: 46, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: soundOn ? '#22c55e' : '#374151', position: 'relative', transition: 'background 0.2s' }}
-              >
-                <div style={{ position: 'absolute', top: 3, left: soundOn ? 23 : 3, width: 20, height: 20, borderRadius: 10, background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }} />
-              </button>
+              {/* Crowd volume slider */}
+              <div style={{ marginTop: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <span style={{ color: '#8a9ab0', fontSize: 11, fontWeight: 600 }}>Crowd Volume</span>
+                  <span style={{ color: GOLD, fontWeight: 800, fontSize: 12 }}>{crowdVolume}%</span>
+                </div>
+                <input
+                  type="range" min={0} max={100} value={crowdVolume}
+                  onChange={handleCrowdVolume}
+                  disabled={!crowdOn}
+                  style={{ width: '100%', height: 6, accentColor: GOLD, opacity: crowdOn ? 1 : 0.4, cursor: crowdOn ? 'pointer' : 'not-allowed' }}
+                />
+              </div>
             </div>
 
-            {/* Volume slider */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '10px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>Ambient Volume</span>
-                <span style={{ color: GOLD, fontWeight: 800, fontSize: 13 }}>{volume}%</span>
+            {/* ── GAME SFX — independent channel ── */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {sfxOn ? <Volume2 size={20} color={GOLD} /> : <VolumeX size={20} color="#6a7a8a" />}
+                  <div>
+                    <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>Game Sounds</div>
+                    <div style={{ color: '#8a9ab0', fontSize: 11 }}>Chips, cards &amp; bonus round</div>
+                  </div>
+                </div>
+                <button
+                  onClick={handleSfxToggle}
+                  style={{ width: 46, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: sfxOn ? '#22c55e' : '#374151', position: 'relative', transition: 'background 0.2s' }}
+                >
+                  <div style={{ position: 'absolute', top: 3, left: sfxOn ? 23 : 3, width: 20, height: 20, borderRadius: 10, background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }} />
+                </button>
               </div>
-              <input
-                type="range" min={0} max={100} value={volume}
-                onChange={handleVolumeChange}
-                disabled={!soundOn}
-                style={{ width: '100%', height: 6, accentColor: GOLD, opacity: soundOn ? 1 : 0.4, cursor: soundOn ? 'pointer' : 'not-allowed' }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: '#8a9ab0', fontSize: 10 }}>0%</span>
-                <span style={{ color: '#8a9ab0', fontSize: 10 }}>100%</span>
+              {/* SFX volume slider */}
+              <div style={{ marginTop: 4 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                  <span style={{ color: '#8a9ab0', fontSize: 11, fontWeight: 600 }}>Game Volume</span>
+                  <span style={{ color: GOLD, fontWeight: 800, fontSize: 12 }}>{sfxVolume}%</span>
+                </div>
+                <input
+                  type="range" min={0} max={100} value={sfxVolume}
+                  onChange={handleSfxVolume}
+                  disabled={!sfxOn}
+                  style={{ width: '100%', height: 6, accentColor: GOLD, opacity: sfxOn ? 1 : 0.4, cursor: sfxOn ? 'pointer' : 'not-allowed' }}
+                />
               </div>
             </div>
+
           </div>
         )}
 

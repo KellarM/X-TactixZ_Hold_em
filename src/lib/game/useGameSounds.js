@@ -17,33 +17,53 @@ const POOLS = {
 
 const POOL_IDX = { cardDeal: 0, chipPlace: 0, chipRemove: 0 };
 
+// ── Crowd / Ambient — its own independent channel ──
 const AMBIENT = new Audio('https://media.base44.com/files/public/6a1a6f6e670be2c42b2d0a99/033e65cf3_freesound_community-poker-room-33521.mp3');
 AMBIENT.loop = true;
 AMBIENT.volume = 0.4;
 AMBIENT.preload = 'auto';
 
-let soundEnabled = true;
+// ── Two independent channels ──
+// Crowd: ambient poker room background
+// SFX: chips, cards, bonus round — everything else
+let crowdEnabled = true;
+let crowdVolume = 0.4;    // 0..1
 
+let sfxEnabled = true;
+let sfxVolume  = 1.0;    // 0..1 master multiplier for all SFX
+
+// ── SFX playback ──
 function play(key, volume) {
-  if (!soundEnabled) return;
+  if (!sfxEnabled || sfxVolume <= 0) return;
   const pool = POOLS[key];
   if (!pool) return;
   const idx = POOL_IDX[key];
   POOL_IDX[key] = (idx + 1) % POOL_SIZE;
   const el = pool[idx];
-  el.volume = volume;
+  el.volume = Math.max(0, Math.min(1, volume * sfxVolume));
   el.currentTime = 0;
   el.play().catch(() => {});
 }
 
+// ── Crowd controls — completely independent from SFX ──
 function startAmbient() {
-  if (!soundEnabled) return;
+  if (!crowdEnabled || crowdVolume <= 0) return;
   if (!AMBIENT.paused) return;
+  AMBIENT.volume = crowdVolume;
   AMBIENT.play().catch(() => {});
 }
 
 function stopAmbient() {
   if (!AMBIENT.paused) AMBIENT.pause();
+}
+
+function applyCrowdVolume() {
+  if (crowdVolume <= 0 || !crowdEnabled) {
+    stopAmbient();
+  } else {
+    AMBIENT.volume = crowdVolume;
+    if (AMBIENT.paused) startAmbient();
+  }
 }
 
 let preloaded = false;
@@ -56,17 +76,36 @@ function preloadOnce() {
 
 export function useGameSounds() {
   return {
+    // ── SFX (chips, cards, bonus) ──
     playChipPlace:    () => play('chipPlace', 0.8),
     playChipRemove:   () => play('chipRemove', 0.7),
     playCardDeal:     () => play('cardDeal', 0.9),
     preloadSounds:    preloadOnce,
-    setSoundEnabled:  (enabled) => {
-      soundEnabled = enabled;
+
+    setSfxEnabled:  (enabled) => { sfxEnabled = enabled; },
+    isSfxEnabled:   () => sfxEnabled,
+    setSfxVolume:   (v) => { sfxVolume = Math.max(0, Math.min(1, v)); },
+    getSfxVolume:   () => sfxVolume,
+
+    // ── Crowd / Ambient — fully independent ──
+    setCrowdEnabled: (enabled) => {
+      crowdEnabled = enabled;
       if (!enabled) stopAmbient();
       else startAmbient();
     },
-    setAmbientVolume: (v) => { AMBIENT.volume = Math.max(0, Math.min(1, v)); },
-    getAmbientVolume: () => AMBIENT.volume,
-    isSoundEnabled:   () => soundEnabled,
+    isCrowdEnabled:  () => crowdEnabled,
+    setCrowdVolume:  (v) => {
+      crowdVolume = Math.max(0, Math.min(1, v));
+      applyCrowdVolume();
+    },
+    getCrowdVolume:  () => crowdVolume,
+
+    // ── Legacy compat — maps to SFX channel ──
+    setSoundEnabled: (enabled) => { sfxEnabled = enabled; },
+    isSoundEnabled:  () => sfxEnabled,
+
+    // ── Ambient legacy compat — maps to crowd channel ──
+    setAmbientVolume: (v) => { crowdVolume = Math.max(0, Math.min(1, v)); applyCrowdVolume(); },
+    getAmbientVolume: () => crowdVolume,
   };
 }

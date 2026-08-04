@@ -9,7 +9,7 @@ import RightSidebar from '@/components/game/RightSidebar';
 import BottomFooter from '@/components/game/BottomFooter';
 import ResultOverlay from '@/components/game/ResultOverlay';
 import BonusSequence from '@/components/game/BonusSequence';
-import { playWin, playLose } from '@/lib/game/useBonusAudio';
+import { playWin, playLose, setBonusSfxEnabled } from '@/lib/game/useBonusAudio';
 import SettingsModal from '@/components/game/SettingsModal';
 import HowToPlayModal from '@/components/game/HowToPlayModal';
 import OnboardingIndicator from '@/components/game/OnboardingIndicator';
@@ -47,6 +47,11 @@ export default function GameTable() {
     window.addEventListener('pointerdown', handler, { once: true });
     return () => window.removeEventListener('pointerdown', handler);
   }, []);
+
+  // Sync bonus audio SFX gate with the game SFX channel
+  useEffect(() => {
+    setBonusSfxEnabled(sounds.isSfxEnabled());
+  }, [sounds]);
 
   // ── Bonus sequence + result overlay timing ─────────────────────────────
   // When phase becomes 'resolved':

@@ -1,7 +1,13 @@
 // Procedural Web Audio API sounds for the RNG Bonus chase.
 // No audio files needed — everything synthesized.
+// Respects the SFX channel — when SFX is muted, bonus sounds are also muted.
 
 let audioCtx = null;
+let bonusSfxEnabled = true;
+let bonusSfxVolume = 1.0;
+
+export function setBonusSfxEnabled(enabled) { bonusSfxEnabled = enabled; }
+export function setBonusSfxVolume(v) { bonusSfxVolume = Math.max(0, Math.min(1, v)); }
 
 function getCtx() {
   if (typeof window === 'undefined') return null;
@@ -21,6 +27,7 @@ function getCtx() {
 
 // Short bell "bing" — pitch in Hz, duration in seconds
 export function playBing(pitch = 800, duration = 0.08, volume = 0.12) {
+  if (!bonusSfxEnabled || bonusSfxVolume <= 0) return;
   const ctx = getCtx();
   if (!ctx) return;
 
@@ -30,7 +37,7 @@ export function playBing(pitch = 800, duration = 0.08, volume = 0.12) {
   osc.type = 'sine';
   osc.frequency.value = pitch;
 
-  gain.gain.setValueAtTime(volume, ctx.currentTime);
+  gain.gain.setValueAtTime(volume * bonusSfxVolume, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
 
   osc.connect(gain);
@@ -42,6 +49,7 @@ export function playBing(pitch = 800, duration = 0.08, volume = 0.12) {
 
 // Sustained "ding" on landing — brighter, longer
 export function playLand(pitch = 1200, volume = 0.18) {
+  if (!bonusSfxEnabled || bonusSfxVolume <= 0) return;
   const ctx = getCtx();
   if (!ctx) return;
 
@@ -54,7 +62,7 @@ export function playLand(pitch = 1200, volume = 0.18) {
   osc2.type = 'sine';
   osc2.frequency.value = pitch * 1.5; // perfect fifth overtone
 
-  gain.gain.setValueAtTime(volume, ctx.currentTime);
+  gain.gain.setValueAtTime(volume * bonusSfxVolume, ctx.currentTime);
   gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
 
   osc1.connect(gain);
@@ -69,6 +77,7 @@ export function playLand(pitch = 1200, volume = 0.18) {
 
 // Ascending win sting — bright, celebratory
 export function playWin(volume = 0.2) {
+  if (!bonusSfxEnabled || bonusSfxVolume <= 0) return;
   const ctx = getCtx();
   if (!ctx) return;
 
@@ -95,6 +104,7 @@ export function playWin(volume = 0.2) {
 
 // Descending lose tone — muted, disappointing
 export function playLose(volume = 0.12) {
+  if (!bonusSfxEnabled || bonusSfxVolume <= 0) return;
   const ctx = getCtx();
   if (!ctx) return;
 
