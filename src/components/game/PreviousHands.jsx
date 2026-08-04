@@ -38,7 +38,10 @@ export default function PreviousHands({ history }) {
         <div>TYPE</div>
         <div className="text-right">R/B L/H</div>
       </div>
-      <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
+      <div
+        className="flex-1 overflow-y-auto no-scrollbar"
+        style={{ minHeight: 0, scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
         {history.length === 0 && (
           <div className="text-center py-6 text-xs" style={{ color: '#5a678a', opacity: 0.5 }}>
             No hands yet

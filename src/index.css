@@ -159,3 +159,8 @@ body.theme-green .velvet-board,
   --theme-strip:    rgba(4,45,19,0.7);
   background: radial-gradient(circle at center, #0d6e2e 0%, #074a1c 60%, #022610 100%);
 }
+
+/* Hide scrollbar visually while keeping scroll functional (WebKit browsers) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

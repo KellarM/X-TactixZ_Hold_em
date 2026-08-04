@@ -399,7 +399,7 @@ export function useGame() {
       sidePayout,
       bonusWinnings,
     });
-    setHistory(prev => [settlement.historyEntry, ...prev].slice(0, 20));
+    setHistory(prev => [settlement.historyEntry, ...prev].slice(0, 18));
     setPhase('resolved');
 
     // ── Auto-capture for Certification Test ──────────────────────────────
@@ -482,7 +482,7 @@ export function useGame() {
       type: 'FOLD',
       rb: '—',
       color: '#888888'
-    }, ...prev].slice(0, 20));
+    }, ...prev].slice(0, 18));
     setDeck([]);
     setRevealed(0);
     setBets(emptyBets());
