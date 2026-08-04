@@ -189,9 +189,11 @@ export default function BonusSequence({
     timersRef.current.push(landTimer);
 
     // ── Completion callback — show result overlay after landing hold ──
+    // Extended by 3s (was 1500ms) so the win explode/glow is actually
+    // visible before the result overlay covers it.
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, maxTime + 1500);
+    }, maxTime + 4500);
     timersRef.current.push(completeTimer);
 
     return clearTimers;

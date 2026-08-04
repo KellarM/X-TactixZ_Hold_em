@@ -67,14 +67,29 @@ function injectStyles() {
       40%  { box-shadow: 0 0 36px 14px rgba(255,235,0,1.0), inset 0 0 40px rgba(255,235,0,0.45); transform: scale(1.12); border-color: #FFD700; }
       100% { box-shadow: 0 0 16px 5px rgba(255,215,0,0.7), inset 0 0 20px rgba(255,215,0,0.2); transform: scale(1.0); border-color: rgba(255,215,0,0.6); }
     }
-    @keyframes rf-bonus-land-win-side {
-      0%   { box-shadow: 0 0 20px 10px rgba(255,215,0,0.9), inset 0 0 40px rgba(255,215,0,0.35); transform: scale(1.15); }
-      30%  { box-shadow: 0 0 50px 20px rgba(255,235,0,1.0), inset 0 0 80px rgba(255,235,0,0.6); transform: scale(1.2); }
-      100% { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0), inset 0 0 60px rgba(255,235,0,0.5); transform: scale(1.12); }
+    /* EXPLODE — winning side bet position pops with an elastic overshoot
+       then settles back to its regular size, with a brightness flash */
+    @keyframes rf-bonus-explode-side {
+      0%   { box-shadow: 0 0 18px 7px  rgba(255,215,0,0.7),  inset 0 0 26px rgba(255,215,0,0.3); transform: scale(1.0);  filter: brightness(1.0); }
+      12%  { box-shadow: 0 0 70px 26px rgba(255,255,180,1.0), inset 0 0 100px rgba(255,255,180,0.8); transform: scale(1.35); filter: brightness(2.4); }
+      30%  { box-shadow: 0 0 46px 16px rgba(255,225,0,0.9),  inset 0 0 70px rgba(255,225,0,0.5);  transform: scale(0.90);  filter: brightness(1.3); }
+      50%  { box-shadow: 0 0 54px 20px rgba(255,225,0,0.95), inset 0 0 80px rgba(255,225,0,0.55); transform: scale(1.10);  filter: brightness(1.5); }
+      75%  { box-shadow: 0 0 40px 14px rgba(255,220,0,0.85), inset 0 0 60px rgba(255,220,0,0.45); transform: scale(0.98);  filter: brightness(1.15); }
+      100% { box-shadow: 0 0 36px 14px rgba(255,235,0,1.0),  inset 0 0 70px rgba(255,235,0,0.55); transform: scale(1.0);   filter: brightness(1.0); }
+    }
+    /* Bright flashbulb burst — accompanies the explode on winning side bets */
+    @keyframes rf-bonus-flash-side {
+      0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
+      100% { opacity: 0; transform: translate(-50%, -50%) scale(2.2); }
+    }
+    /* Quiet fizzle — bonus landed here but no win. Soft ring, no harsh text. */
+    @keyframes rf-bonus-fizzle-ring-side {
+      0%   { transform: translate(-50%, -50%) scale(0.6); opacity: 0.85; border-color: rgba(210,210,210,0.6); }
+      100% { transform: translate(-50%, -50%) scale(1.7); opacity: 0;    border-color: rgba(140,140,140,0.1); }
     }
     @keyframes rf-bonus-land-lose-side {
-      0%   { box-shadow: 0 0 16px 6px rgba(239,68,68,0.5), inset 0 0 25px rgba(239,68,68,0.15); transform: scale(1.08); }
-      100% { box-shadow: 0 0 24px 8px rgba(180,40,40,0.3), inset 0 0 35px rgba(120,20,20,0.10); transform: scale(1.0); }
+      0%   { box-shadow: 0 0 16px 6px rgba(140,140,140,0.35), inset 0 0 22px rgba(140,140,140,0.12); transform: scale(1.04); }
+      100% { box-shadow: 0 0 20px 6px rgba(90,90,90,0.2),    inset 0 0 28px rgba(60,60,60,0.08);   transform: scale(1.0); }
     }
     @keyframes rf-bonus-shockwave-side-1 {
       0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; border-width: 4px; }
@@ -208,16 +223,41 @@ export default function RightSidebar({
   const isSideLanded = (sideIdx) => bonusPulse?.landed && bonusPulse?.side === sideIdx;
 
   const bonusSideStyle = (sideIdx) => {
-    if (isSideLanded(sideIdx) && bonusPulse?.sideWon) return { animation: 'rf-bonus-land-win-side 0.8s ease-out forwards' };
-    if (isSideLanded(sideIdx) && !bonusPulse?.sideWon) return { animation: 'rf-bonus-land-lose-side 0.8s ease-out forwards' };
+    if (isSideLanded(sideIdx) && bonusPulse?.sideWon) return { animation: 'rf-bonus-explode-side 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow-side 1.2s ease-in-out 0.9s infinite' };
+    if (isSideLanded(sideIdx) && !bonusPulse?.sideWon) return { animation: 'rf-bonus-land-lose-side 0.9s ease-out forwards' };
     if (isSidePulsing(sideIdx)) return { animation: 'rf-bonus-pulse-side 0.25s ease-in-out' };
     return {};
   };
 
   const bonusBadge = (sideIdx) => {
     if (!isSideLanded(sideIdx)) return null;
+
+    // ── NO WIN: quiet fizzle ring only. No harsh "NO WIN" text. ──
+    if (!bonusPulse.sideWon) {
+      return (
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          width: '70%', height: '70%',
+          borderRadius: '50%',
+          border: '2px solid rgba(210,210,210,0.6)',
+          pointerEvents: 'none', zIndex: 26,
+          animation: 'rf-bonus-fizzle-ring-side 0.9s ease-out forwards',
+        }} />
+      );
+    }
+
+    // ── WIN: flashbulb burst + shockwave rings + particle burst + badge ──
     return (
       <>
+        {/* Flashbulb burst on impact */}
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          width: '100%', height: '100%',
+          borderRadius: '50%',
+          pointerEvents: 'none', zIndex: 27,
+          background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,225,120,0.65) 45%, transparent 75%)',
+          animation: 'rf-bonus-flash-side 0.45s ease-out forwards',
+        }} />
         {/* Shockwave ring 1 */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
@@ -257,25 +297,21 @@ export default function RightSidebar({
             }} />
           );
         })}
-        {/* Enhanced badge */}
+        {/* Badge — pops in with the explode */}
         <span style={{
           position: 'absolute', top: -8, left: '50%',
           transform: 'translateX(-50%)',
-          background: bonusPulse.sideWon
-            ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
-            : 'linear-gradient(135deg, #555 0%, #333 100%)',
-          color: bonusPulse.sideWon ? '#000' : '#999',
-          fontSize: 12, fontWeight: 900,
+          background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)',
+          color: '#000',
+          fontSize: 13, fontWeight: 900,
           padding: '4px 12px', borderRadius: 6,
           zIndex: 40, letterSpacing: '0.8px',
-          boxShadow: bonusPulse.sideWon
-            ? '0 2px 12px rgba(0,0,0,0.95), 0 0 24px rgba(255,215,0,0.7), 0 0 48px rgba(255,165,0,0.4)'
-            : '0 2px 8px rgba(0,0,0,0.9)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.95), 0 0 24px rgba(255,215,0,0.7), 0 0 48px rgba(255,165,0,0.4)',
           pointerEvents: 'none', whiteSpace: 'nowrap',
-          textShadow: bonusPulse.sideWon ? '0 1px 0 rgba(255,255,255,0.3)' : 'none',
-          border: bonusPulse.sideWon ? '1.5px solid #FFE566' : '1px solid #444',
+          textShadow: '0 1px 0 rgba(255,255,255,0.3)',
+          border: '1.5px solid #FFE566',
         }}>
-          {bonusPulse.sideWon ? `×${bonusPulse.sideMult} BONUS` : 'BONUS — NO WIN'}
+          {`×${bonusPulse.sideMult} BONUS`}
         </span>
       </>
     );

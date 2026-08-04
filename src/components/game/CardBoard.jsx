@@ -26,14 +26,30 @@ function injectStyles() {
       40%  { box-shadow: 0 0 38px 14px rgba(255,235,0,1.0), inset 0 0 50px rgba(255,235,0,0.45); transform: scale(1.10); border-color: #FFD700; }
       100% { box-shadow: 0 0 18px 6px rgba(255,215,0,0.7),  inset 0 0 28px rgba(255,215,0,0.25); transform: scale(1.0); border-color: rgba(255,215,0,0.6); }
     }
-    @keyframes rf-bonus-land-win {
-      0%   { box-shadow: 0 0 24px 10px rgba(255,215,0,0.9),  inset 0 0 40px rgba(255,215,0,0.35); transform: scale(1.12); }
-      30%  { box-shadow: 0 0 56px 22px rgba(255,235,0,1.0),  inset 0 0 90px rgba(255,235,0,0.6); transform: scale(1.18); }
-      100% { box-shadow: 0 0 44px 18px rgba(255,235,0,1.0),  inset 0 0 70px rgba(255,235,0,0.5); transform: scale(1.10); }
+    /* EXPLODE — winning position pops with an elastic overshoot then
+       settles back to its regular size, with a brightness flash on impact */
+    @keyframes rf-bonus-explode {
+      0%   { box-shadow: 0 0 20px 8px  rgba(255,215,0,0.7),  inset 0 0 30px rgba(255,215,0,0.3); transform: scale(1.0);  filter: brightness(1.0); }
+      12%  { box-shadow: 0 0 80px 30px rgba(255,255,180,1.0), inset 0 0 120px rgba(255,255,180,0.8); transform: scale(1.38); filter: brightness(2.4); }
+      30%  { box-shadow: 0 0 50px 18px rgba(255,225,0,0.9),  inset 0 0 80px rgba(255,225,0,0.5);  transform: scale(0.90);  filter: brightness(1.3); }
+      50%  { box-shadow: 0 0 60px 22px rgba(255,225,0,0.95), inset 0 0 90px rgba(255,225,0,0.55); transform: scale(1.10);  filter: brightness(1.5); }
+      75%  { box-shadow: 0 0 44px 16px rgba(255,220,0,0.85), inset 0 0 70px rgba(255,220,0,0.45); transform: scale(0.98);  filter: brightness(1.15); }
+      100% { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0),  inset 0 0 80px rgba(255,235,0,0.55); transform: scale(1.0);   filter: brightness(1.0); }
+    }
+    /* Bright flashbulb burst — accompanies the explode on winning positions */
+    @keyframes rf-bonus-flash {
+      0%   { opacity: 1;    transform: translate(-50%, -50%) scale(0.3); }
+      100% { opacity: 0;    transform: translate(-50%, -50%) scale(2.2); }
+    }
+    /* Quiet fizzle — bonus landed here but no win. A soft ring that
+       ripples out and fades, with a gentle dim pulse. No harsh text. */
+    @keyframes rf-bonus-fizzle-ring {
+      0%   { transform: translate(-50%, -50%) scale(0.6); opacity: 0.85; border-color: rgba(210,210,210,0.6); }
+      100% { transform: translate(-50%, -50%) scale(1.7); opacity: 0;    border-color: rgba(140,140,140,0.1); }
     }
     @keyframes rf-bonus-land-lose {
-      0%   { box-shadow: 0 0 18px 6px  rgba(239,68,68,0.5),  inset 0 0 28px rgba(239,68,68,0.15); transform: scale(1.06); }
-      100% { box-shadow: 0 0 28px 8px  rgba(180,40,40,0.3),  inset 0 0 38px rgba(120,20,20,0.10); transform: scale(1.0); }
+      0%   { box-shadow: 0 0 18px 6px  rgba(140,140,140,0.35), inset 0 0 24px rgba(140,140,140,0.12); transform: scale(1.04); }
+      100% { box-shadow: 0 0 22px 6px  rgba(90,90,90,0.2),    inset 0 0 30px rgba(60,60,60,0.08);  transform: scale(1.0); }
     }
 
     /* Landing shockwave — ring 1 (fast) */
@@ -196,11 +212,11 @@ export function BettingSlot({
   const isBonusLanded = bonusPulse?.landed && bonusPulse?.card === bonusIndex;
 
   if (isBonusLanded && bonusPulse?.cardWon) {
-    animation = 'rf-bonus-land-win 0.8s ease-out forwards, rf-bonus-sustained-glow 1.2s ease-in-out 0.8s infinite';
+    animation = 'rf-bonus-explode 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow 1.2s ease-in-out 0.9s infinite';
     background = '#5a3a00';
   } else if (isBonusLanded && !bonusPulse?.cardWon) {
-    animation = 'rf-bonus-land-lose 0.8s ease-out forwards';
-    background = '#1a0a0a';
+    animation = 'rf-bonus-land-lose 0.9s ease-out forwards';
+    background = '#181818';
   } else if (isBonusPulsing) {
     animation = 'rf-bonus-pulse 0.25s ease-in-out';
     background = '#2a2000';
@@ -287,32 +303,53 @@ export function BettingSlot({
         </>
       )}
 
-      {/* BONUS badge — enhanced with glow and scale on landing */}
-      {isBonusLanded && (
+      {/* WIN FLASH — bright flashbulb burst on the exploding winner */}
+      {isBonusLanded && bonusPulse.cardWon && (
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          width: '100%', height: '100%',
+          borderRadius: '50%',
+          pointerEvents: 'none', zIndex: 27,
+          background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,225,120,0.65) 45%, transparent 75%)',
+          animation: 'rf-bonus-flash 0.45s ease-out forwards',
+        }} />
+      )}
+
+      {/* FIZZLE RING — bonus landed here but no win. Quiet ripple, no text. */}
+      {isBonusLanded && !bonusPulse.cardWon && (
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          width: '70%', height: '70%',
+          borderRadius: '50%',
+          border: '2px solid rgba(210,210,210,0.6)',
+          pointerEvents: 'none', zIndex: 26,
+          animation: 'rf-bonus-fizzle-ring 0.9s ease-out forwards',
+        }} />
+      )}
+
+      {/* BONUS badge — only shown for wins now; pops in with the explode */}
+      {isBonusLanded && bonusPulse.cardWon && (
         <div style={{
           position: 'absolute',
           top: -8,
           left: '50%',
           transform: 'translateX(-50%)',
-          background: bonusPulse.cardWon
-            ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
-            : 'linear-gradient(135deg, #555 0%, #333 100%)',
-          color: bonusPulse.cardWon ? '#000' : '#999',
-          fontSize: 13,
+          background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)',
+          color: '#000',
+          fontSize: 14,
           fontWeight: 900,
           padding: '4px 14px',
           borderRadius: 6,
           zIndex: 40,
           letterSpacing: '0.8px',
-          boxShadow: bonusPulse.cardWon
-            ? '0 2px 12px rgba(0,0,0,0.95), 0 0 24px rgba(255,215,0,0.7), 0 0 48px rgba(255,165,0,0.4)'
-            : '0 2px 8px rgba(0,0,0,0.9)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.95), 0 0 24px rgba(255,215,0,0.7), 0 0 48px rgba(255,165,0,0.4)',
           pointerEvents: 'none',
           whiteSpace: 'nowrap',
-          textShadow: bonusPulse.cardWon ? '0 1px 0 rgba(255,255,255,0.3)' : 'none',
-          border: bonusPulse.cardWon ? '1.5px solid #FFE566' : '1px solid #444',
+          textShadow: '0 1px 0 rgba(255,255,255,0.3)',
+          border: '1.5px solid #FFE566',
+          animation: 'rf-bonus-explode 0.9s cubic-bezier(.36,1.65,.32,1) forwards',
         }}>
-          {bonusPulse.cardWon ? `×${bonusPulse.cardMult} BONUS` : 'BONUS — NO WIN'}
+          {`×${bonusPulse.cardMult} BONUS`}
         </div>
       )}
 
