@@ -47,7 +47,11 @@ export default function RankBoard({ odds, bets, caps, onPlace, onRemove, phase }
                   {isLocked ? (phase === 'ante' ? 'FLOP PENDING' : 'LOCKED') : formatPayout(p)}
                 </span>
                 {isLocked ? (
-                  <Lock size={15} color="#3d3013" strokeWidth={2.5} />
+                  <img
+                    src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
+                    alt="Locked"
+                    style={{ width: 15, height: 'auto', opacity: 0.95, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }}
+                  />
                 ) : (
                   <Unlock size={15} color="#3d3013" strokeWidth={2.5} />
                 )}
