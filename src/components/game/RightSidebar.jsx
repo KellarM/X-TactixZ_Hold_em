@@ -277,7 +277,7 @@ export default function RightSidebar({
                       position: 'absolute',
                       top: '50%', left: '50%',
                       transform: 'translate(-50%, -50%)',
-                      width: 38, height: 'auto',
+                      width: 26, height: 'auto',
                       opacity: 0.95,
                       filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))',
                       pointerEvents: 'none',
