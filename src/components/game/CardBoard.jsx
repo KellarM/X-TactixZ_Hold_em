@@ -215,8 +215,9 @@ export function BettingSlot({
       {/* Odds label — top (shows actual odds even when locked) */}
       <div style={{
         color: locked ? '#9a8f6e' : '#FFD700',
-        fontSize: 11,
+        fontSize: 13.5,
         fontWeight: 700,
+        fontFamily: "'Playfair Display', serif",
         padding: '4px 4px 1px',
         flexShrink: 0,
         lineHeight: 1,
@@ -267,9 +268,10 @@ export function BettingSlot({
       {/* Bottom label — rank evaluation (or "Dead"), shown even when locked */}
       {bottomLabel && (
         <div style={{
-          fontSize: 9,
-          fontWeight: 800,
-          letterSpacing: '0.5px',
+          fontSize: 10.5,
+          fontWeight: 700,
+          fontFamily: "'Cinzel', serif",
+          letterSpacing: '1px',
           textAlign: 'center',
           padding: '2px 4px 3px',
           width: '100%',
