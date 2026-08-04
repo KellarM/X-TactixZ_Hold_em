@@ -35,12 +35,7 @@ function injectStyles() {
       0%   { box-shadow: 0 0 18px 6px  rgba(239,68,68,0.5),  inset 0 0 28px rgba(239,68,68,0.15); transform: scale(1.06); }
       100% { box-shadow: 0 0 28px 8px  rgba(180,40,40,0.3),  inset 0 0 38px rgba(120,20,20,0.10); transform: scale(1.0); }
     }
-    /* Sun-ray streaks — rotating conic gradient emanating from the box */
-    @keyframes rf-bonus-rays {
-      0%   { transform: translate(-50%, -50%) rotate(0deg)   scale(0.8); opacity: 0.6; }
-      50%  { transform: translate(-50%, -50%) rotate(180deg)  scale(1.4); opacity: 1.0; }
-      100% { transform: translate(-50%, -50%) rotate(360deg)  scale(0.8); opacity: 0.6; }
-    }
+
     /* Landing shockwave — ring 1 (fast) */
     @keyframes rf-bonus-shockwave-1 {
       0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; border-width: 4px; }
@@ -249,28 +244,6 @@ export function BettingSlot({
       onClick={() => { if (!locked) onPlace(); }}
       onContextMenu={(e) => { e.preventDefault(); if (!locked && bet > 0) onRemove(); }}
     >
-      {/* SUN-RAY STREAKS — rotating rays during pulse and landing */}
-      {(isBonusPulsing || isBonusLanded) && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          width: '140%',
-          height: '140%',
-          pointerEvents: 'none',
-          zIndex: 25,
-          opacity: isBonusLanded ? 1 : 0.7,
-          animation: `rf-bonus-rays ${isBonusLanded ? '2s' : '0.25s'} linear infinite`,
-          background: `repeating-conic-gradient(from 0deg,
-            transparent 0deg, transparent 7deg,
-            rgba(255,215,0,0.55) 8deg, rgba(255,235,0,0.85) 9deg, rgba(255,215,0,0.55) 10deg,
-            transparent 11deg, transparent 18deg)`,
-          borderRadius: '50%',
-          maskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
-          WebkitMaskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
-        }} />
-      )}
-
       {/* LANDING SHOCKWAVE — two expanding rings on bonus land */}
       {isBonusLanded && (
         <>

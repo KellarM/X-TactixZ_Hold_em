@@ -76,6 +76,23 @@ function injectStyles() {
       0%   { box-shadow: 0 0 16px 6px rgba(239,68,68,0.5), inset 0 0 25px rgba(239,68,68,0.15); transform: scale(1.08); }
       100% { box-shadow: 0 0 24px 8px rgba(180,40,40,0.3), inset 0 0 35px rgba(120,20,20,0.10); transform: scale(1.0); }
     }
+    @keyframes rf-bonus-shockwave-side-1 {
+      0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; border-width: 4px; }
+      100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-width: 1px; }
+    }
+    @keyframes rf-bonus-shockwave-side-2 {
+      0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0.8; border-width: 3px; }
+      100% { transform: translate(-50%, -50%) scale(4.5); opacity: 0; border-width: 1px; }
+    }
+    @keyframes rf-bonus-particle-side {
+      0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+    }
+    @keyframes rf-bonus-sustained-glow-side {
+      0%   { box-shadow: 0 0 36px 14px rgba(255,235,0,1.0), inset 0 0 70px rgba(255,235,0,0.55); }
+      50%  { box-shadow: 0 0 60px 22px rgba(255,235,0,1.0), inset 0 0 100px rgba(255,235,0,0.70); }
+      100% { box-shadow: 0 0 36px 14px rgba(255,235,0,1.0), inset 0 0 70px rgba(255,235,0,0.55); }
+    }
     @keyframes rf-side-leader {
       0%   { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); }
       50%  { box-shadow: 0 0 28px 10px rgba(255,220,50,0.85), inset 0 0 40px rgba(255,220,50,0.30); }
@@ -197,46 +214,10 @@ export default function RightSidebar({
     return {};
   };
 
-  // Sun-ray overlay during pulse phase (before landing)
-  const bonusRayOverlay = (sideIdx) => {
-    if (!isSidePulsing(sideIdx)) return null;
-    return (
-      <div style={{
-        position: 'absolute', top: '50%', left: '50%',
-        width: '140%', height: '140%',
-        pointerEvents: 'none', zIndex: 25,
-        opacity: 0.7,
-        animation: 'rf-bonus-rays-side 0.25s linear infinite',
-        background: `repeating-conic-gradient(from 0deg,
-          transparent 0deg, transparent 7deg,
-          rgba(255,215,0,0.55) 8deg, rgba(255,235,0,0.85) 9deg, rgba(255,215,0,0.55) 10deg,
-          transparent 11deg, transparent 18deg)`,
-        borderRadius: '50%',
-        maskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
-        WebkitMaskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
-      }} />
-    );
-  };
-
   const bonusBadge = (sideIdx) => {
     if (!isSideLanded(sideIdx)) return null;
     return (
       <>
-        {/* Sun-ray streaks */}
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          width: '140%', height: '140%',
-          pointerEvents: 'none', zIndex: 25,
-          opacity: 1,
-          animation: 'rf-bonus-rays-side 2s linear infinite',
-          background: `repeating-conic-gradient(from 0deg,
-            transparent 0deg, transparent 7deg,
-            rgba(255,215,0,0.55) 8deg, rgba(255,235,0,0.85) 9deg, rgba(255,215,0,0.55) 10deg,
-            transparent 11deg, transparent 18deg)`,
-          borderRadius: '50%',
-          maskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
-          WebkitMaskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
-        }} />
         {/* Shockwave ring 1 */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
@@ -367,7 +348,6 @@ export default function RightSidebar({
                     }}
                   />
                 )}
-                {bonusRayOverlay(rankIdx)}
                 {bonusBadge(rankIdx)}
                 {isWinner && isResolved && (
                   <span style={{
@@ -414,7 +394,6 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusSideStyle(7 + colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {bonusRayOverlay(7 + colorIdx)}
                 {bonusBadge(7 + colorIdx)}
                 <span style={{ ...goldEmbossText, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 {locked ? (
@@ -473,7 +452,6 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusSideStyle(13 + riverIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {bonusRayOverlay(13 + riverIdx)}
                 {bonusBadge(13 + riverIdx)}
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
