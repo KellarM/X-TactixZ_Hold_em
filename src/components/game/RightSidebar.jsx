@@ -10,15 +10,19 @@ const GOLD_ACTIVE = {
   boxShadow: 'inset 0 1px 2px rgba(255,255,200,0.6), inset 0 -1px 2px rgba(100,60,0,0.5), 0 1px 4px rgba(0,0,0,0.5)',
   border: '1px solid #000',
 };
+// GOLD_DIM lightened: each stop blended 50% toward GOLD_ACTIVE's matching stop
+// (was #6a5410/#54420a/#6a5818/#3a2d02/#54420a -- half as dark now, lock is the indicator)
 const GOLD_DIM = {
-  background: 'linear-gradient(135deg, #6a5410 0%, #54420a 30%, #6a5818 55%, #3a2d02 80%, #54420a 100%)',
-  boxShadow: 'inset 0 1px 2px rgba(100,80,20,0.3)',
+  background: 'linear-gradient(135deg, #b09638 0%, #9e821a 30%, #b4a451 55%, #826106 80%, #9e821a 100%)',
+  boxShadow: 'inset 0 1px 2px rgba(255,255,200,0.3), inset 0 -1px 2px rgba(100,60,0,0.4), 0 1px 4px rgba(0,0,0,0.4)',
   border: '1px solid #000',
 };
 const RED_ACTIVE   = { background: 'linear-gradient(160deg, #e02020 0%, #8c0e0e 100%)', border: '1px solid #111' };
 const BLACK_ACTIVE = { background: 'linear-gradient(160deg, #222 0%, #000 100%)', border: '1px solid #2a2a2a' };
-const RED_LOCKED   = { background: 'linear-gradient(160deg, #5a0a0a 0%, #2a0303 100%)', border: '1px solid #111' };
-const BLACK_LOCKED = { background: 'linear-gradient(160deg, #0a0a0a 0%, #000 100%)', border: '1px solid #1a1a1a' };
+// RED_LOCKED / BLACK_LOCKED lightened the same way: 50% blend toward their ACTIVE counterpart
+// (was #5a0a0a/#2a0303 and #0a0a0a/#000 -- black barely moves since ACTIVE black is already near-black)
+const RED_LOCKED   = { background: 'linear-gradient(160deg, #9d1515 0%, #5b0909 100%)', border: '1px solid #111' };
+const BLACK_LOCKED = { background: 'linear-gradient(160deg, #161616 0%, #000 100%)', border: '1px solid #1a1a1a' };
 
 const goldEmbossText = {
   color: 'transparent',
