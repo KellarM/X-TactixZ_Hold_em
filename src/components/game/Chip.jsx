@@ -54,12 +54,16 @@ export default function Chip({ amount, scale = 1, style, className = '' }) {
   const totalH = d + wallH;
   const label = formatChipLabel(amount);
   const charCount = label ? label.length : 1;
-  const baseFontSize = Math.round(16 * scale);
-  const fontSize = charCount >= 4
-    ? Math.max(9, Math.round(baseFontSize * 0.7))
+  const baseFontSize = Math.round(19 * scale); // increased from 16 per denomination-legibility request
+  let fontSize = charCount >= 4
+    ? Math.max(10, Math.round(baseFontSize * 0.74))
     : charCount === 3
-    ? Math.max(11, Math.round(baseFontSize * 0.82))
+    ? Math.max(12, Math.round(baseFontSize * 0.86))
     : baseFontSize;
+  // Hard safety clamp — label can never exceed 80% of the inner (white/black) circle
+  // diameter, regardless of scale or character count. Guarantees no chip-boundary overflow.
+  const maxSafeFontSize = Math.max(8, Math.round(centerD * 0.80));
+  fontSize = Math.min(fontSize, maxSafeFontSize);
 
   return (
     <span
