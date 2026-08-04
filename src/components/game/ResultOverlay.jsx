@@ -1,5 +1,6 @@
 import React from 'react';
 import { FIXED_HANDS, formatMoney, CAT_TO_LABEL } from '@/lib/game/cards';
+import PlayingCard from './PlayingCard';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // DESIGN TOKENS — matched exactly to original DetailedPayoutDisplay.jsx
@@ -36,9 +37,20 @@ const NEW_HAND_BTN = {
 };
 
 // ─── Get human-readable card label from hand id ────────────────────────────
+// Defensive Number() coercion — id may arrive as a string or number depending
+// on caller; FIXED_HANDS.id is always a number, so normalize before compare.
 function getHandLabel(id) {
-  const hand = FIXED_HANDS.find(h => h.id === id);
+  const numId = Number(id);
+  const hand = FIXED_HANDS.find(h => h.id === numId);
   return hand ? hand.label : `Hand ${id}`;
+}
+
+// Get the actual card objects [{rank, suit}, {rank, suit}] for a hand id —
+// used to render real card icons (not just text) in the win display.
+function getHandCards(id) {
+  const numId = Number(id);
+  const hand = FIXED_HANDS.find(h => h.id === numId);
+  return hand ? hand.cards : null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -121,20 +133,28 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
                   overflow: 'hidden',
                 }}
               >
-                {/* Row 1: label + bet/odds */}
+                {/* Row 1: cards/label + bet/odds */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 4 }}>
-                  <span style={{
-                    fontSize: '0.78rem',
-                    fontWeight: 900,
-                    color: '#fff',
-                    ...blackOutline,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    maxWidth: '52%',
-                  }}>
-                    {win.label}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, maxWidth: '58%', overflow: 'hidden' }}>
+                    {win.cards && (
+                      <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+                        {win.cards.map((c, ci) => (
+                          <PlayingCard key={ci} card={c} size="xs" />
+                        ))}
+                      </div>
+                    )}
+                    <span style={{
+                      fontSize: '0.78rem',
+                      fontWeight: 900,
+                      color: '#fff',
+                      ...blackOutline,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {win.label}
+                    </span>
+                  </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <div style={{ fontSize: '0.7rem', fontWeight: 800, color: '#fff', ...blackOutline, whiteSpace: 'nowrap' }}>
                       Bet: {formatMoney(win.amt)}
@@ -199,7 +219,7 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
   // ── Build win rows for each quadrant ──
   const cardWins  = details.card
     .filter(d => d.won)
-    .map(d => ({ label: getHandLabel(d.id), amt: d.amt, payout: d.payout }));
+    .map(d => ({ label: getHandLabel(d.id), cards: getHandCards(d.id), amt: d.amt, payout: d.payout }));
 
   const rankWins  = details.rank
     .filter(d => d.won)

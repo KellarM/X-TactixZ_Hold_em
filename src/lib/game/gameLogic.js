@@ -34,10 +34,14 @@ export function settleRound(community, hands, bets, flopOdds, riverOdds) {
   const details = { card: [], rank: [], color: [], river: [], boardWin: res.boardWin };
 
   // Card Board — push ALL bets (winners + losers) so the overlay can sum the true wager
+  // NOTE: Object.keys() always returns STRING keys, even for numeric object keys.
+  // hand.id in FIXED_HANDS is a NUMBER. We must convert id -> Number here so
+  // downstream lookups (FIXED_HANDS.find(h => h.id === id)) actually match —
+  // otherwise the label lookup always misses and falls back to generic "Hand N" text.
   if (res.boardWin) {
     Object.keys(bets.card).forEach(id => {
       const amt = bets.card[id] || 0;
-      if (amt > 0) details.card.push({ id, amt, payout: null, won: false });
+      if (amt > 0) details.card.push({ id: Number(id), amt, payout: null, won: false });
     });
   } else {
     const numWinners = res.winners.length;
@@ -51,9 +55,9 @@ export function settleRound(community, hands, bets, flopOdds, riverOdds) {
         let payout = oddsEntry.payout;
         if (numWinners > 1) payout = ((payout + 1) / 2) * 1.05 - 1;
         winnings += amt * (payout + 1);
-        details.card.push({ id, amt, payout, won: true });
+        details.card.push({ id: numId, amt, payout, won: true });
       } else {
-        details.card.push({ id, amt, payout: null, won: false });
+        details.card.push({ id: numId, amt, payout: null, won: false });
       }
     });
   }

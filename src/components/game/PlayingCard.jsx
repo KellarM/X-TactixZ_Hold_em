@@ -65,6 +65,7 @@ const CARD_IMAGES = {
 // size: 'sm' (betting slot) | 'md' (community card) | 'lg'
 export default function PlayingCard({ card, faceDown = false, size = 'md', className = '' }) {
   const dims = {
+    xs: { w: 26, h: 37,  rank: '8px',  suit: '7px',  big: 12, pad: '2px' },
     sm: { w: 62, h: 88,  rank: '16px', suit: '14px', big: 28, pad: '4px' },
     md: { w: 66, h: 92,  rank: '22px', suit: '20px', big: 32, pad: '5px' },
     community: { w: 70, h: 100, rank: '22px', suit: '20px', big: 32, pad: '5px' },
