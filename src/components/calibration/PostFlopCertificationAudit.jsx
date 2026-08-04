@@ -112,16 +112,19 @@ function formatElapsed(seconds) {
 }
 
 // ── Result Row Component ──────────────────────────────────────
-function ResultRow({ label, observedProb, trueProb, trueOdds, observedRtp, dead, rtpLow, rtpHigh, isLast }) {
+function ResultRow({ label, wins, observedProb, trueProb, trueOdds, observedRtp, dead, rtpLow, rtpHigh, isLast }) {
   const variance = dead ? null : ((observedProb - trueProb) / trueProb * 100);
   const status = dead ? null
     : Math.abs(variance) < 2 ? 'pass'
     : Math.abs(variance) < 5 ? 'warn'
     : 'fail';
+  const count406 = dead ? null : Math.round(trueProb * 406);
 
   return (
     <tr className={isLast ? '' : 'border-b border-slate-700/50'}>
       <td className="px-2 py-1.5 text-xs text-slate-300 font-medium">{label}</td>
+      <td className="px-2 py-1.5 text-xs font-mono text-slate-300 text-right">{dead ? '—' : wins.toLocaleString()}</td>
+      <td className="px-2 py-1.5 text-xs font-mono text-slate-400 text-right">{dead ? '—' : count406}</td>
       <td className="px-2 py-1.5 text-xs font-mono text-slate-400 text-right">{dead ? '—' : formatPct(trueProb)}</td>
       <td className="px-2 py-1.5 text-xs font-mono text-slate-300 text-right">{dead ? '—' : formatPct(observedProb)}</td>
       <td className="px-2 py-1.5 text-xs font-mono text-slate-400 text-right">{formatOdds(trueOdds)}</td>
@@ -312,6 +315,8 @@ function ModulePanel({ module, flopData, flopIndex }) {
                   <thead>
                     <tr className="border-b border-slate-700">
                       <th className="px-2 py-1.5 text-left text-xs font-semibold text-slate-400">Position</th>
+                      <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">Win Count</th>
+                      <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">406 / Count</th>
                       <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">True Prob</th>
                       <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">Observed</th>
                       <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">True Odds</th>
@@ -325,6 +330,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
                       <ResultRow
                         key={i}
                         label={HAND_LABELS[i]}
+                        wins={r.wins}
                         observedProb={r.observedProb}
                         trueProb={r.trueProb}
                         trueOdds={r.trueOdds}
@@ -346,6 +352,8 @@ function ModulePanel({ module, flopData, flopIndex }) {
                   <thead>
                     <tr className="border-b border-slate-700">
                       <th className="px-2 py-1.5 text-left text-xs font-semibold text-slate-400">Position</th>
+                      <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">Win Count</th>
+                      <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">406 / Count</th>
                       <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">True Prob</th>
                       <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">Observed</th>
                       <th className="px-2 py-1.5 text-right text-xs font-semibold text-slate-400">True Odds</th>
@@ -359,6 +367,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
                       <ResultRow
                         key={i}
                         label={RANK_NAMES[i]}
+                        wins={r.wins}
                         observedProb={r.observedProb}
                         trueProb={r.trueProb}
                         trueOdds={r.trueOdds}
