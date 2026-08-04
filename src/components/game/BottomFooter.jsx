@@ -114,43 +114,82 @@ export default function BottomFooter({
         )}
       </div>
 
-      {/* ── 4. DEAL BUTTON — locked width, never shifts ── */}
+      {/* ── 4. DEAL BUTTON — locked width, never shifts.
+             Fold (left) and Clear Bets (right) flank it, in the empty space
+             above the subtitle line, only during postflop/postturn. Each is
+             absolutely positioned within this row so it doesn't disturb the
+             Deal/New Hand button's centering, and is sized to its own content
+             (auto width/height from padding), not stretched. ── */}
       <div style={{
         width: W.deal, flexShrink: 0,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 3,
       }}>
-        {phase === 'resolved' ? (
-          <button
-            onClick={onNewHand}
-            style={{
-              background: GOLD_BTN, color: '#3d3013', fontWeight: 800,
-              fontSize: 16, letterSpacing: '1px', borderRadius: 8,
-              padding: '8px 28px', border: 'none', cursor: 'pointer',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
-              display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap',
-            }}
-          >
-            <RotateCcw size={16} /> NEW HAND
-          </button>
-        ) : (
-          <button
-            onClick={onDeal}
-            disabled={!canDeal}
-            style={{
-              background: canDeal ? GOLD_BTN : 'linear-gradient(135deg, #3a3128 0%, #2a2418 100%)',
-              color: canDeal ? '#3d3013' : '#6a5e48',
-              fontWeight: 800, fontSize: 16, letterSpacing: '1px',
-              borderRadius: 8, padding: '8px 28px',
-              border: '1px solid #C5A059',
-              cursor: canDeal ? 'pointer' : 'not-allowed',
-              boxShadow: canDeal ? '0 2px 6px rgba(0,0,0,0.5)' : 'none',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {dealLabel}
-          </button>
-        )}
+        <div style={{
+          position: 'relative', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', width: '100%',
+        }}>
+          {showActions && (
+            <button
+              onClick={onFold}
+              style={{
+                position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
+                background: '#3a1020', border: '1px solid #C5A059', color: '#FF6B6B',
+                fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
+                borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              FOLD
+            </button>
+          )}
+
+          {phase === 'resolved' ? (
+            <button
+              onClick={onNewHand}
+              style={{
+                background: GOLD_BTN, color: '#3d3013', fontWeight: 800,
+                fontSize: 16, letterSpacing: '1px', borderRadius: 8,
+                padding: '8px 28px', border: 'none', cursor: 'pointer',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+                display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap',
+              }}
+            >
+              <RotateCcw size={16} /> NEW HAND
+            </button>
+          ) : (
+            <button
+              onClick={onDeal}
+              disabled={!canDeal}
+              style={{
+                background: canDeal ? GOLD_BTN : 'linear-gradient(135deg, #3a3128 0%, #2a2418 100%)',
+                color: canDeal ? '#3d3013' : '#6a5e48',
+                fontWeight: 800, fontSize: 16, letterSpacing: '1px',
+                borderRadius: 8, padding: '8px 28px',
+                border: '1px solid #C5A059',
+                cursor: canDeal ? 'pointer' : 'not-allowed',
+                boxShadow: canDeal ? '0 2px 6px rgba(0,0,0,0.5)' : 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {dealLabel}
+            </button>
+          )}
+
+          {showActions && (
+            <button
+              onClick={onClearBets}
+              style={{
+                position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
+                background: '#1a1030', border: '1px solid #C5A059', color: '#C5A059',
+                fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
+                borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              CLEAR BETS
+            </button>
+          )}
+        </div>
+
         <span style={{
           color: '#FFD700', fontSize: 16, fontWeight: 700,
           fontFamily: "'Playfair Display', serif",
@@ -165,32 +204,6 @@ export default function BottomFooter({
       <div style={{ width: W.betSum, flexShrink: 0 }}>
         <StatBox label="BET SUM" value={formatMoney(phase === 'ante' ? ante : totalWagered)} />
       </div>
-
-      {/* ── CLEAR BETS / FOLD — visible during postflop/postturn ── */}
-      {showActions && (
-        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-          <button
-            onClick={onClearBets}
-            style={{
-              background: '#1a1030', border: '1px solid #C5A059', color: '#C5A059',
-              fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
-              borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
-            }}
-          >
-            CLEAR BETS
-          </button>
-          <button
-            onClick={onFold}
-            style={{
-              background: '#3a1020', border: '1px solid #C5A059', color: '#FF6B6B',
-              fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
-              borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
-            }}
-          >
-            FOLD
-          </button>
-        </div>
-      )}
 
       {/* ── 6. GEAR — absolutely pinned to far right border. Independent of flex flow;
              cannot be moved by anything else in the row, regardless of width changes ── */}
