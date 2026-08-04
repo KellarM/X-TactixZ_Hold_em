@@ -35,6 +35,33 @@ function injectStyles() {
       0%   { box-shadow: 0 0 18px 6px  rgba(239,68,68,0.5),  inset 0 0 28px rgba(239,68,68,0.15); transform: scale(1.06); }
       100% { box-shadow: 0 0 28px 8px  rgba(180,40,40,0.3),  inset 0 0 38px rgba(120,20,20,0.10); transform: scale(1.0); }
     }
+    /* Sun-ray streaks — rotating conic gradient emanating from the box */
+    @keyframes rf-bonus-rays {
+      0%   { transform: translate(-50%, -50%) rotate(0deg)   scale(0.8); opacity: 0.6; }
+      50%  { transform: translate(-50%, -50%) rotate(180deg)  scale(1.4); opacity: 1.0; }
+      100% { transform: translate(-50%, -50%) rotate(360deg)  scale(0.8); opacity: 0.6; }
+    }
+    /* Landing shockwave — ring 1 (fast) */
+    @keyframes rf-bonus-shockwave-1 {
+      0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; border-width: 4px; }
+      100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; border-width: 1px; }
+    }
+    /* Landing shockwave — ring 2 (delayed, slower) */
+    @keyframes rf-bonus-shockwave-2 {
+      0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 0.8; border-width: 3px; }
+      100% { transform: translate(-50%, -50%) scale(4.5); opacity: 0; border-width: 1px; }
+    }
+    /* Landing particle burst — 8 dots flying outward */
+    @keyframes rf-bonus-particle {
+      0%   { transform: translate(0, 0) scale(1); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+    }
+    /* Sustained golden glow on the landed box */
+    @keyframes rf-bonus-sustained-glow {
+      0%   { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0),  inset 0 0 80px rgba(255,235,0,0.55); }
+      50%  { box-shadow: 0 0 70px 26px rgba(255,235,0,1.0),  inset 0 0 120px rgba(255,235,0,0.70); }
+      100% { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0),  inset 0 0 80px rgba(255,235,0,0.55); }
+    }
   `;
   document.head.appendChild(style);
 }
@@ -174,7 +201,7 @@ export function BettingSlot({
   const isBonusLanded = bonusPulse?.landed && bonusPulse?.card === bonusIndex;
 
   if (isBonusLanded && bonusPulse?.cardWon) {
-    animation = 'rf-bonus-land-win 0.8s ease-out forwards';
+    animation = 'rf-bonus-land-win 0.8s ease-out forwards, rf-bonus-sustained-glow 1.2s ease-in-out 0.8s infinite';
     background = '#5a3a00';
   } else if (isBonusLanded && !bonusPulse?.cardWon) {
     animation = 'rf-bonus-land-lose 0.8s ease-out forwards';
@@ -222,26 +249,95 @@ export function BettingSlot({
       onClick={() => { if (!locked) onPlace(); }}
       onContextMenu={(e) => { e.preventDefault(); if (!locked && bet > 0) onRemove(); }}
     >
-      {/* BONUS badge — shows when the bonus landed on this position */}
+      {/* SUN-RAY STREAKS — rotating rays during pulse and landing */}
+      {(isBonusPulsing || isBonusLanded) && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: '140%',
+          height: '140%',
+          pointerEvents: 'none',
+          zIndex: 25,
+          opacity: isBonusLanded ? 1 : 0.7,
+          animation: `rf-bonus-rays ${isBonusLanded ? '2s' : '0.25s'} linear infinite`,
+          background: `repeating-conic-gradient(from 0deg,
+            transparent 0deg, transparent 7deg,
+            rgba(255,215,0,0.55) 8deg, rgba(255,235,0,0.85) 9deg, rgba(255,215,0,0.55) 10deg,
+            transparent 11deg, transparent 18deg)`,
+          borderRadius: '50%',
+          maskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
+          WebkitMaskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
+        }} />
+      )}
+
+      {/* LANDING SHOCKWAVE — two expanding rings on bonus land */}
+      {isBonusLanded && (
+        <>
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%',
+            width: '100%', height: '100%',
+            border: '4px solid #FFD700',
+            borderRadius: '8px',
+            pointerEvents: 'none', zIndex: 28,
+            animation: 'rf-bonus-shockwave-1 0.7s ease-out forwards',
+          }} />
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%',
+            width: '100%', height: '100%',
+            border: '3px solid rgba(255,235,0,0.7)',
+            borderRadius: '8px',
+            pointerEvents: 'none', zIndex: 28,
+            animation: 'rf-bonus-shockwave-2 0.9s ease-out 0.15s forwards',
+            opacity: 0,
+          }} />
+          {/* Particle burst — 8 gold dots flying outward */}
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, pi) => {
+            const rad = angle * Math.PI / 180;
+            const dx = Math.cos(rad) * 60;
+            const dy = Math.sin(rad) * 60;
+            return (
+              <div key={pi} style={{
+                position: 'absolute', top: '50%', left: '50%',
+                width: 6, height: 6,
+                marginLeft: -3, marginTop: -3,
+                background: '#FFD700',
+                borderRadius: '50%',
+                pointerEvents: 'none', zIndex: 29,
+                boxShadow: '0 0 8px rgba(255,215,0,0.8)',
+                animation: `rf-bonus-particle 0.6s ease-out forwards`,
+                '--dx': `${dx}px`,
+                '--dy': `${dy}px`,
+              }} />
+            );
+          })}
+        </>
+      )}
+
+      {/* BONUS badge — enhanced with glow and scale on landing */}
       {isBonusLanded && (
         <div style={{
           position: 'absolute',
-          top: -2,
+          top: -8,
           left: '50%',
           transform: 'translateX(-50%)',
           background: bonusPulse.cardWon
-            ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)'
+            ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
             : 'linear-gradient(135deg, #555 0%, #333 100%)',
           color: bonusPulse.cardWon ? '#000' : '#999',
-          fontSize: 11,
+          fontSize: 13,
           fontWeight: 900,
-          padding: '3px 10px',
-          borderRadius: 5,
-          zIndex: 30,
-          letterSpacing: '0.5px',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 14px rgba(255,215,0,0.4)',
+          padding: '4px 14px',
+          borderRadius: 6,
+          zIndex: 40,
+          letterSpacing: '0.8px',
+          boxShadow: bonusPulse.cardWon
+            ? '0 2px 12px rgba(0,0,0,0.95), 0 0 24px rgba(255,215,0,0.7), 0 0 48px rgba(255,165,0,0.4)'
+            : '0 2px 8px rgba(0,0,0,0.9)',
           pointerEvents: 'none',
           whiteSpace: 'nowrap',
+          textShadow: bonusPulse.cardWon ? '0 1px 0 rgba(255,255,255,0.3)' : 'none',
+          border: bonusPulse.cardWon ? '1.5px solid #FFE566' : '1px solid #444',
         }}>
           {bonusPulse.cardWon ? `×${bonusPulse.cardMult} BONUS` : 'BONUS — NO WIN'}
         </div>

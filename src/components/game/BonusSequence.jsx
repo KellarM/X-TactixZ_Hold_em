@@ -1,18 +1,17 @@
 // RNG Bonus sequence — random jump animation engine.
 // Card hands: 10 positions, random jumps (never neighbor-to-neighbor), 30 touches, ~10 seconds.
 // Side bets: 15 positions, random jumps, 30 touches, ~10 seconds.
-// Both land on the RNG-chosen target with deceleration on the final steps.
+// Both sequences SYNCHRONIZE their landing — the shorter one stretches its
+// final hold so both arrive at their targets on the same tick.
 
 import { useEffect, useRef, useCallback } from 'react';
-import { playBing, playLand, playWin, playLose } from '@/lib/game/useBonusAudio';
+import { playBing, playSettleTick, playLand, playWin, playLose } from '@/lib/game/useBonusAudio';
 
 // Generate a RANDOM JUMP sequence — each position is randomly chosen,
 // but never the same as the previous one or its immediate neighbor.
-// This creates a "jumping around" feel rather than a sequential sweep.
-// The sequence ends on the target with smooth deceleration steps.
 function generateRandomJumpSequence(positionCount, totalTouches, targetIdx) {
   const seq = [];
-  let prev = -1; // no previous at start
+  let prev = -1;
 
   for (let i = 0; i < totalTouches; i++) {
     let next;
@@ -20,8 +19,6 @@ function generateRandomJumpSequence(positionCount, totalTouches, targetIdx) {
     do {
       next = Math.floor(Math.random() * positionCount);
       attempts++;
-      // Avoid: same as previous, or immediate neighbor of previous
-      // (unless we've tried too many times — then allow it)
     } while (
       attempts < 20 &&
       (next === prev ||
@@ -32,20 +29,16 @@ function generateRandomJumpSequence(positionCount, totalTouches, targetIdx) {
     prev = next;
   }
 
-  // After the random jumps, add a "settle" phase that smoothly lands on the target.
-  // Pick 3-5 steps that approach the target with decreasing distance.
+  // Settle phase — smoothly approach target
   const settleSteps = [];
   let cur = seq[seq.length - 1];
 
-  // If we're already on target, add a couple of fake-out jumps first
   if (cur === targetIdx) {
-    // Jump to a random spot, then come back to target
     const fakeOut = Math.floor(Math.random() * positionCount);
     settleSteps.push(fakeOut);
     cur = fakeOut;
   }
 
-  // Step toward target one position at a time
   while (cur !== targetIdx) {
     cur += (targetIdx > cur) ? 1 : -1;
     settleSteps.push(cur);
@@ -54,24 +47,20 @@ function generateRandomJumpSequence(positionCount, totalTouches, targetIdx) {
   return [...seq, ...settleSteps];
 }
 
-// Compute delays for each step — constant during random phase,
-// progressively longer during settle phase (deceleration).
+// Compute delays — constant during random phase, progressive during settle.
 function computeDelays(seqLen, bounceTouches, bounceDuration = 8000) {
   const delays = [];
   const baseDelay = bounceDuration / bounceTouches;
 
   for (let i = 0; i < seqLen; i++) {
     if (i < bounceTouches) {
-      // Random jump phase — mostly constant, slight randomization for organic feel
       if (i >= bounceTouches - 5) {
-        // Slight deceleration on last 5 jumps before settle
         const decelFactor = 1 + (i - (bounceTouches - 5)) * 0.2;
         delays.push(baseDelay * decelFactor);
       } else {
-        delays.push(baseDelay * (0.85 + Math.random() * 0.3)); // ±15% randomization
+        delays.push(baseDelay * (0.85 + Math.random() * 0.3));
       }
     } else {
-      // Settle phase — progressive deceleration
       const settleIdx = i - bounceTouches;
       delays.push(350 + settleIdx * 150);
     }
@@ -85,34 +74,23 @@ function computeDelays(seqLen, bounceTouches, bounceDuration = 8000) {
   return delays;
 }
 
-// Pitch for each touch — random jumps get random pitches within a range,
-// settle steps get a descending pitch (winding down toward landing).
 function pitchForStep(pos, stepIdx, totalBounceTouches, seqLen, baseFreq = 700, range = 300) {
   if (stepIdx >= totalBounceTouches) {
-    // Settle phase — descending pitch
     const settleProgress = (stepIdx - totalBounceTouches) / Math.max(1, seqLen - totalBounceTouches);
     return baseFreq + range * (1 - settleProgress);
   }
-  // Random jump phase — pitch based on position (higher position = higher pitch)
-  const normalized = pos / 10; // approximate
+  const normalized = pos / 10;
   return baseFreq + normalized * range + (Math.random() - 0.5) * 80;
 }
 
 /**
  * BonusSequence — renders nothing visible. Orchestrates the pulse animation
  * by calling onPulse(cardPos, sidePos) on each tick, then onLand when both
- * sequences arrive at their targets, then onComplete after a brief hold.
+ * sequences arrive at their targets simultaneously, then onComplete.
  *
- * Card hands use RANDOM JUMPS (never neighbor-to-neighbor).
- * Side bets use RANDOM JUMPS (never neighbor-to-neighbor).
- *
- * Props:
- *   cardIdx: 0-9  — RNG-chosen card hand bonus position
- *   sideIdx: 0-14 — RNG-chosen side bet bonus position
- *   onPulse: (cardPos, sidePos) => void
- *   onLand:  (cardPos, sidePos) => void
- *   onComplete: () => void
- *   soundEnabled: boolean
+ * SYNCHRONIZATION: Both sequences are generated independently, then the
+ * shorter one's final hold delay is stretched so both land at the same
+ * timestamp. One synchronized landing moment = one dramatic beat.
  */
 export default function BonusSequence({
   cardIdx,
@@ -135,63 +113,85 @@ export default function BonusSequence({
 
     const cardSeq = generateRandomJumpSequence(10, 30, cardIdx);
     const sideSeq = generateRandomJumpSequence(15, 30, sideIdx);
-    const cardDelays = computeDelays(cardSeq.length, 30, 8000);
-    const sideDelays = computeDelays(sideSeq.length, 30, 8000);
+    let cardDelays = computeDelays(cardSeq.length, 30, 8000);
+    let sideDelays = computeDelays(sideSeq.length, 30, 8000);
 
+    // ── SYNCHRONIZE: stretch the shorter sequence's final hold ──
+    const cardTotalTime = cardDelays.reduce((a, b) => a + b, 0);
+    const sideTotalTime = sideDelays.reduce((a, b) => a + b, 0);
+    const maxTime = Math.max(cardTotalTime, sideTotalTime);
+
+    if (cardTotalTime < maxTime) {
+      cardDelays[cardDelays.length - 1] += (maxTime - cardTotalTime);
+    }
+    if (sideTotalTime < maxTime) {
+      sideDelays[sideDelays.length - 1] += (maxTime - sideTotalTime);
+    }
+
+    // Both now finish at exactly maxTime
     let cardTime = 0;
     let sideTime = 0;
 
-    // Schedule card pulse touches
+    // ── Schedule card pulse touches ──
     cardDelays.forEach((delay, i) => {
       cardTime += delay;
+      const isSettle = i >= 30;
+      const settleIdx = i - 30;
+      const settleTotal = cardSeq.length - 30;
       const t = setTimeout(() => {
         if (completedRef.current) return;
         onPulse(cardSeq[i], null);
         if (soundEnabled) {
-          const pitch = pitchForStep(cardSeq[i], i, 30, cardSeq.length, 700, 300);
           const isLast = i === cardSeq.length - 1;
           if (isLast) {
-            playLand(pitch);
+            playLand(1200, 0.20);
+          } else if (isSettle) {
+            playSettleTick(600, settleIdx, settleTotal, 0.10);
           } else {
-            playBing(pitch, 0.06, 0.10);
+            const pitch = pitchForStep(cardSeq[i], i, 30, cardSeq.length, 700, 300);
+            playBing(pitch, 0.07, 0.12);
           }
         }
       }, cardTime);
       timersRef.current.push(t);
     });
 
-    // Schedule side bet pulse touches
+    // ── Schedule side bet pulse touches ──
     sideDelays.forEach((delay, i) => {
       sideTime += delay;
+      const isSettle = i >= 30;
+      const settleIdx = i - 30;
+      const settleTotal = sideSeq.length - 30;
       const t = setTimeout(() => {
         if (completedRef.current) return;
         onPulse(null, sideSeq[i]);
         if (soundEnabled) {
-          const pitch = pitchForStep(sideSeq[i], i, 30, sideSeq.length, 500, 400);
           const isLast = i === sideSeq.length - 1;
           if (isLast) {
-            playLand(pitch);
+            playLand(1000, 0.18);
+          } else if (isSettle) {
+            playSettleTick(500, settleIdx, settleTotal, 0.10);
           } else {
-            playBing(pitch, 0.06, 0.10);
+            const pitch = pitchForStep(sideSeq[i], i, 30, sideSeq.length, 500, 400);
+            playBing(pitch, 0.07, 0.12);
           }
         }
       }, sideTime);
       timersRef.current.push(t);
     });
 
-    // Schedule landing event
-    const landTime = Math.max(cardTime, sideTime);
+    // ── Synchronized landing event — both sequences arrive together ──
     const landTimer = setTimeout(() => {
       if (completedRef.current) return;
       completedRef.current = true;
       onLand(cardIdx, sideIdx);
-    }, landTime);
+    }, maxTime);
     timersRef.current.push(landTimer);
 
-    // Schedule completion callback
+    // ── Completion callback — show result overlay after landing hold ──
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, landTime + 1500);
+    }, maxTime + 1500);
     timersRef.current.push(completeTimer);
 
     return clearTimers;

@@ -197,24 +197,106 @@ export default function RightSidebar({
     return {};
   };
 
+  // Sun-ray overlay during pulse phase (before landing)
+  const bonusRayOverlay = (sideIdx) => {
+    if (!isSidePulsing(sideIdx)) return null;
+    return (
+      <div style={{
+        position: 'absolute', top: '50%', left: '50%',
+        width: '140%', height: '140%',
+        pointerEvents: 'none', zIndex: 25,
+        opacity: 0.7,
+        animation: 'rf-bonus-rays-side 0.25s linear infinite',
+        background: `repeating-conic-gradient(from 0deg,
+          transparent 0deg, transparent 7deg,
+          rgba(255,215,0,0.55) 8deg, rgba(255,235,0,0.85) 9deg, rgba(255,215,0,0.55) 10deg,
+          transparent 11deg, transparent 18deg)`,
+        borderRadius: '50%',
+        maskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
+        WebkitMaskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
+      }} />
+    );
+  };
+
   const bonusBadge = (sideIdx) => {
     if (!isSideLanded(sideIdx)) return null;
     return (
-      <span style={{
-        position: 'absolute', top: -2, left: '50%',
-        transform: 'translateX(-50%)',
-        background: bonusPulse.sideWon
-          ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 100%)'
-          : 'linear-gradient(135deg, #555 0%, #333 100%)',
-        color: bonusPulse.sideWon ? '#000' : '#999',
-        fontSize: 10, fontWeight: 900,
-        padding: '2px 8px', borderRadius: 4,
-        zIndex: 30, letterSpacing: '0.5px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 12px rgba(255,215,0,0.4)',
-        pointerEvents: 'none', whiteSpace: 'nowrap',
-      }}>
-        {bonusPulse.sideWon ? `×${bonusPulse.sideMult} BONUS` : 'BONUS — NO WIN'}
-      </span>
+      <>
+        {/* Sun-ray streaks */}
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          width: '140%', height: '140%',
+          pointerEvents: 'none', zIndex: 25,
+          opacity: 1,
+          animation: 'rf-bonus-rays-side 2s linear infinite',
+          background: `repeating-conic-gradient(from 0deg,
+            transparent 0deg, transparent 7deg,
+            rgba(255,215,0,0.55) 8deg, rgba(255,235,0,0.85) 9deg, rgba(255,215,0,0.55) 10deg,
+            transparent 11deg, transparent 18deg)`,
+          borderRadius: '50%',
+          maskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
+          WebkitMaskImage: 'radial-gradient(circle, transparent 30%, black 35%, black 80%, transparent 90%)',
+        }} />
+        {/* Shockwave ring 1 */}
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          width: '100%', height: '100%',
+          border: '4px solid #FFD700',
+          borderRadius: '6px',
+          pointerEvents: 'none', zIndex: 28,
+          animation: 'rf-bonus-shockwave-side-1 0.7s ease-out forwards',
+        }} />
+        {/* Shockwave ring 2 (delayed) */}
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          width: '100%', height: '100%',
+          border: '3px solid rgba(255,235,0,0.7)',
+          borderRadius: '6px',
+          pointerEvents: 'none', zIndex: 28,
+          animation: 'rf-bonus-shockwave-side-2 0.9s ease-out 0.15s forwards',
+          opacity: 0,
+        }} />
+        {/* Particle burst */}
+        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, pi) => {
+          const rad = angle * Math.PI / 180;
+          const dx = Math.cos(rad) * 50;
+          const dy = Math.sin(rad) * 50;
+          return (
+            <div key={pi} style={{
+              position: 'absolute', top: '50%', left: '50%',
+              width: 5, height: 5,
+              marginLeft: -2.5, marginTop: -2.5,
+              background: '#FFD700',
+              borderRadius: '50%',
+              pointerEvents: 'none', zIndex: 29,
+              boxShadow: '0 0 6px rgba(255,215,0,0.8)',
+              animation: 'rf-bonus-particle-side 0.6s ease-out forwards',
+              '--dx': dx + 'px',
+              '--dy': dy + 'px',
+            }} />
+          );
+        })}
+        {/* Enhanced badge */}
+        <span style={{
+          position: 'absolute', top: -8, left: '50%',
+          transform: 'translateX(-50%)',
+          background: bonusPulse.sideWon
+            ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
+            : 'linear-gradient(135deg, #555 0%, #333 100%)',
+          color: bonusPulse.sideWon ? '#000' : '#999',
+          fontSize: 12, fontWeight: 900,
+          padding: '4px 12px', borderRadius: 6,
+          zIndex: 40, letterSpacing: '0.8px',
+          boxShadow: bonusPulse.sideWon
+            ? '0 2px 12px rgba(0,0,0,0.95), 0 0 24px rgba(255,215,0,0.7), 0 0 48px rgba(255,165,0,0.4)'
+            : '0 2px 8px rgba(0,0,0,0.9)',
+          pointerEvents: 'none', whiteSpace: 'nowrap',
+          textShadow: bonusPulse.sideWon ? '0 1px 0 rgba(255,255,255,0.3)' : 'none',
+          border: bonusPulse.sideWon ? '1.5px solid #FFE566' : '1px solid #444',
+        }}>
+          {bonusPulse.sideWon ? `×${bonusPulse.sideMult} BONUS` : 'BONUS — NO WIN'}
+        </span>
+      </>
     );
   };
 
@@ -285,6 +367,7 @@ export default function RightSidebar({
                     }}
                   />
                 )}
+                {bonusRayOverlay(rankIdx)}
                 {bonusBadge(rankIdx)}
                 {isWinner && isResolved && (
                   <span style={{
@@ -331,6 +414,7 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusSideStyle(7 + colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
+                {bonusRayOverlay(7 + colorIdx)}
                 {bonusBadge(7 + colorIdx)}
                 <span style={{ ...goldEmbossText, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 {locked ? (
@@ -389,6 +473,7 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusSideStyle(13 + riverIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
+                {bonusRayOverlay(13 + riverIdx)}
                 {bonusBadge(13 + riverIdx)}
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
