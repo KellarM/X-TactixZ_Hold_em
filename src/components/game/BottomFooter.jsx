@@ -25,7 +25,7 @@ if (typeof document !== 'undefined' && !document.getElementById('rf-ante-glow-st
 const W = {
   bank:   130,   // $99,999.99 = 10 chars, sized to fit without expansion
   betSum: 100,   // same as original, locked
-  deal:   280,   // longest subtitle: "SELECT A CHIP, THEN PLACE AN ANTE, THEN DEAL" = ~46 chars at 9px
+  deal:   560,   // longest subtitle at 18px (2x): ~46 chars, scaled from 280px@9px basis
   gear:   36,
 };
 
@@ -41,6 +41,7 @@ export default function BottomFooter({
     <div
       style={{
         width: '100%',
+        position: 'relative',
         background: 'var(--theme-bg, #050d21)',
         borderTop: '2px solid #C5A059',
         display: 'flex',
@@ -152,7 +153,8 @@ export default function BottomFooter({
           </button>
         )}
         <span style={{
-          color: '#F7C25A', fontSize: 9, fontWeight: 600,
+          color: '#FFD700', fontSize: 18, fontWeight: 700,
+          fontFamily: "'Playfair Display', serif",
           letterSpacing: '0.5px', whiteSpace: 'nowrap',
           display: 'block', textAlign: 'center',
         }}>
@@ -194,19 +196,19 @@ export default function BottomFooter({
       {/* ── OPERATOR TOOLBAR — right of Fold, locked, never shifts ── */}
       <ToolBar />
 
-      {/* ── SPACER — pushes Gear to far right ── */}
-      <div style={{ flex: '1 1 0', minWidth: 0 }} />
-
-      {/* ── 6. GEAR — pinned to far right border ── */}
+      {/* ── 6. GEAR — absolutely pinned to far right border. Independent of flex flow;
+             cannot be moved by anything else in the row, regardless of width changes ── */}
       <button
         onClick={onSettings}
         title="Settings"
         style={{
+          position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
           width: W.gear, height: 36, borderRadius: '50%',
           border: '1px solid #C5A059', color: '#C5A059',
           background: 'transparent', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           flexShrink: 0,
+          zIndex: 10,
         }}
       >
         <Settings size={18} />
