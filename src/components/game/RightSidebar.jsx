@@ -58,9 +58,16 @@ const boardPanelStyle = {
 const STYLE_ID = 'rf-sidebar-animations';
 function injectStyles() {
   if (typeof document === 'undefined') return;
-  if (document.getElementById(STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
+  // Always (re)write textContent instead of bailing when the tag already
+  // exists — a stale tag left over from a hot-reload / previous session
+  // would otherwise keep OLD keyframes, silently dropping any new
+  // animations added in a later code push.
+  let style = document.getElementById(STYLE_ID);
+  if (!style) {
+    style = document.createElement('style');
+    style.id = STYLE_ID;
+    document.head.appendChild(style);
+  }
   style.textContent = `
     @keyframes rf-bonus-pulse-side {
       0%   { box-shadow: 0 0 16px 5px rgba(255,215,0,0.7), inset 0 0 20px rgba(255,215,0,0.2); transform: scale(1.0); border-color: rgba(255,215,0,0.6); }
@@ -119,7 +126,6 @@ function injectStyles() {
       100% { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); filter: brightness(1.0); }
     }
   `;
-  document.head.appendChild(style);
 }
 
 // ── Rank board chip: absolute CENTRE ──
@@ -237,6 +243,7 @@ export default function RightSidebar({
       return (
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
           width: '70%', height: '70%',
           borderRadius: '50%',
           border: '2px solid rgba(210,210,210,0.6)',
@@ -252,6 +259,7 @@ export default function RightSidebar({
         {/* Flashbulb burst on impact */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
           width: '100%', height: '100%',
           borderRadius: '50%',
           pointerEvents: 'none', zIndex: 27,
@@ -261,6 +269,7 @@ export default function RightSidebar({
         {/* Shockwave ring 1 */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
           width: '100%', height: '100%',
           border: '4px solid #FFD700',
           borderRadius: '6px',
@@ -270,6 +279,7 @@ export default function RightSidebar({
         {/* Shockwave ring 2 (delayed) */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
           width: '100%', height: '100%',
           border: '3px solid rgba(255,235,0,0.7)',
           borderRadius: '6px',

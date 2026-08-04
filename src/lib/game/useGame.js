@@ -130,7 +130,7 @@ export function useGame() {
   const saved = useRef(loadSavedState());
   const handCounter = useRef(0);
   const [phase, setPhase] = useState(saved.current?.phase ?? 'ante');
-  const [bonus, setBonus] = useState(null); // { cardIdx, sideIdx, cardMult, sideMult, cardWon, sideWon, cardPayout, sidePayout, bonusWinnings }
+  const [bonus, setBonus] = useState(saved.current?.bonus ?? null); // { cardIdx, sideIdx, cardMult, sideMult, cardWon, sideWon, cardPayout, sidePayout, bonusWinnings }
   const [bank, setBank] = useState(saved.current?.bank ?? START_BANK);
   const [ante, setAnte] = useState(saved.current?.ante ?? 0);
   const [deck, setDeck] = useState(saved.current?.deck ?? []);
@@ -144,12 +144,17 @@ export function useGame() {
 
   useEffect(() => {
     try {
-      const data = { phase, bank, ante, deck, revealed, bets, selectedChip, history, result };
+      // 'bonus' MUST be persisted alongside 'phase' and 'result' — if phase
+      // is 'resolved' after a remount/refresh, this is the data that drives
+      // the RNG Bonus chase sequence. Without it, a refresh mid-resolution
+      // silently skips the bonus animation and shows the result overlay
+      // early via the no-bonus fallback path.
+      const data = { phase, bank, ante, deck, revealed, bets, selectedChip, history, result, bonus };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       // ignore
     }
-  }, [phase, bank, ante, deck, revealed, bets, selectedChip, history, result]);
+  }, [phase, bank, ante, deck, revealed, bets, selectedChip, history, result, bonus]);
 
   const community = deck.slice(0, revealed);
   const flop = deck.slice(0, 3);
