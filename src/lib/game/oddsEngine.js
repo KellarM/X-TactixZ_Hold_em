@@ -18,10 +18,14 @@ export const ODDS_THRESHOLD_CARD_HIGH = 300;   // Card Board max odds
 export const ODDS_THRESHOLD_CARD_LOW  = 1.1;   // Card Board min odds
 export const ODDS_THRESHOLD_RANK_HIGH = 300;   // Rank Board max odds
 export const ODDS_THRESHOLD_RANK_LOW  = 1.1;   // Rank Board min odds
-export const ODDS_THRESHOLD_COLOR_HIGH = 300;  // Color Board max odds
-export const ODDS_THRESHOLD_COLOR_LOW  = 1.1;  // Color Board min odds
-export const ODDS_THRESHOLD_RIVER_HIGH = 300;   // River Board max odds
-export const ODDS_THRESHOLD_RIVER_LOW  = 1.1;   // River Board min odds
+// NOTE: Color and River boards intentionally do NOT use odds thresholds.
+// Color Board is locked at a pre-certified 96% RTP with fixed payouts as low as
+// 0.856:1 by design (3 positions always live per flop state) — a 1.1 floor would
+// falsely kill one of the 3 live positions on every single flop.
+// River Board is an inherently near-50/50 bet — at 8% house edge, payouts run
+// ~0.6-1.3:1 almost always, so a 1.1 floor locks BOTH sides most rounds.
+// Bug found and fixed 2026-08-03: these were mistakenly added without being
+// requested (only Card/Rank thresholds were asked for) and broke live gameplay.
 
 // Check if a payout falls outside a given threshold window
 function payoutOutsideThresholds(payout, high, low) {
@@ -121,8 +125,8 @@ export function computePostFlopOdds(flop, stock, hands) {
       wins,
       probability: p,
       payout: payoutFromProb(p, HOUSE_EDGE_COLOR),
-      locked: p === 0 || p > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_COLOR), ODDS_THRESHOLD_COLOR_HIGH, ODDS_THRESHOLD_COLOR_LOW),
-      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : (payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_COLOR), ODDS_THRESHOLD_COLOR_HIGH, ODDS_THRESHOLD_COLOR_LOW) ? 'threshold' : null))
+      locked: p === 0 || p > LOCKOUT_THRESHOLD,
+      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : null)
     };
   }
 
@@ -144,8 +148,8 @@ export function computeRiverOdds(board4, stock) {
   const pLow = lowCount / remaining.length;
   const pHigh = highCount / remaining.length;
   return {
-    low: { count: lowCount, probability: pLow, payout: payoutFromProb(pLow, HOUSE_EDGE_RIVER), locked: pLow === 0 || pLow > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(pLow, HOUSE_EDGE_RIVER), ODDS_THRESHOLD_RIVER_HIGH, ODDS_THRESHOLD_RIVER_LOW) },
-    high: { count: highCount, probability: pHigh, payout: payoutFromProb(pHigh, HOUSE_EDGE_RIVER), locked: pHigh === 0 || pHigh > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(pHigh, HOUSE_EDGE_RIVER), ODDS_THRESHOLD_RIVER_HIGH, ODDS_THRESHOLD_RIVER_LOW) },
+    low: { count: lowCount, probability: pLow, payout: payoutFromProb(pLow, HOUSE_EDGE_RIVER), locked: pLow === 0 || pLow > LOCKOUT_THRESHOLD },
+    high: { count: highCount, probability: pHigh, payout: payoutFromProb(pHigh, HOUSE_EDGE_RIVER), locked: pHigh === 0 || pHigh > LOCKOUT_THRESHOLD },
     remaining: remaining.length
   };
 }
