@@ -46,6 +46,18 @@ for (let r = 0; r < 13; r++)
 
 const HAND_LABELS = ['A♦10♥','K♣K♠','Q♣J♠','Q♠10♠','J♣9♣','8♦6♦','7♦7♠','4♥2♥','3♣3♥','A♥5♦'];
 const RANK_NAMES = ['1 Pair', '2 Pair', '3 Of A Kind', 'Straight', 'Flush', 'Full House', '4 Of A Kind'];
+// Odds thresholds — must match oddsEngine.js
+// Separate per-board so they can be tuned independently
+const ODDS_THRESHOLD_CARD_HIGH = 300;
+const ODDS_THRESHOLD_CARD_LOW  = 1.1;
+const ODDS_THRESHOLD_RANK_HIGH = 300;
+const ODDS_THRESHOLD_RANK_LOW  = 1.1;
+
+// Check if true odds fall outside the bettable window
+function isOddsDead(trueOdds, high, low) {
+  if (trueOdds === null) return true;
+  return trueOdds > high || trueOdds < low;
+}
 
 // ── Precomputed 7-choose-5 combos ─────────────────────────────
 const COMBOS_7_5 = [
@@ -275,7 +287,7 @@ function handleRun(payload) {
       trueProb,
       trueOdds: trueProb > 0 ? (1 / trueProb) - 1 : null,
       observedRtp: obsRtp,
-      dead: trueProb === 0,
+      dead: trueProb === 0 || isOddsDead(trueProb > 0 ? (1 / trueProb) - 1 : null, ODDS_THRESHOLD_CARD_HIGH, ODDS_THRESHOLD_CARD_LOW),
       // RTP at various targets
       rtpAt96: trueProb > 0 ? observedProb * (0.96 / trueProb) * 100 : 0,
       rtpAt98: trueProb > 0 ? observedProb * (0.98 / trueProb) * 100 : 0,
@@ -296,7 +308,7 @@ function handleRun(payload) {
       trueProb,
       trueOdds: trueProb > 0 ? (1 / trueProb) - 1 : null,
       observedRtp: obsRtp,
-      dead: trueProb === 0,
+      dead: trueProb === 0 || isOddsDead(trueProb > 0 ? (1 / trueProb) - 1 : null, ODDS_THRESHOLD_RANK_HIGH, ODDS_THRESHOLD_RANK_LOW),
       rtpAt96: trueProb > 0 ? observedProb * (0.96 / trueProb) * 100 : 0,
       rtpAt98: trueProb > 0 ? observedProb * (0.98 / trueProb) * 100 : 0,
       rtpAt100: trueProb > 0 ? (observedProb / trueProb) * 100 : 0,

@@ -13,13 +13,20 @@ export const LOCKOUT_THRESHOLD = 0.80; // Lockout dominant positions at 80% (tig
 
 // Odds thresholds — positions outside this payout window are dead (not bettable)
 // Configurable operator settings. Starting values for tuning — not final.
-export const ODDS_THRESHOLD_HIGH = 300;  // Max payout odds (e.g. 300:1). Rarer than this = dead
-export const ODDS_THRESHOLD_LOW = 1.1;   // Min payout odds (e.g. 1.1:1). Below this = dead
+// Separate per-board so they can be tuned independently.
+export const ODDS_THRESHOLD_CARD_HIGH = 300;   // Card Board max odds
+export const ODDS_THRESHOLD_CARD_LOW  = 1.1;   // Card Board min odds
+export const ODDS_THRESHOLD_RANK_HIGH = 300;   // Rank Board max odds
+export const ODDS_THRESHOLD_RANK_LOW  = 1.1;   // Rank Board min odds
+export const ODDS_THRESHOLD_COLOR_HIGH = 300;  // Color Board max odds
+export const ODDS_THRESHOLD_COLOR_LOW  = 1.1;  // Color Board min odds
+export const ODDS_THRESHOLD_RIVER_HIGH = 300;   // River Board max odds
+export const ODDS_THRESHOLD_RIVER_LOW  = 1.1;   // River Board min odds
 
-// Check if a payout falls outside the bettable odds window
-function payoutOutsideThresholds(payout) {
+// Check if a payout falls outside a given threshold window
+function payoutOutsideThresholds(payout, high, low) {
   if (payout === null) return true;
-  return payout > ODDS_THRESHOLD_HIGH || payout < ODDS_THRESHOLD_LOW;
+  return payout > high || payout < low;
 }
 
 // Correct flat house-edge formula: EV = -HE regardless of probability
@@ -87,8 +94,8 @@ export function computePostFlopOdds(flop, stock, hands) {
       wins,
       probability: p,
       payout: payoutFromProb(p, HOUSE_EDGE_CARD),
-      locked: p === 0 || p > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_CARD)),
-      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : (payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_CARD)) ? 'threshold' : null))
+      locked: p === 0 || p > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_CARD), ODDS_THRESHOLD_CARD_HIGH, ODDS_THRESHOLD_CARD_LOW),
+      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : (payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_CARD), ODDS_THRESHOLD_CARD_HIGH, ODDS_THRESHOLD_CARD_LOW) ? 'threshold' : null))
     };
   });
 
@@ -101,8 +108,8 @@ export function computePostFlopOdds(flop, stock, hands) {
       wins,
       probability: p,
       payout: payoutFromProb(p, HOUSE_EDGE_RANK),
-      locked: p === 0 || p > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_RANK)),
-      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : (payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_RANK)) ? 'threshold' : null))
+      locked: p === 0 || p > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_RANK), ODDS_THRESHOLD_RANK_HIGH, ODDS_THRESHOLD_RANK_LOW),
+      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : (payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_RANK), ODDS_THRESHOLD_RANK_HIGH, ODDS_THRESHOLD_RANK_LOW) ? 'threshold' : null))
     };
   }
 
@@ -114,8 +121,8 @@ export function computePostFlopOdds(flop, stock, hands) {
       wins,
       probability: p,
       payout: payoutFromProb(p, HOUSE_EDGE_COLOR),
-      locked: p === 0 || p > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_COLOR)),
-      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : (payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_COLOR)) ? 'threshold' : null))
+      locked: p === 0 || p > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_COLOR), ODDS_THRESHOLD_COLOR_HIGH, ODDS_THRESHOLD_COLOR_LOW),
+      reason: p === 0 ? 'dead' : (p > LOCKOUT_THRESHOLD ? 'dominant' : (payoutOutsideThresholds(payoutFromProb(p, HOUSE_EDGE_COLOR), ODDS_THRESHOLD_COLOR_HIGH, ODDS_THRESHOLD_COLOR_LOW) ? 'threshold' : null))
     };
   }
 
@@ -137,8 +144,8 @@ export function computeRiverOdds(board4, stock) {
   const pLow = lowCount / remaining.length;
   const pHigh = highCount / remaining.length;
   return {
-    low: { count: lowCount, probability: pLow, payout: payoutFromProb(pLow, HOUSE_EDGE_RIVER), locked: pLow === 0 || pLow > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(pLow, HOUSE_EDGE_RIVER)) },
-    high: { count: highCount, probability: pHigh, payout: payoutFromProb(pHigh, HOUSE_EDGE_RIVER), locked: pHigh === 0 || pHigh > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(pHigh, HOUSE_EDGE_RIVER)) },
+    low: { count: lowCount, probability: pLow, payout: payoutFromProb(pLow, HOUSE_EDGE_RIVER), locked: pLow === 0 || pLow > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(pLow, HOUSE_EDGE_RIVER), ODDS_THRESHOLD_RIVER_HIGH, ODDS_THRESHOLD_RIVER_LOW) },
+    high: { count: highCount, probability: pHigh, payout: payoutFromProb(pHigh, HOUSE_EDGE_RIVER), locked: pHigh === 0 || pHigh > LOCKOUT_THRESHOLD || payoutOutsideThresholds(payoutFromProb(pHigh, HOUSE_EDGE_RIVER), ODDS_THRESHOLD_RIVER_HIGH, ODDS_THRESHOLD_RIVER_LOW) },
     remaining: remaining.length
   };
 }

@@ -15,13 +15,16 @@ const RANK_NAMES = ['1 Pair', '2 Pair', '3 Of A Kind', 'Straight', 'Flush', 'Ful
 
 // Odds thresholds — positions outside this window are DEAD (not bettable)
 // Must match the engine config in oddsEngine.js
-const ODDS_THRESHOLD_HIGH = 300;
-const ODDS_THRESHOLD_LOW = 1.1;
+// Separate per-board so they can be tuned independently
+const ODDS_THRESHOLD_CARD_HIGH = 300;
+const ODDS_THRESHOLD_CARD_LOW  = 1.1;
+const ODDS_THRESHOLD_RANK_HIGH = 300;
+const ODDS_THRESHOLD_RANK_LOW  = 1.1;
 
-// Check if true odds fall outside the bettable window
-function isThresholdDead(trueOdds) {
+// Check if true odds fall outside the bettable window for a given board type
+function isThresholdDead(trueOdds, high, low) {
   if (trueOdds === null) return true;
-  return trueOdds > ODDS_THRESHOLD_HIGH || trueOdds < ODDS_THRESHOLD_LOW;
+  return trueOdds > high || trueOdds < low;
 }
 
 // Certification modules (4 round types)
@@ -112,7 +115,7 @@ function formatPct(p) {
 function formatOdds(o) {
   if (o === null) return 'DEAD';
   if (o === 0) return '0.0000:1';
-  return o.toFixed(4) + ':1';
+  return o.toFixed(2) + ':1';
 }
 
 function formatElapsed(seconds) {
@@ -410,7 +413,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
                     </thead>
                     <tbody>
                       {result.cardResults.map((r, i) => {
-                        if (isThresholdDead(r.trueOdds)) {
+                        if (isThresholdDead(r.trueOdds, ODDS_THRESHOLD_CARD_HIGH, ODDS_THRESHOLD_CARD_LOW)) {
                           return (
                             <tr key={'c'+i} className="border-b border-slate-700/50 opacity-50">
                               <td className="px-2 py-1 text-slate-300">{HAND_LABELS[r.handId - 1]}</td>
@@ -443,7 +446,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
                         );
                       })}
                       {result.rankResults.map((r, i) => {
-                        if (isThresholdDead(r.trueOdds)) {
+                        if (isThresholdDead(r.trueOdds, ODDS_THRESHOLD_RANK_HIGH, ODDS_THRESHOLD_RANK_LOW)) {
                           return (
                             <tr key={'r'+i} className="border-b border-slate-700/50 opacity-50">
                               <td className="px-2 py-1 text-slate-300">{RANK_NAMES[r.rankIndex]}</td>
