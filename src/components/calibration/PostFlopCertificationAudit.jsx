@@ -13,6 +13,17 @@ const HAND_LABELS = [
 ];
 const RANK_NAMES = ['1 Pair', '2 Pair', '3 Of A Kind', 'Straight', 'Flush', 'Full House', '4 Of A Kind'];
 
+// Odds thresholds — positions outside this window are DEAD (not bettable)
+// Must match the engine config in oddsEngine.js
+const ODDS_THRESHOLD_HIGH = 300;
+const ODDS_THRESHOLD_LOW = 1.1;
+
+// Check if true odds fall outside the bettable window
+function isThresholdDead(trueOdds) {
+  if (trueOdds === null) return true;
+  return trueOdds > ODDS_THRESHOLD_HIGH || trueOdds < ODDS_THRESHOLD_LOW;
+}
+
 // Certification modules (4 round types)
 const MODULES = [
   {
@@ -398,7 +409,20 @@ function ModulePanel({ module, flopData, flopIndex }) {
                       </tr>
                     </thead>
                     <tbody>
-                      {result.cardResults.filter(r => !r.dead).map((r, i) => {
+                      {result.cardResults.map((r, i) => {
+                        if (isThresholdDead(r.trueOdds)) {
+                          return (
+                            <tr key={'c'+i} className="border-b border-slate-700/50 opacity-50">
+                              <td className="px-2 py-1 text-slate-300">{HAND_LABELS[r.handId - 1]}</td>
+                              <td className="px-2 py-1 text-right font-mono text-amber-300">{formatOdds(r.trueOdds)}</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-center font-mono text-slate-500 font-bold">DEAD</td>
+                            </tr>
+                          );
+                        }
                         const odds100 = r.observedProb > 0 ? (1 / r.observedProb) - 1 : null;
                         const odds95 = r.observedProb > 0 ? (0.95 / r.observedProb) - 1 : null;
                         const odds965 = r.observedProb > 0 ? (0.965 / r.observedProb) - 1 : null;
@@ -418,7 +442,20 @@ function ModulePanel({ module, flopData, flopIndex }) {
                           </tr>
                         );
                       })}
-                      {result.rankResults.filter(r => !r.dead).map((r, i) => {
+                      {result.rankResults.map((r, i) => {
+                        if (isThresholdDead(r.trueOdds)) {
+                          return (
+                            <tr key={'r'+i} className="border-b border-slate-700/50 opacity-50">
+                              <td className="px-2 py-1 text-slate-300">{RANK_NAMES[r.rankIndex]}</td>
+                              <td className="px-2 py-1 text-right font-mono text-amber-300">{formatOdds(r.trueOdds)}</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-center font-mono text-slate-500 font-bold">DEAD</td>
+                            </tr>
+                          );
+                        }
                         const odds100 = r.observedProb > 0 ? (1 / r.observedProb) - 1 : null;
                         const odds95 = r.observedProb > 0 ? (0.95 / r.observedProb) - 1 : null;
                         const odds965 = r.observedProb > 0 ? (0.965 / r.observedProb) - 1 : null;
