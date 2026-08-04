@@ -284,7 +284,7 @@ export default function RightSidebar({
                   <img
                     src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
                     alt="Locked"
-                    style={{ width: 22, height: 'auto', opacity: 0.9, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }}
+                    style={{ width: 26, height: 'auto', opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
                   />
                 ) : (
                   <span style={{ ...goldEmbossText, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
@@ -342,7 +342,7 @@ export default function RightSidebar({
                   <img
                     src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
                     alt="Locked"
-                    style={{ width: 26, height: 'auto', marginTop: 2, opacity: 0.9, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }}
+                    style={{ width: 32, height: 'auto', marginTop: 2, opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
                   />
                 ) : (
                   <span style={{ color: '#000', fontWeight: 900, fontSize: 13, lineHeight: 1 }}>
