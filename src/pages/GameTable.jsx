@@ -9,6 +9,7 @@ import RightSidebar from '@/components/game/RightSidebar';
 import BottomFooter from '@/components/game/BottomFooter';
 import ResultOverlay from '@/components/game/ResultOverlay';
 import BonusSequence from '@/components/game/BonusSequence';
+import RevealPrompt from '@/components/game/RevealPrompt';
 import { playWin, playLose, setBonusSfxEnabled } from '@/lib/game/useBonusAudio';
 import SettingsModal from '@/components/game/SettingsModal';
 import HowToPlayModal from '@/components/game/HowToPlayModal';
@@ -29,9 +30,12 @@ export default function GameTable() {
     setBoardThemeState(t);
     try { localStorage.setItem('rfpf_theme', t); } catch {}
   };
-  // ── Result overlay delay — 5 seconds after resolution before modal appears ──
-  // Winner indicators light up immediately; the modal waits so players can read the board.
+  // ── Result overlay — NEVER auto-opens ──────────────────────────────────
+  // After resolution: bonus sequence runs (or is skipped in the no-bonus
+  // safety fallback) -> awaitingReveal becomes true -> "Click Anywhere /
+  // Open Window" prompt shows -> player clicks anywhere -> showResult opens.
   const [showResult, setShowResult] = useState(false);
+  const [awaitingReveal, setAwaitingReveal] = useState(false);
   const [bonusPulse, setBonusPulse] = useState({ card: null, side: null, landed: false, cardWon: false, sideWon: false, cardMult: 2, sideMult: 3 });
   const [bonusActive, setBonusActive] = useState(false);
   const [playerStats, setPlayerStats] = useState({
@@ -61,19 +65,21 @@ export default function GameTable() {
   useEffect(() => {
     if (phase === 'resolved' && game.result) {
       setShowResult(false);
+      setAwaitingReveal(false);
       setBonusPulse({ card: null, side: null, landed: false, cardWon: false, sideWon: false, cardMult: 2, sideMult: 3 });
 
       if (game.bonus) {
         // Start bonus sequence — BonusSequence component handles the animation
         setBonusActive(true);
       } else {
-        // Fallback: no bonus, show after 5 seconds
-        const timer = setTimeout(() => setShowResult(true), 5000);
-        return () => clearTimeout(timer);
+        // Safety fallback: no bonus data — skip straight to the click-anywhere
+        // prompt. The result overlay NEVER auto-opens under any path.
+        setAwaitingReveal(true);
       }
     } else {
       setShowResult(false);
       setBonusActive(false);
+      setAwaitingReveal(false);
       setBonusPulse({ card: null, side: null, landed: false, cardWon: false, sideWon: false, cardMult: 2, sideMult: 3 });
     }
   }, [phase, game.result, game.bonus]);
@@ -109,6 +115,12 @@ export default function GameTable() {
 
   const handleBonusComplete = useCallback(() => {
     setBonusActive(false);
+    setAwaitingReveal(true);
+  }, []);
+
+  // Player clicked anywhere on screen while the reveal prompt was showing
+  const handleRevealClick = useCallback(() => {
+    setAwaitingReveal(false);
     setShowResult(true);
   }, []);
 
@@ -202,6 +214,7 @@ export default function GameTable() {
             revealed={game.revealed}
             phase={phase}
           />
+          {awaitingReveal && <RevealPrompt onReveal={handleRevealClick} />}
           <div style={{ flex: '1 1 0', minHeight: 0 }}>
             <CardBoard
               odds={game.flopOdds}
