@@ -116,32 +116,38 @@ export default function BottomFooter({
 
       {/* ── 4. DEAL BUTTON — locked width, never shifts.
              Fold (left) and Clear Bets (right) flank it, in the empty space
-             above the subtitle line, only during postflop/postturn. Each is
-             absolutely positioned within this row so it doesn't disturb the
-             Deal/New Hand button's centering, and is sized to its own content
-             (auto width/height from padding), not stretched. ── */}
+             above the subtitle line, only during postflop/postturn.
+             Uses a 3-column CSS grid (1fr / auto / auto / 1fr... see below) so
+             Fold sits at the exact horizontal midpoint between the box's left
+             edge and the Deal button's left edge (equal distance from both),
+             and Clear Bets sits at the exact midpoint between the Deal
+             button's right edge and the box's right edge (equal distance from
+             both) -- computed by the grid, not guessed/hardcoded. ── */}
       <div style={{
         width: W.deal, flexShrink: 0,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 3,
       }}>
         <div style={{
-          position: 'relative', display: 'flex',
-          alignItems: 'center', justifyContent: 'center', width: '100%',
+          display: 'grid',
+          gridTemplateColumns: '1fr auto 1fr',
+          alignItems: 'center',
+          width: '100%',
         }}>
-          {showActions && (
-            <button
-              onClick={onFold}
-              style={{
-                position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)',
-                background: '#3a1020', border: '1px solid #C5A059', color: '#FF6B6B',
-                fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
-                borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
-              }}
-            >
-              FOLD
-            </button>
-          )}
+          <div style={{ justifySelf: 'center' }}>
+            {showActions && (
+              <button
+                onClick={onFold}
+                style={{
+                  background: '#3a1020', border: '1px solid #C5A059', color: '#FF6B6B',
+                  fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
+                  borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                FOLD
+              </button>
+            )}
+          </div>
 
           {phase === 'resolved' ? (
             <button
@@ -152,6 +158,7 @@ export default function BottomFooter({
                 padding: '8px 28px', border: 'none', cursor: 'pointer',
                 boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
                 display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap',
+                justifySelf: 'center',
               }}
             >
               <RotateCcw size={16} /> NEW HAND
@@ -169,25 +176,27 @@ export default function BottomFooter({
                 cursor: canDeal ? 'pointer' : 'not-allowed',
                 boxShadow: canDeal ? '0 2px 6px rgba(0,0,0,0.5)' : 'none',
                 whiteSpace: 'nowrap',
+                justifySelf: 'center',
               }}
             >
               {dealLabel}
             </button>
           )}
 
-          {showActions && (
-            <button
-              onClick={onClearBets}
-              style={{
-                position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
-                background: '#1a1030', border: '1px solid #C5A059', color: '#C5A059',
-                fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
-                borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
-              }}
-            >
-              CLEAR BETS
-            </button>
-          )}
+          <div style={{ justifySelf: 'center' }}>
+            {showActions && (
+              <button
+                onClick={onClearBets}
+                style={{
+                  background: '#1a1030', border: '1px solid #C5A059', color: '#C5A059',
+                  fontWeight: 700, fontSize: 11, letterSpacing: '0.5px',
+                  borderRadius: 6, padding: '7px 10px', cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                CLEAR BETS
+              </button>
+            )}
+          </div>
         </div>
 
         <span style={{
