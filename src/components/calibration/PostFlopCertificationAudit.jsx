@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RefreshCw, CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronRight, Shield, FileDown, Search, BarChart3 } from 'lucide-react';
 import { runPostFlopAudit, resetWorker } from '@/lib/postFlopWorkerBridge';
 import { downloadPostFlopExcel } from '@/lib/game/postFlopExcelExporter';
+import { DEALER_STOCK, SUIT_SYMBOL } from '@/lib/game/cards';
 import compactMatrix from '@/lib/game/postFlopMatrixCompact.json';
 
 // ── Constants ──────────────────────────────────────────────────
@@ -12,6 +13,38 @@ const HAND_LABELS = [
   'Hand 9 — 3♣3♥', 'Hand 10 — A♥5♦',
 ];
 const RANK_NAMES = ['1 Pair', '2 Pair', '3 Of A Kind', 'Straight', 'Flush', 'Full House', '4 Of A Kind'];
+
+// ── Card pool for flop filter dropdowns ──────────────────────
+// Build from DEALER_STOCK (32-card community stock) formatted to match
+// the compact matrix's string format: "rank" + suit symbol (e.g. "A♠", "10♥")
+const CARD_POOL = DEALER_STOCK.map(c => `${c.rank}${SUIT_SYMBOL[c.suit]}`);
+
+// Sort for display: group by suit (♠♥♦♣), then rank descending (A→2)
+const RANK_ORDER = { 'A': 14, 'K': 13, 'Q': 12, 'J': 11, '10': 10, '9': 9, '8': 8, '7': 7, '6': 6, '5': 5, '4': 4, '3': 3, '2': 2 };
+const SUIT_ORDER = { '♠': 0, '♥': 1, '♦': 2, '♣': 3 };
+const SORTED_CARD_POOL = [...CARD_POOL].sort((a, b) => {
+  const sA = a.slice(-1), sB = b.slice(-1);
+  if (sA !== sB) return SUIT_ORDER[sA] - SUIT_ORDER[sB];
+  return RANK_ORDER[a.slice(0, -1)] - RANK_ORDER[b.slice(0, -1)];
+});
+
+// Check if a card string is red (hearts or diamonds)
+function isRedCard(cardStr) {
+  return cardStr.includes('♥') || cardStr.includes('♦');
+}
+
+// Find a flop in the compact matrix by 3 cards (unordered match).
+// C(32,3) = 4,960 = TOTAL_FLOPS, so every valid combo exists.
+function findFlopByCards(c1, c2, c3) {
+  if (!c1 || !c2 || !c3) return -1;
+  const target = [c1, c2, c3].sort();
+  for (let i = 0; i < TOTAL_FLOPS; i++) {
+    const f = compactMatrix.flops[i];
+    const fc = [f[1], f[2], f[3]].sort();
+    if (fc[0] === target[0] && fc[1] === target[1] && fc[2] === target[2]) return i;
+  }
+  return -1;
+}
 
 // Odds thresholds — positions outside this window are DEAD (not bettable)
 // Must match the engine config in oddsEngine.js
@@ -498,6 +531,10 @@ export default function PostFlopCertificationAudit() {
   const [rtpValue, setRtpValue] = useState(100);
   const listRef = useRef(null);
 
+  // Card filter state — 3 dropdowns for selecting specific flop cards
+  const [filterCards, setFilterCards] = useState([null, null, null]);
+  const [openDropdown, setOpenDropdown] = useState(null); // 0, 1, 2, or null
+
   const flopData = useMemo(() => getFlopData(flopIndex), [flopIndex]);
 
   // Filter flops by search
@@ -519,6 +556,7 @@ export default function PostFlopCertificationAudit() {
   useEffect(() => {
     function handleClick(e) {
       if (listRef.current && !listRef.current.contains(e.target)) setShowFlopList(false);
+      setOpenDropdown(null);
     }
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
@@ -653,18 +691,84 @@ export default function PostFlopCertificationAudit() {
           </div>
         </div>
 
-        {/* Flop summary */}
-        <div className="mt-3 grid grid-cols-5 gap-2">
-          <div className="bg-slate-800/50 rounded-lg p-2">
-            <p className="text-xs text-slate-500">Board Win</p>
-            <p className="text-sm font-bold text-white font-mono">{(flopData.boardWinProb * 100).toFixed(2)}%</p>
-          </div>
-          {flopData.cardProbs.map((p, i) => (
-            <div key={i} className="bg-slate-800/50 rounded-lg p-2">
-              <p className="text-xs text-slate-500 truncate">{HAND_LABELS[i].split('—')[1]?.trim() || HAND_LABELS[i]}</p>
-              <p className={`text-sm font-bold font-mono ${p === 0 ? 'text-slate-600' : 'text-white'}`}>{formatPct(p)}</p>
-            </div>
-          )).slice(0, 0)}
+        {/* Card filter — 3 dropdowns to select exact flop cards */}
+        <div className="mt-3 flex items-center gap-3 flex-wrap">
+          <span className="text-xs font-bold text-slate-400 uppercase">Card Filter:</span>
+          {[0, 1, 2].map(slotIdx => {
+            const selected = filterCards[slotIdx];
+            const otherSlots = filterCards.filter((_, i) => i !== slotIdx);
+            return (
+              <div key={slotIdx} className="relative" style={{ zIndex: openDropdown === slotIdx ? 60 : 10 }}>
+                <button
+                  onClick={() => setOpenDropdown(openDropdown === slotIdx ? null : slotIdx)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 border border-slate-600 hover:border-amber-500 text-sm transition-colors"
+                >
+                  <span className="text-xs text-slate-500 font-mono">#{slotIdx + 1}</span>
+                  {selected ? (
+                    <span className="font-bold text-lg" style={{ color: isRedCard(selected) ? '#dc2626' : '#f1f5f9' }}>
+                      {selected}
+                    </span>
+                  ) : (
+                    <span className="text-slate-500 text-xs italic">Select card…</span>
+                  )}
+                  <ChevronDown className="w-3 h-3 text-slate-500" />
+                </button>
+
+                {openDropdown === slotIdx && (
+                  <div className="absolute top-full mt-1 left-0 max-h-64 overflow-y-auto bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 min-w-[120px]">
+                    {SORTED_CARD_POOL.map(card => {
+                      const isTaken = otherSlots.includes(card);
+                      return (
+                        <button
+                          key={card}
+                          disabled={isTaken}
+                          onClick={() => {
+                            const next = [...filterCards];
+                            next[slotIdx] = card;
+                            setFilterCards(next);
+                            setOpenDropdown(null);
+                            // Auto-jump when all 3 selected
+                            if (next[0] && next[1] && next[2]) {
+                              const idx = findFlopByCards(next[0], next[1], next[2]);
+                              if (idx >= 0) setFlopIndex(idx);
+                            }
+                          }}
+                          className="w-full flex items-center justify-between px-3 py-1.5 text-sm transition-colors"
+                          style={{
+                            color: isTaken ? '#475569' : isRedCard(card) ? '#dc2626' : '#f1f5f9',
+                            cursor: isTaken ? 'not-allowed' : 'pointer',
+                            background: isTaken ? 'transparent' : 'hover:bg-slate-700',
+                          }}
+                          onMouseEnter={e => { if (!isTaken) e.currentTarget.style.background = '#334155'; }}
+                          onMouseLeave={e => { if (!isTaken) e.currentTarget.style.background = 'transparent'; }}
+                        >
+                          <span className="font-bold">{card}</span>
+                          {isTaken && <span className="text-xs text-slate-600">used</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Clear filters button */}
+          {(filterCards[0] || filterCards[1] || filterCards[2]) && (
+            <button
+              onClick={() => setFilterCards([null, null, null])}
+              className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600 text-xs text-slate-400 transition-colors"
+            >
+              Clear
+            </button>
+          )}
+
+          {/* Status indicator */}
+          {filterCards[0] && filterCards[1] && filterCards[2] && (
+            <span className="text-xs text-emerald-400 font-mono">
+              → Flop {flopData.flopId} selected
+            </span>
+          )}
         </div>
       </div>
 
