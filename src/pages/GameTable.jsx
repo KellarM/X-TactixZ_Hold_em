@@ -171,6 +171,7 @@ export default function GameTable() {
             bets={game.bets}
             caps={game.caps}
             boardTotals={game.boardTotals}
+          ante={game.ante}
             onPlace={handlePlaceBet}
             onRemove={handleRemoveBet}
             leadingRankLabel={game.leadingRankLabel}

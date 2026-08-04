@@ -174,6 +174,7 @@ export default function RightSidebar({
   leadingRankLabel = null, winnerRankLabel = null,
   leadingColorKeys = [], winnerColorKeys = [],
   leadingRiverSide = null, winnerRiverSide = null,
+  ante = 0, boardTotals = { card: 0, rank: 0, color: 0, river: 0 },
 }) {
   useEffect(() => { injectStyles(); }, []);
 
@@ -194,7 +195,9 @@ export default function RightSidebar({
   const colorLocked = (k) => !flopOdds || !flopOdds.colorOdds[k] || flopOdds.colorOdds[k].locked;
   const colorPayout = (k) => flopOdds?.colorOdds[k]?.payout ?? null;
 
-  const riverLocked = (s) => !riverOpen || !riverOdds || (riverOdds[s]?.locked ?? true);
+  const threeBoardTotal = boardTotals.card + boardTotals.rank + boardTotals.color;
+  const riverAnteMet = threeBoardTotal >= ante && ante > 0;
+  const riverLocked = (s) => !riverOpen || !riverOdds || (riverOdds[s]?.locked ?? true) || !riverAnteMet;
   const riverPayout = (s) => riverOdds?.[s]?.payout ?? null;
 
   return (
@@ -277,9 +280,17 @@ export default function RightSidebar({
                 style={{ ...style, borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
                 <span style={{ ...goldEmbossText, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
-                <span style={{ ...goldEmbossText, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
-                  {locked ? 'LOCKED' : formatPayout(p)}
-                </span>
+                {locked ? (
+                  <img
+                    src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
+                    alt="Locked"
+                    style={{ width: 22, height: 'auto', opacity: 0.9, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }}
+                  />
+                ) : (
+                  <span style={{ ...goldEmbossText, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
+                    {formatPayout(p)}
+                  </span>
+                )}
                 {isWinner && isResolved && (
                   <span style={{
                     position: 'absolute',
@@ -327,9 +338,17 @@ export default function RightSidebar({
               >
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
-                <span style={{ color: '#000', fontWeight: 900, fontSize: 13, lineHeight: 1 }}>
-                  {locked ? (riverOpen ? 'LOCKED' : 'AFTER TURN') : formatPayout(riverPayout(b.side))}
-                </span>
+                {locked ? (
+                  <img
+                    src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
+                    alt="Locked"
+                    style={{ width: 26, height: 'auto', marginTop: 2, opacity: 0.9, filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.6))' }}
+                  />
+                ) : (
+                  <span style={{ color: '#000', fontWeight: 900, fontSize: 13, lineHeight: 1 }}>
+                    {formatPayout(riverPayout(b.side))}
+                  </span>
+                )}
                 {isWinner && isResolved && (
                   <span style={{
                     position: 'absolute',
