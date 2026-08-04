@@ -212,19 +212,27 @@ export default function RightSidebar({
                 <span style={{ color: 'rgba(0,0,0,0.88)', fontWeight: 900, fontSize: 15, lineHeight: 1, WebkitTextStroke: '0.4px currentColor' }}>
                   {label}
                 </span>
-                <span className="flex items-center" style={{ gap: 6 }}>
-                  {locked ? (
+                {/* Odds — ALWAYS visible (dimmed when locked), same right slot as other boards */}
+                <span style={{ color: locked ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0.88)', fontWeight: 900, fontSize: 14, lineHeight: 1, WebkitTextStroke: '0.4px currentColor' }}>
+                  {formatPayout(p)}
+                </span>
+                {/* Lock — centered overlay (same position as bet chips), only when locked */}
+                {locked && (
                   <img
                     src="https://media.base44.com/images/public/6a669c10586e3d2dd9f2cdba/0fb1a0900_GoldLock.png"
                     alt="Locked"
-                    style={{ width: 44, height: 'auto', mixBlendMode: 'screen', filter: 'brightness(1.1) saturate(1.2) drop-shadow(0 1px 3px rgba(0,0,0,0.5))' }}
+                    style={{
+                      position: 'absolute',
+                      top: '50%', left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: 44, height: 'auto',
+                      mixBlendMode: 'screen',
+                      filter: 'brightness(1.1) saturate(1.2) drop-shadow(0 1px 3px rgba(0,0,0,0.5))',
+                      pointerEvents: 'none',
+                      zIndex: 6,
+                    }}
                   />
-                ) : (
-                    <span style={{ color: 'rgba(0,0,0,0.88)', fontWeight: 900, fontSize: 14, lineHeight: 1, WebkitTextStroke: '0.4px currentColor' }}>
-                      {formatPayout(p)}
-                    </span>
-                  )}
-                </span>
+                )}
                 {isWinner && isResolved && (
                   <span style={{
                     position: 'absolute',
