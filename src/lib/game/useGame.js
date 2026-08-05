@@ -129,8 +129,11 @@ function evaluateHandRanks(community) {
 export function useGame() {
   const saved = useRef(loadSavedState());
   const handCounter = useRef(0);
-  const [phase, setPhase] = useState(saved.current?.phase ?? 'ante');
-  const [bonus, setBonus] = useState(saved.current?.bonus ?? null); // { cardIdx, sideIdx, cardMult, sideMult, cardWon, sideWon, cardPayout, sidePayout, bonusWinnings }
+  const [phase, setPhase] = useState(
+    saved.current?.phase === 'resolved' ? 'ante' : (saved.current?.phase ?? 'ante')
+  );
+  const _savedResolved = saved.current?.phase === 'resolved';
+  const [bonus, setBonus] = useState(_savedResolved ? null : (saved.current?.bonus ?? null)); // { cardIdx, sideIdx, cardMult, sideMult, cardWon, sideWon, cardPayout, sidePayout, bonusWinnings }
   const [bank, setBank] = useState(saved.current?.bank ?? START_BANK);
   const [ante, setAnte] = useState(saved.current?.ante ?? 0);
   const [deck, setDeck] = useState(saved.current?.deck ?? []);
@@ -138,7 +141,7 @@ export function useGame() {
   const [bets, setBets] = useState(saved.current?.bets ?? emptyBets());
   const [selectedChip, setSelectedChip] = useState(null);  // No pre-selection — player must click a chip
   const [history, setHistory] = useState(saved.current?.history ?? []);
-  const [result, setResult] = useState(saved.current?.result ?? null);
+  const [result, setResult] = useState(_savedResolved ? null : (saved.current?.result ?? null));
   const [flopOdds, setFlopOdds] = useState(null);
   const [computing, setComputing] = useState(false);
 

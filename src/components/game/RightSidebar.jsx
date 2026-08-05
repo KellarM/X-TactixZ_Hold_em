@@ -70,9 +70,9 @@ function injectStyles() {
   }
   style.textContent = `
     @keyframes rf-bonus-pulse-side {
-      0%   { box-shadow: 0 0 14px 4px rgba(255,215,0,0.5), inset 0 0 14px rgba(255,215,0,0.12); transform: scale(1.0); border-color: rgba(255,215,0,0.4); background-color: transparent; }
-      35%  { box-shadow: 0 0 50px 20px rgba(255,235,0,1.0), inset 0 0 55px rgba(255,235,0,0.55); transform: scale(1.25); border-color: #FFD700; background-color: rgba(255,200,0,0.22); }
-      100% { box-shadow: 0 0 14px 4px rgba(255,215,0,0.5), inset 0 0 14px rgba(255,215,0,0.12); transform: scale(1.0); border-color: rgba(255,215,0,0.4); background-color: transparent; }
+      0%   { box-shadow: 0 0 12px 4px rgba(255,215,0,0.6), inset 0 0 16px rgba(255,215,0,0.18); transform: scale(1.0);  border-color: rgba(255,215,0,0.5); }
+      50%  { box-shadow: 0 0 38px 15px rgba(255,235,0,1.0), inset 0 0 42px rgba(255,235,0,0.42); transform: scale(1.16); border-color: #FFD700; }
+      100% { box-shadow: 0 0 12px 4px rgba(255,215,0,0.6), inset 0 0 16px rgba(255,215,0,0.18); transform: scale(1.0);  border-color: rgba(255,215,0,0.5); }
     }
     /* EXPLODE — winning side bet position pops with an elastic overshoot
        then settles back to its regular size, with a brightness flash */
@@ -237,7 +237,7 @@ export default function RightSidebar({
   const bonusSideStyle = (sideIdx) => {
     if (isSideLanded(sideIdx) && bonusPulse?.sideWon) return { animation: 'rf-bonus-explode-side 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow-side 1.2s ease-in-out 0.9s infinite' };
     if (isSideLanded(sideIdx) && !bonusPulse?.sideWon) return { animation: 'rf-bonus-land-lose-side 0.9s ease-out forwards' };
-    if (isSidePulsing(sideIdx)) return { animation: 'rf-bonus-pulse-side 0.45s ease-in-out' };
+    if (isSidePulsing(sideIdx)) return { animation: 'rf-bonus-pulse-side 0.3s ease-in-out' };
     return {};
   };
 

@@ -36,9 +36,7 @@ export default function RevealPrompt({ onReveal }) {
 
   return (
     <>
-      {/* Full-screen click catcher — "click ANYWHERE" per spec. position:fixed
-          removes this from normal flex flow, so it renders full-viewport
-          regardless of where this component is mounted in the tree. */}
+      {/* Full-screen click catcher */}
       <div
         onClick={onReveal}
         role="button"
@@ -52,30 +50,35 @@ export default function RevealPrompt({ onReveal }) {
         }}
       />
 
-      {/* Visible banner — sits in-flow exactly where this component is
-          rendered (between the community-card box and the Card Board). */}
+      {/* Visible banner — position:fixed so it floats over the content
+          WITHOUT taking up flex space or pushing the board down. Positioned
+          in the gap between the community cards and the Card Board. */}
       <div
         onClick={onReveal}
         style={{
-          position: 'relative',
+          position: 'fixed',
+          top: 200,
+          left: '50%',
+          transform: 'translateX(-50%)',
           zIndex: 501,
-          flexShrink: 0,
-          height: 46,
-          minHeight: 46,
+          height: 40,
+          minHeight: 40,
+          padding: '0 24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           borderRadius: '0.5rem',
           border: '2px solid #FFD700',
-          background: 'linear-gradient(90deg, rgba(90,58,0,0.6) 0%, rgba(130,75,0,0.6) 50%, rgba(90,58,0,0.6) 100%)',
+          background: 'linear-gradient(90deg, rgba(90,58,0,0.85) 0%, rgba(130,75,0,0.85) 50%, rgba(90,58,0,0.85) 100%)',
           animation: 'rf-reveal-border-glow 1.4s ease-in-out infinite',
           cursor: 'pointer',
           userSelect: 'none',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
         }}
       >
         <span style={{
           fontFamily: 'Oswald, sans-serif',
-          fontSize: '1.15rem',
+          fontSize: '1.1rem',
           fontWeight: 900,
           letterSpacing: '0.13em',
           textTransform: 'uppercase',
