@@ -63,7 +63,7 @@ const CARD_IMAGES = {
 };
 
 // size: 'sm' (betting slot) | 'md' (community card) | 'lg'
-export default function PlayingCard({ card, faceDown = false, size = 'md', className = '' }) {
+export default function PlayingCard({ card, faceDown = false, size = 'md', className = '', useImage = true }) {
   const dims = {
     xs: { w: 26, h: 37,  rank: '8px',  suit: '7px',  big: 12, pad: '2px' },
     sm: { w: 62, h: 88,  rank: '16px', suit: '14px', big: 28, pad: '4px' },
@@ -107,8 +107,8 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
     );
   }
 
-  // Real image (fixed hand cards)
-  const imgUrl = CARD_IMAGES[`${card.rank}_${card.suit}`] ?? null;
+  // Real image (fixed hand cards) — skipped when useImage={false} (community cards)
+  const imgUrl = useImage ? (CARD_IMAGES[`${card.rank}_${card.suit}`] ?? null) : null;
   if (imgUrl) {
     return (
       <img
@@ -128,7 +128,8 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
     );
   }
 
-  // Text fallback for community stock cards
+  // CSS / unicode-drawn card — used for community cards (useImage={false})
+  // and as fallback for any fixed hand card without an image URL
   const isRed = SUIT_COLOR[card.suit] === 'red';
   const color = isRed ? '#D11A1A' : '#0A0A0A';
   const sym = SUIT_SYMBOL[card.suit];
@@ -139,21 +140,24 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
       style={{
         width: dims.w,
         height: dims.h,
-        background: '#FAFAFA',
+        background: 'linear-gradient(160deg, #FFFFFF 0%, #F5F5F0 100%)',
         border: '1px solid #C5A059',
+        borderRadius: 6,
         padding: dims.pad,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+        flexShrink: 0,
+        overflow: 'hidden',
       }}
     >
       <div className="flex flex-col items-start leading-none" style={{ color }}>
-        <span style={{ fontSize: dims.rank, fontWeight: 900, lineHeight: 1 }}>{card.rank}</span>
+        <span style={{ fontSize: dims.rank, fontWeight: 900, lineHeight: 1, fontFamily: "'Playfair Display', serif" }}>{card.rank}</span>
         <span style={{ fontSize: dims.suit, lineHeight: 1, marginTop: -1 }}>{sym}</span>
       </div>
       <div className="flex-1 flex items-center justify-center">
-        <span style={{ fontSize: dims.big, color, lineHeight: 1, opacity: 0.9 }}>{sym}</span>
+        <span style={{ fontSize: dims.big, color, lineHeight: 1, opacity: 0.85 }}>{sym}</span>
       </div>
-      <div className="flex flex-col items-end leading-none rotate-180" style={{ color }}>
-        <span style={{ fontSize: dims.rank, fontWeight: 900, lineHeight: 1 }}>{card.rank}</span>
+      <div className="flex flex-col items-end leading-none" style={{ color, transform: 'rotate(180deg)' }}>
+        <span style={{ fontSize: dims.rank, fontWeight: 900, lineHeight: 1, fontFamily: "'Playfair Display', serif" }}>{card.rank}</span>
         <span style={{ fontSize: dims.suit, lineHeight: 1, marginTop: -1 }}>{sym}</span>
       </div>
     </div>

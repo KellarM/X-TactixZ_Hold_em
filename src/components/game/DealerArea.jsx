@@ -41,19 +41,17 @@ const LABEL_TOP_GAP = 6;
 
 function CardSlot({ card, faceDown }) {
   if (!card || faceDown) {
+    // CSS card back — no external image dependency
     return (
       <div style={{ width: CARD_W, height: CARD_H, flexShrink: 0 }}>
-        <img
-          src="https://media.base44.com/images/public/69f3a45ad82dff5b772d4de2/1b33b172d_image.png"
-          alt="Card back"
-          style={{ width: CARD_W, height: CARD_H, borderRadius: 6, objectFit: 'cover', display: 'block', opacity: 0.9 }}
-        />
+        <PlayingCard faceDown size="community" />
       </div>
     );
   }
+  // Community cards: CSS/unicode-drawn (useImage={false}) — no external image loading
   return (
     <div style={{ width: CARD_W, height: CARD_H, flexShrink: 0 }}>
-      <PlayingCard card={card} size="community" />
+      <PlayingCard card={card} size="community" useImage={false} />
     </div>
   );
 }
