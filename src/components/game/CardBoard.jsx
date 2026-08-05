@@ -29,9 +29,9 @@ function injectStyles() {
       100% { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); background-color: #3a2a00; }
     }
     @keyframes rf-bonus-pulse {
-      0%   { box-shadow: 0 0 18px 6px rgba(255,215,0,0.7),  inset 0 0 28px rgba(255,215,0,0.25); transform: scale(1.0); border-color: rgba(255,215,0,0.6); }
-      40%  { box-shadow: 0 0 38px 14px rgba(255,235,0,1.0), inset 0 0 50px rgba(255,235,0,0.45); transform: scale(1.10); border-color: #FFD700; }
-      100% { box-shadow: 0 0 18px 6px rgba(255,215,0,0.7),  inset 0 0 28px rgba(255,215,0,0.25); transform: scale(1.0); border-color: rgba(255,215,0,0.6); }
+      0%   { box-shadow: 0 0 18px 6px rgba(255,215,0,0.5),  inset 0 0 20px rgba(255,215,0,0.15); transform: scale(1.0); border-color: rgba(255,215,0,0.4); background-color: transparent; }
+      35%  { box-shadow: 0 0 60px 22px rgba(255,235,0,1.0), inset 0 0 70px rgba(255,235,0,0.6);  transform: scale(1.22); border-color: #FFD700; background-color: rgba(255,200,0,0.25); }
+      100% { box-shadow: 0 0 18px 6px rgba(255,215,0,0.5),  inset 0 0 20px rgba(255,215,0,0.15); transform: scale(1.0); border-color: rgba(255,215,0,0.4); background-color: transparent; }
     }
     /* EXPLODE — winning position pops with an elastic overshoot then
        settles back to its regular size, with a brightness flash on impact */
@@ -236,8 +236,8 @@ export function BettingSlot({
     borderColor = '#C5A059';
     borderWidth = '4px';
   } else if (isBonusPulsing) {
-    animation = 'rf-bonus-pulse 0.25s ease-in-out';
-    background = '#2a2000';
+    animation = 'rf-bonus-pulse 0.45s ease-in-out';
+    background = '#3d2e00';
   } else if (isWinner) {
     animation  = 'rf-winner-pulse 1.1s ease-in-out infinite';
     background = '#3a2a00';
