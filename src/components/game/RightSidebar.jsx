@@ -125,6 +125,12 @@ function injectStyles() {
       50%  { box-shadow: 0 0 48px 18px rgba(255,230,0,1.0),  inset 0 0 70px rgba(255,230,0,0.55); filter: brightness(1.4); }
       100% { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); filter: brightness(1.0); }
     }
+    /* Persistent marker — pulsing tag that stays on the bonus-selected
+       side-bet position until the player clicks to reveal. */
+    @keyframes rf-bonus-marker-pulse-side {
+      0%, 100% { opacity: 1;   box-shadow: 0 2px 6px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.5); }
+      50%      { opacity: 0.82; box-shadow: 0 2px 6px rgba(0,0,0,0.9), 0 0 18px rgba(255,215,0,0.85); }
+    }
   `;
 }
 
@@ -238,18 +244,43 @@ export default function RightSidebar({
   const bonusBadge = (sideIdx) => {
     if (!isSideLanded(sideIdx)) return null;
 
-    // ── NO WIN: quiet fizzle ring only. No harsh "NO WIN" text. ──
+    // ── PERSISTENT MARKER — stays on the selected position for BOTH win
+    //    and lose until the player clicks to reveal. ──
+    const persistentMarker = (
+      <span style={{
+        position: 'absolute', bottom: -7, left: '50%',
+        transform: 'translateX(-50%)',
+        background: bonusPulse.sideWon
+          ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
+          : 'linear-gradient(135deg, #888 0%, #555 50%, #888 100%)',
+        color: '#000',
+        fontSize: 10, fontWeight: 900,
+        padding: '2px 8px', borderRadius: 5,
+        zIndex: 41, letterSpacing: '0.5px',
+        boxShadow: '0 2px 6px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.5)',
+        pointerEvents: 'none', whiteSpace: 'nowrap',
+        border: '1px solid ' + (bonusPulse.sideWon ? '#FFE566' : '#aaa'),
+        animation: 'rf-bonus-marker-pulse-side 1.3s ease-in-out infinite',
+      }}>
+        {bonusPulse.sideWon ? `★ ×${bonusPulse.sideMult} BONUS` : '★ BONUS PICK'}
+      </span>
+    );
+
+    // ── NO WIN: quiet fizzle ring + persistent marker. ──
     if (!bonusPulse.sideWon) {
       return (
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '70%', height: '70%',
-          borderRadius: '50%',
-          border: '2px solid rgba(210,210,210,0.6)',
-          pointerEvents: 'none', zIndex: 26,
-          animation: 'rf-bonus-fizzle-ring-side 0.9s ease-out forwards',
-        }} />
+        <>
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '70%', height: '70%',
+            borderRadius: '50%',
+            border: '2px solid rgba(210,210,210,0.6)',
+            pointerEvents: 'none', zIndex: 26,
+            animation: 'rf-bonus-fizzle-ring-side 0.9s ease-out forwards',
+          }} />
+          {persistentMarker}
+        </>
       );
     }
 
@@ -323,6 +354,7 @@ export default function RightSidebar({
         }}>
           {`×${bonusPulse.sideMult} BONUS`}
         </span>
+        {persistentMarker}
       </>
     );
   };

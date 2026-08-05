@@ -80,6 +80,12 @@ function injectStyles() {
       50%  { box-shadow: 0 0 70px 26px rgba(255,235,0,1.0),  inset 0 0 120px rgba(255,235,0,0.70); }
       100% { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0),  inset 0 0 80px rgba(255,235,0,0.55); }
     }
+    /* Persistent marker — pulsing gold star tag that stays on the bonus-
+       selected position until the player clicks to reveal the result. */
+    @keyframes rf-bonus-marker-pulse {
+      0%, 100% { opacity: 1;   box-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 12px rgba(255,215,0,0.5); transform: translateX(-50%) scale(1); }
+      50%      { opacity: 0.85; box-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 22px rgba(255,215,0,0.9); transform: translateX(-50%) scale(1.06); }
+    }
   `;
 }
 
@@ -220,9 +226,15 @@ export function BettingSlot({
   if (isBonusLanded && bonusPulse?.cardWon) {
     animation = 'rf-bonus-explode 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow 1.2s ease-in-out 0.9s infinite';
     background = '#5a3a00';
+    borderColor = '#FFD700';
+    borderWidth = '4px';
   } else if (isBonusLanded && !bonusPulse?.cardWon) {
     animation = 'rf-bonus-land-lose 0.9s ease-out forwards';
     background = '#181818';
+    // Keep a visible gold border on the bonus-selected losing position
+    // so the player can always see which hand was picked.
+    borderColor = '#C5A059';
+    borderWidth = '4px';
   } else if (isBonusPulsing) {
     animation = 'rf-bonus-pulse 0.25s ease-in-out';
     background = '#2a2000';
@@ -335,6 +347,36 @@ export function BettingSlot({
           pointerEvents: 'none', zIndex: 26,
           animation: 'rf-bonus-fizzle-ring 0.9s ease-out forwards',
         }} />
+      )}
+
+      {/* PERSISTENT BONUS MARKER — stays on the selected position for BOTH
+          win and lose. This is the "which hand was picked" indicator that
+          remains visible after the one-shot shockwave/fizzle animations
+          fade out. Shows until the player clicks to reveal the result. */}
+      {isBonusLanded && (
+        <div style={{
+          position: 'absolute',
+          bottom: -10,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          background: bonusPulse.cardWon
+            ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
+            : 'linear-gradient(135deg, #888 0%, #555 50%, #888 100%)',
+          color: '#000',
+          fontSize: 11,
+          fontWeight: 900,
+          padding: '2px 10px',
+          borderRadius: 5,
+          zIndex: 41,
+          letterSpacing: '0.5px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 12px rgba(255,215,0,0.5)',
+          pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+          border: '1px solid ' + (bonusPulse.cardWon ? '#FFE566' : '#aaa'),
+          animation: 'rf-bonus-marker-pulse 1.3s ease-in-out infinite',
+        }}>
+          {bonusPulse.cardWon ? `★ ×${bonusPulse.cardMult} BONUS` : '★ BONUS PICK'}
+        </div>
       )}
 
       {/* BONUS badge — only shown for wins now; pops in with the explode */}
