@@ -17,11 +17,12 @@ const GOLD_DIM = {
   boxShadow: 'inset 0 1px 2px rgba(255,255,200,0.3), inset 0 -1px 2px rgba(100,60,0,0.4), 0 1px 4px rgba(0,0,0,0.4)',
   border: '1px solid #000',
 };
-// SHADOWED — applied to non-leading, unlocked positions once a leader exists
-// pre-resolution, so the leading position visually pops by contrast.
-const SHADOWED = {
-  filter: 'brightness(0.5) saturate(0.55)',
-  opacity: 0.82,
+// BRIGHTENED — applied to the Rank Board's leading position (pre-resolution)
+// so it pops with extra glow, WITHOUT darkening the other open betting
+// positions (Michael: "all positions should look open" during betting/play —
+// darkening the rest made valid bets look unavailable).
+const BRIGHTENED = {
+  filter: 'brightness(1.3) saturate(1.15) drop-shadow(0 0 10px rgba(255,230,120,0.85))',
 };
 // Solid black text (weight-matched to goldEmbossText) — used on Color Board
 // positions when gold-highlighted (leading/winner), since the default
@@ -406,10 +407,11 @@ export default function RightSidebar({
             const isLeading = leadingRankLabel === label;
             const isWinner  = winnerRankLabel === label;
             const baseStyle = locked ? GOLD_DIM : GOLD_ACTIVE;
-            // While a leader exists (pre-resolution), shadow every OTHER unlocked
-            // position so the currently-leading rank visually pops against them.
-            const shouldShadow = !!leadingRankLabel && !isResolved && !isLeading && !isWinner && !locked;
-            const style = { ...withHighlight(baseStyle, isLeading, isWinner, isResolved), ...(shouldShadow ? SHADOWED : {}) };
+            // Leading position (pre-resolution) gets an extra brightness/glow
+            // boost so it pops — the other unlocked positions stay at their
+            // normal open appearance instead of being darkened.
+            const shouldBrighten = isLeading && !isResolved && !isWinner;
+            const style = { ...withHighlight(baseStyle, isLeading, isWinner, isResolved), ...(shouldBrighten ? BRIGHTENED : {}) };
             return (
               <button
                 key={label}
