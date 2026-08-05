@@ -55,20 +55,6 @@ export const CHIPS = [
 ];
 
 const START_BANK = 99.99;
-const STORAGE_KEY = 'rapidfire_postflop_v1';
-
-function loadSavedState() {
-  try {
-    const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(STORAGE_KEY) : null;
-    if (!raw) return null;
-    const data = JSON.parse(raw);
-    if (!data || typeof data !== 'object') return null;
-    return data;
-  } catch {
-    return null;
-  }
-}
-
 function emptyBets() {
   return {
     card: {},
@@ -127,37 +113,19 @@ function evaluateHandRanks(community) {
 }
 
 export function useGame() {
-  const saved = useRef(loadSavedState());
   const handCounter = useRef(0);
-  const [phase, setPhase] = useState(
-    saved.current?.phase === 'resolved' ? 'ante' : (saved.current?.phase ?? 'ante')
-  );
-  const _savedResolved = saved.current?.phase === 'resolved';
-  const [bonus, setBonus] = useState(_savedResolved ? null : (saved.current?.bonus ?? null)); // { cardIdx, sideIdx, cardMult, sideMult, cardWon, sideWon, cardPayout, sidePayout, bonusWinnings }
-  const [bank, setBank] = useState(saved.current?.bank ?? START_BANK);
-  const [ante, setAnte] = useState(saved.current?.ante ?? 0);
-  const [deck, setDeck] = useState(saved.current?.deck ?? []);
-  const [revealed, setRevealed] = useState(saved.current?.revealed ?? 0);
-  const [bets, setBets] = useState(saved.current?.bets ?? emptyBets());
-  const [selectedChip, setSelectedChip] = useState(null);  // No pre-selection — player must click a chip
-  const [history, setHistory] = useState(saved.current?.history ?? []);
-  const [result, setResult] = useState(_savedResolved ? null : (saved.current?.result ?? null));
+  const [phase, setPhase] = useState('ante');
+  const [bonus, setBonus] = useState(null);
+  const [bank, setBank] = useState(START_BANK);
+  const [ante, setAnte] = useState(0);
+  const [deck, setDeck] = useState([]);
+  const [revealed, setRevealed] = useState(0);
+  const [bets, setBets] = useState(emptyBets());
+  const [selectedChip, setSelectedChip] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [result, setResult] = useState(null);
   const [flopOdds, setFlopOdds] = useState(null);
   const [computing, setComputing] = useState(false);
-
-  useEffect(() => {
-    try {
-      // 'bonus' MUST be persisted alongside 'phase' and 'result' — if phase
-      // is 'resolved' after a remount/refresh, this is the data that drives
-      // the RNG Bonus chase sequence. Without it, a refresh mid-resolution
-      // silently skips the bonus animation and shows the result overlay
-      // early via the no-bonus fallback path.
-      const data = { phase, bank, ante, deck, revealed, bets, selectedChip, history, result, bonus };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch {
-      // ignore
-    }
-  }, [phase, bank, ante, deck, revealed, bets, selectedChip, history, result, bonus]);
 
   const community = deck.slice(0, revealed);
   const flop = deck.slice(0, 3);
