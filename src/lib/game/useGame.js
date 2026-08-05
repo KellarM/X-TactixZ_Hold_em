@@ -51,7 +51,8 @@ export const CHIPS = [
   { value: 0.10, label: '10¢' },
   { value: 0.25, label: '25¢' },
   { value: 0.50, label: '50¢' },
-  { value: 1.00, label: '$1' }
+  { value: 1.00, label: '$1' },
+  { value: 5.00, label: '$5' }
 ];
 
 const START_BANK = 99.99;
