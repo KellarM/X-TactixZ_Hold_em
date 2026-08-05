@@ -14,10 +14,10 @@ export const LOCKOUT_THRESHOLD = 0.80; // Lockout dominant positions at 80% (tig
 // Odds thresholds — positions outside this payout window are dead (not bettable)
 // Configurable operator settings. Starting values for tuning — not final.
 // Separate per-board so they can be tuned independently.
-export const ODDS_THRESHOLD_CARD_HIGH = 300;   // Card Board max odds
-export const ODDS_THRESHOLD_CARD_LOW  = 1.1;   // Card Board min odds
-export const ODDS_THRESHOLD_RANK_HIGH = 300;   // Rank Board max odds
-export const ODDS_THRESHOLD_RANK_LOW  = 1.1;   // Rank Board min odds
+export const ODDS_THRESHOLD_CARD_HIGH = 400;   // Card Board max odds — locked at 400:1 or higher
+export const ODDS_THRESHOLD_CARD_LOW  = 0.1;   // Card Board min odds — locked at 0.1:1 or lower
+export const ODDS_THRESHOLD_RANK_HIGH = 400;   // Rank Board max odds — locked at 400:1 or higher
+export const ODDS_THRESHOLD_RANK_LOW  = 0.1;   // Rank Board min odds — locked at 0.1:1 or lower
 // NOTE: Color and River boards intentionally do NOT use odds thresholds.
 // Color Board is locked at a pre-certified 96% RTP with fixed payouts as low as
 // 0.856:1 by design (3 positions always live per flop state) — a 1.1 floor would
