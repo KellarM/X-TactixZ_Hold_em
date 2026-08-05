@@ -128,11 +128,40 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
     );
   }
 
-  // CSS / unicode-drawn card — used for community cards (useImage={false})
-  // and as fallback for any fixed hand card without an image URL
   const isRed = SUIT_COLOR[card.suit] === 'red';
-  const color = isRed ? '#D11A1A' : '#0A0A0A';
   const sym = SUIT_SYMBOL[card.suit];
+
+  // ── Community card CSS rendering (useImage={false}) ──────────────────────
+  // Mirrors Desktop's PlayingCard.jsx "size === 'community'" branch exactly —
+  // rose-red border, plain white face, non-rotated bottom-right index — for
+  // visual parity between the Desktop and Post-Flop products. Only reached
+  // by community cards; fixed hand cards always resolve via CARD_IMAGES above.
+  if (size === 'community') {
+    const textColor = isRed ? '#dc2626' : '#000';
+    return (
+      <div
+        className={`relative rounded-lg border-2 bg-white flex flex-col shadow-lg select-none overflow-hidden ${className}`}
+        style={{ width: dims.w, height: dims.h, borderColor: 'rgba(239,68,68,0.6)', flexShrink: 0 }}
+      >
+        <div className="flex flex-col items-start leading-none p-1" style={{ color: textColor, fontWeight: 'bold' }}>
+          <div style={{ fontSize: 20 }}>{card.rank}</div>
+          <div style={{ fontSize: 10 }}>{sym}</div>
+        </div>
+        <div className="flex-1 flex items-center justify-center px-1 -my-1">
+          <div style={{ fontSize: 46, color: textColor, opacity: 0.7, lineHeight: 1 }}>{sym}</div>
+        </div>
+        <div className="flex flex-col items-end leading-none p-1 pb-0.5" style={{ color: textColor, fontWeight: 'bold' }}>
+          <div style={{ fontSize: 20 }}>{card.rank}</div>
+          <div style={{ fontSize: 10 }}>{sym}</div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Other sizes — original gold-bordered CSS fallback ────────────────────
+  // Defensive fallback only; not currently reached in practice since fixed
+  // hand cards (xs/sm/md/lg) always resolve via CARD_IMAGES above.
+  const color = isRed ? '#D11A1A' : '#0A0A0A';
 
   return (
     <div
