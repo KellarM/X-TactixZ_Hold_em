@@ -116,8 +116,8 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
         /* Win rows */
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
           {wins.map((win, idx) => {
-            const profit = win.amt * win.payout;
-            const total  = win.amt * (win.payout + 1);
+            const profit = Math.round(win.amt * win.payout * 100) / 100;
+            const total  = win.amt + profit;
             return (
               <div
                 key={idx}
@@ -230,10 +230,10 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
   const bonusWin = bonus?.bonusWinnings || 0;
 
   // Net win = what came back (board wins + bonus) minus everything spent (ante + bets)
-  const netWin = (winnings + bonusWin) - totalWagered;
+  const netWin = Math.round(((winnings + bonusWin) - totalWagered) * 100) / 100;
 
   // Total win = board winnings + bonus, combined as one number
-  const totalWin = winnings + bonusWin;
+  const totalWin = Math.round((winnings + bonusWin) * 100) / 100;
 
   const isBoardWin = resolution.boardWin;
   const hasWin = winnings > 0;

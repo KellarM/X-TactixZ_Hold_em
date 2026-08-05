@@ -315,7 +315,7 @@ export function useGame() {
       );
       if (cardDetail) {
         cardWon = true;
-        cardPayout = cardDetail.amt * cardDetail.payout * (cardMult - 1);
+        cardPayout = Math.round(cardDetail.amt * cardDetail.payout * (cardMult - 1) * 100) / 100;
         bonusWinnings += cardPayout;
       }
     }
@@ -331,7 +331,7 @@ export function useGame() {
       );
       if (rankDetail) {
         sideWon = true;
-        sidePayout = rankDetail.amt * rankDetail.payout * (sideMult - 1);
+        sidePayout = Math.round(rankDetail.amt * rankDetail.payout * (sideMult - 1) * 100) / 100;
         bonusWinnings += sidePayout;
       }
     }
@@ -343,7 +343,7 @@ export function useGame() {
       );
       if (colorDetail) {
         sideWon = true;
-        sidePayout = colorDetail.amt * colorDetail.payout * (sideMult - 1);
+        sidePayout = Math.round(colorDetail.amt * colorDetail.payout * (sideMult - 1) * 100) / 100;
         bonusWinnings += sidePayout;
       }
     }
@@ -354,12 +354,13 @@ export function useGame() {
         .find(d => d.won && d.side === riverSide);
       if (riverDetail) {
         sideWon = true;
-        sidePayout = riverDetail.amt * riverDetail.payout * (sideMult - 1);
+        sidePayout = Math.round(riverDetail.amt * riverDetail.payout * (sideMult - 1) * 100) / 100;
         bonusWinnings += sidePayout;
       }
     }
 
     // Add bonus winnings to bank
+    bonusWinnings = Math.round(bonusWinnings * 100) / 100;
     if (bonusWinnings > 0) {
       setBank(b => +(b + bonusWinnings).toFixed(2));
     }

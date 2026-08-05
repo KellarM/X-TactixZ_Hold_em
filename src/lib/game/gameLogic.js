@@ -54,7 +54,8 @@ export function settleRound(community, hands, bets, flopOdds, riverOdds) {
       if (isWinner && oddsEntry && oddsEntry.payout != null) {
         let payout = oddsEntry.payout;
         if (numWinners > 1) payout = ((payout + 1) / 2) * 1.05 - 1;
-        winnings += amt * (payout + 1);
+        const winAmt = Math.round(amt * (payout + 1) * 100) / 100;
+        winnings += winAmt;
         details.card.push({ id: numId, amt, payout, won: true });
       } else {
         details.card.push({ id: numId, amt, payout: null, won: false });
@@ -76,7 +77,8 @@ export function settleRound(community, hands, bets, flopOdds, riverOdds) {
       const won = label === winLabel;
       if (won && flopOdds && flopOdds.rankOdds[label] && flopOdds.rankOdds[label].payout != null) {
         const payout = flopOdds.rankOdds[label].payout;
-        winnings += amt * (payout + 1);
+        const winAmt = Math.round(amt * (payout + 1) * 100) / 100;
+        winnings += winAmt;
         details.rank.push({ label, amt, payout, won: true });
       } else {
         details.rank.push({ label, amt, payout: null, won: false });
@@ -94,7 +96,8 @@ export function settleRound(community, hands, bets, flopOdds, riverOdds) {
     const won = actual === targetCount;
     if (won && flopOdds && flopOdds.colorOdds[k] && flopOdds.colorOdds[k].payout != null) {
       const payout = flopOdds.colorOdds[k].payout;
-      winnings += amt * (payout + 1);
+      const winAmt = Math.round(amt * (payout + 1) * 100) / 100;
+      winnings += winAmt;
       details.color.push({ k, amt, payout, won: true });
     } else {
       details.color.push({ k, amt, payout: null, won: false });
@@ -111,7 +114,8 @@ export function settleRound(community, hands, bets, flopOdds, riverOdds) {
       const won = (side === 'low' && riverIsLow) || (side === 'high' && !riverIsLow);
       if (won && riverOdds[side] && riverOdds[side].payout != null) {
         const payout = riverOdds[side].payout;
-        winnings += amt * (payout + 1);
+        const winAmt = Math.round(amt * (payout + 1) * 100) / 100;
+        winnings += winAmt;
         details.river.push({ side, amt, payout, won: true });
       } else {
         details.river.push({ side, amt, payout: null, won: false });
@@ -138,5 +142,5 @@ export function settleRound(community, hands, bets, flopOdds, riverOdds) {
     color: TYPE_COLOR[typeKey] || '#FFFFFF'
   };
 
-  return { winnings, details, historyEntry, resolution: res };
+  return { winnings: Math.round(winnings * 100) / 100, details, historyEntry, resolution: res };
 }
