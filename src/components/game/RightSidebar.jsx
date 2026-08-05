@@ -17,6 +17,21 @@ const GOLD_DIM = {
   boxShadow: 'inset 0 1px 2px rgba(255,255,200,0.3), inset 0 -1px 2px rgba(100,60,0,0.4), 0 1px 4px rgba(0,0,0,0.4)',
   border: '1px solid #000',
 };
+// SHADOWED — applied to non-leading, unlocked positions once a leader exists
+// pre-resolution, so the leading position visually pops by contrast.
+const SHADOWED = {
+  filter: 'brightness(0.5) saturate(0.55)',
+  opacity: 0.82,
+};
+// Solid black text (weight-matched to goldEmbossText) — used on Color Board
+// positions when gold-highlighted (leading/winner), since the default
+// goldEmbossText gold-on-gold would be unreadable against a gold background.
+const blackHighlightText = {
+  color: '#000',
+  WebkitTextFillColor: '#000',
+  background: 'none',
+  filter: 'none',
+};
 const RED_ACTIVE   = { background: 'linear-gradient(160deg, #e02020 0%, #8c0e0e 100%)', border: '1px solid #111' };
 const BLACK_ACTIVE = { background: 'linear-gradient(160deg, #222 0%, #000 100%)', border: '1px solid #2a2a2a' };
 // RED_LOCKED / BLACK_LOCKED lightened the same way: 50% blend toward their ACTIVE counterpart
@@ -391,7 +406,10 @@ export default function RightSidebar({
             const isLeading = leadingRankLabel === label;
             const isWinner  = winnerRankLabel === label;
             const baseStyle = locked ? GOLD_DIM : GOLD_ACTIVE;
-            const style = withHighlight(baseStyle, isLeading, isWinner, isResolved);
+            // While a leader exists (pre-resolution), shadow every OTHER unlocked
+            // position so the currently-leading rank visually pops against them.
+            const shouldShadow = !!leadingRankLabel && !isResolved && !isLeading && !isWinner && !locked;
+            const style = { ...withHighlight(baseStyle, isLeading, isWinner, isResolved), ...(shouldShadow ? SHADOWED : {}) };
             return (
               <button
                 key={label}
@@ -461,7 +479,18 @@ export default function RightSidebar({
             const baseStyle = locked
               ? (pos.color === 'red' ? RED_LOCKED : BLACK_LOCKED)
               : (pos.color === 'red' ? RED_ACTIVE : BLACK_ACTIVE);
-            const style = withHighlight(baseStyle, isLeading, isWinner, isResolved);
+            let style = withHighlight(baseStyle, isLeading, isWinner, isResolved);
+            // Color Board is the one board whose BASE style is red/black (suit colour,
+            // not gold) — withHighlight only adds a border for isLeading, which left the
+            // background red/black with just a gold ring. Force the same full-gold
+            // background used for a confirmed winner so the leading position pops exactly
+            // like Card Board / Rank Board do.
+            if (isLeading && !isResolved && !isWinner) {
+              style = { ...style, background: 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)' };
+            }
+            // Gold-on-gold text is unreadable once the background turns gold
+            // (leading or winner) — force solid black text.
+            const colorTextStyle = (isWinner || (isLeading && !isResolved)) ? blackHighlightText : goldEmbossText;
             return (
               <button
                 key={pos.key}
@@ -472,7 +501,7 @@ export default function RightSidebar({
                 style={{ ...style, ...bonusSideStyle(7 + colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
                 {bonusBadge(7 + colorIdx)}
-                <span style={{ ...goldEmbossText, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
+                <span style={{ ...colorTextStyle, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 {locked ? (
                   <img
                     src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
@@ -480,7 +509,7 @@ export default function RightSidebar({
                     style={{ width: 26, height: 'auto', opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
                   />
                 ) : (
-                  <span style={{ ...goldEmbossText, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
+                  <span style={{ ...colorTextStyle, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
                     {formatPayout(p)}
                   </span>
                 )}

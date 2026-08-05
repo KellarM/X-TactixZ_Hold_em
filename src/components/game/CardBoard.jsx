@@ -216,6 +216,9 @@ export function BettingSlot({
   // ── Animation ──────────────────────────────────────────────────────────────
   let animation = 'none';
   let background = 'var(--theme-bg, #04122b)';
+  // Any gold-highlighted state (confirmed winner OR currently-leading pre-resolution)
+  // needs black text for contrast against the gold background.
+  const goldHighlighted = isWinner || (isLeading && !isResolved);
 
   // Bonus pulse state — overrides normal animations during bonus sequence
   const isBonusPulsing = bonusPulse?.card === bonusIndex && !bonusPulse?.landed;
@@ -241,12 +244,11 @@ export function BettingSlot({
     background = 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)';
   } else if (isLeading && !isResolved) {
     animation  = 'rf-leader-pulse 2.0s ease-in-out infinite';
-    background = '#1a1400';
+    background = 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)';
   }
 
   // ── Rank label colour ──────────────────────────────────────────────────────
-  const rankColor = isWinner ? '#FFD700'
-    : isLeading ? '#e5c158'
+  const rankColor = goldHighlighted ? '#000'
     : locked ? '#5a5240'
     : '#8a9ab0';
 
@@ -426,7 +428,7 @@ export function BettingSlot({
 
       {/* Odds label — top (shows actual odds even when locked) */}
       <div style={{
-        color: locked ? '#9a8f6e' : '#FFD700',
+        color: goldHighlighted ? '#000' : (locked ? '#9a8f6e' : '#FFD700'),
         fontSize: 13.5,
         fontWeight: 700,
         fontFamily: "'Playfair Display', serif",
