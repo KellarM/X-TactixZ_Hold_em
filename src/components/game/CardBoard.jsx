@@ -19,14 +19,12 @@ function injectStyles() {
   }
   style.textContent = `
     @keyframes rf-leader-pulse {
-      0%   { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); background-color: #1a1400; }
-      50%  { box-shadow: 0 0 28px 10px rgba(255,220,50,0.85), inset 0 0 40px rgba(255,220,50,0.30); background-color: #2a2000; }
-      100% { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); background-color: #1a1400; }
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.02); }
     }
-    @keyframes rf-winner-pulse {
-      0%   { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); background-color: #3a2a00; }
-      50%  { box-shadow: 0 0 48px 18px rgba(255,230,0,1.0),  inset 0 0 70px rgba(255,230,0,0.55); background-color: #c8960a; }
-      100% { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); background-color: #3a2a00; }
+    @keyframes rf-winner-settle {
+      0%   { box-shadow: 0 0 24px 10px rgba(255,215,0,0.8); }
+      100% { box-shadow: 0 0 10px 3px  rgba(255,215,0,0.3); }
     }
     @keyframes rf-bonus-pulse {
       0%   { box-shadow: 0 0 14px 4px rgba(255,215,0,0.6), inset 0 0 22px rgba(255,215,0,0.22); transform: scale(1.0);  border-color: rgba(255,215,0,0.5); }
@@ -239,10 +237,10 @@ export function BettingSlot({
     animation = 'rf-bonus-pulse 0.3s ease-in-out';
     background = '#2a2000';
   } else if (isWinner) {
-    animation  = 'rf-winner-pulse 1.1s ease-in-out infinite';
-    background = '#3a2a00';
+    animation  = 'rf-winner-settle 0.6s ease-out forwards';
+    background = 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)';
   } else if (isLeading && !isResolved) {
-    animation  = 'rf-leader-pulse 1.6s ease-in-out infinite';
+    animation  = 'rf-leader-pulse 2.0s ease-in-out infinite';
     background = '#1a1400';
   }
 

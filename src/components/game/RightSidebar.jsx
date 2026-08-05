@@ -116,14 +116,12 @@ function injectStyles() {
       100% { box-shadow: 0 0 36px 14px rgba(255,235,0,1.0), inset 0 0 70px rgba(255,235,0,0.55); }
     }
     @keyframes rf-side-leader {
-      0%   { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); }
-      50%  { box-shadow: 0 0 28px 10px rgba(255,220,50,0.85), inset 0 0 40px rgba(255,220,50,0.30); }
-      100% { box-shadow: 0 0 10px 3px rgba(229,193,88,0.5),  inset 0 0 18px rgba(229,193,88,0.15); }
+      0%, 100% { transform: scale(1); }
+      50%      { transform: scale(1.02); }
     }
-    @keyframes rf-side-winner {
-      0%   { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); filter: brightness(1.0); }
-      50%  { box-shadow: 0 0 48px 18px rgba(255,230,0,1.0),  inset 0 0 70px rgba(255,230,0,0.55); filter: brightness(1.4); }
-      100% { box-shadow: 0 0 18px 6px  rgba(255,200,0,0.7),  inset 0 0 30px rgba(255,200,0,0.25); filter: brightness(1.0); }
+    @keyframes rf-side-winner-settle {
+      0%   { box-shadow: 0 0 24px 10px rgba(255,215,0,0.8); }
+      100% { box-shadow: 0 0 8px 3px  rgba(255,215,0,0.3); }
     }
     /* Persistent marker — pulsing tag that stays on the bonus-selected
        side-bet position until the player clicks to reveal. */
@@ -200,15 +198,16 @@ function withHighlight(baseStyle, isLeading, isWinner, isResolved) {
   if (isWinner) {
     return {
       ...baseStyle,
-      animation: 'rf-side-winner 1.1s ease-in-out infinite',
+      animation: 'rf-side-winner-settle 0.6s ease-out forwards',
       border: '2.5px solid #FFD700',
+      background: 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)',
       opacity: 1,
     };
   }
   if (isLeading && !isResolved) {
     return {
       ...baseStyle,
-      animation: 'rf-side-leader 1.6s ease-in-out infinite',
+      animation: 'rf-side-leader 2.0s ease-in-out infinite',
       border: '2px solid #e5c158',
       opacity: 1,
     };
