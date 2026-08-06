@@ -141,7 +141,12 @@ function injectStyles() {
     }
     /* Persistent marker — pulsing tag that stays on the bonus-selected
        side-bet position until the player clicks to reveal. */
-    @keyframes rf-bonus-marker-pulse-side {
+  
+    @keyframes rf-badge-appear-side {
+      0%   { opacity: 0; transform: translateX(-50%) scale(0.8); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1); }
+    }
+  @keyframes rf-bonus-marker-pulse-side {
       0%, 100% { opacity: 1;   box-shadow: 0 2px 6px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.5); }
       50%      { opacity: 0.82; box-shadow: 0 2px 6px rgba(0,0,0,0.9), 0 0 18px rgba(255,215,0,0.85); }
     }
@@ -244,37 +249,64 @@ export default function RightSidebar({
   const riverOpen = phase === 'postturn' || phase === 'resolved';
   const isResolved = phase === 'resolved';
 
-  // ── Bonus pulse state helpers — 3 areas: card, rank, colorRiver ──
-  // Rank bonus: indices 0-6 (7 positions, x4 multiplier)
-  // Color+River bonus: indices 0-7 (0-5=color, 6-7=river, x3 multiplier)
-  const isRankPulsing = (rankIdx) => bonusPulse?.rank === rankIdx && !bonusPulse?.landed;
-  const isRankLanded = (rankIdx) => bonusPulse?.landed && bonusPulse?.rank === rankIdx;
+  // ── Bonus marker state helpers — image-based placemats ──
+  const isRankActive = (rankIdx) => bonusPulse?.rank === rankIdx;
+  const isRankPulsing = (rankIdx) => isRankActive(rankIdx) && !bonusPulse?.landed;
+  const isRankLanded = (rankIdx) => isRankActive(rankIdx) && bonusPulse?.landed;
 
-  const isColorRiverPulsing = (crIdx) => bonusPulse?.colorRiver === crIdx && !bonusPulse?.landed;
-  const isColorRiverLanded = (crIdx) => bonusPulse?.landed && bonusPulse?.colorRiver === crIdx;
+  const isColorRiverActive = (crIdx) => bonusPulse?.colorRiver === crIdx;
+  const isColorRiverPulsing = (crIdx) => isColorRiverActive(crIdx) && !bonusPulse?.landed;
+  const isColorRiverLanded = (crIdx) => isColorRiverActive(crIdx) && bonusPulse?.landed;
 
-  const bonusRankStyle = (rankIdx) => {
-    if (isRankLanded(rankIdx) && bonusPulse?.rankWon) return { animation: 'rf-bonus-explode-side 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow-side 1.2s ease-in-out 0.9s infinite' };
-    if (isRankLanded(rankIdx) && !bonusPulse?.rankWon) return { animation: 'rf-bonus-land-lose-side 0.9s ease-out forwards' };
-    if (isRankPulsing(rankIdx)) return { animation: 'rf-bonus-pulse-side 0.3s ease-in-out' };
-    return {};
+  const bonusRankStyle = (rankIdx) => ({});
+  const bonusColorRiverStyle = (crIdx) => ({});
+
+  const bonusRankMarker = (rankIdx) => {
+    if (!isRankActive(rankIdx)) return null;
+    const fading = isRankLanded(rankIdx) && bonusPulse?.markerFading;
+    return (
+      <img
+        src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/789f97df6_marker_rank.png"
+        alt="Bonus Marker"
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          width: '100%', height: '100%',
+          objectFit: 'fill',
+          pointerEvents: 'none', zIndex: 30,
+          opacity: fading ? 0 : 1,
+          transition: 'opacity 1s ease-out',
+        }}
+      />
+    );
   };
 
-  const bonusColorRiverStyle = (crIdx) => {
-    if (isColorRiverLanded(crIdx) && bonusPulse?.colorRiverWon) return { animation: 'rf-bonus-explode-side 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow-side 1.2s ease-in-out 0.9s infinite' };
-    if (isColorRiverLanded(crIdx) && !bonusPulse?.colorRiverWon) return { animation: 'rf-bonus-land-lose-side 0.9s ease-out forwards' };
-    if (isColorRiverPulsing(crIdx)) return { animation: 'rf-bonus-pulse-side 0.3s ease-in-out' };
-    return {};
+  const bonusColorRiverMarker = (crIdx, markerUrl) => {
+    if (!isColorRiverActive(crIdx)) return null;
+    const fading = isColorRiverLanded(crIdx) && bonusPulse?.markerFading;
+    return (
+      <img
+        src={markerUrl}
+        alt="Bonus Marker"
+        style={{
+          position: 'absolute', top: 0, left: 0,
+          width: '100%', height: '100%',
+          objectFit: 'fill',
+          pointerEvents: 'none', zIndex: 30,
+          opacity: fading ? 0 : 1,
+          transition: 'opacity 1s ease-out',
+        }}
+      />
+    );
   };
 
   const bonusBadge = (idx, area) => {
     const isLanded = area === 'rank' ? isRankLanded(idx) : isColorRiverLanded(idx);
-    if (!isLanded) return null;
+    if (!isLanded || !bonusPulse?.markerFading) return null;
 
     const won = area === 'rank' ? bonusPulse?.rankWon : bonusPulse?.colorRiverWon;
     const mult = area === 'rank' ? bonusPulse?.rankMult : bonusPulse?.colorRiverMult;
 
-    const persistentMarker = (
+    return (
       <span style={{
         position: 'absolute', bottom: -7, left: '50%',
         transform: 'translateX(-50%)',
@@ -288,90 +320,11 @@ export default function RightSidebar({
         boxShadow: '0 2px 6px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.5)',
         pointerEvents: 'none', whiteSpace: 'nowrap',
         border: '1px solid ' + (won ? '#FFE566' : '#aaa'),
-        animation: 'rf-bonus-marker-pulse-side 1.3s ease-in-out infinite',
+        opacity: 0,
+        animation: 'rf-badge-appear-side 0.4s ease-out 0.3s forwards',
       }}>
         {won ? `★ ×${mult} BONUS` : '★ BONUS PICK'}
       </span>
-    );
-
-    if (!won) {
-      return (
-        <>
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '70%', height: '70%',
-            borderRadius: '50%',
-            border: '2px solid rgba(210,210,210,0.6)',
-            pointerEvents: 'none', zIndex: 26,
-            animation: 'rf-bonus-fizzle-ring-side 0.9s ease-out forwards',
-          }} />
-          {persistentMarker}
-        </>
-      );
-    }
-
-    return (
-      <>
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100%', height: '100%',
-          borderRadius: '50%',
-          pointerEvents: 'none', zIndex: 27,
-          background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,225,120,0.65) 45%, transparent 75%)',
-          animation: 'rf-bonus-flash-side 0.45s ease-out forwards',
-        }} />
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100%', height: '100%',
-          border: '4px solid #FFD700', borderRadius: '6px',
-          pointerEvents: 'none', zIndex: 28,
-          animation: 'rf-bonus-shockwave-side-1 0.7s ease-out forwards',
-        }} />
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100%', height: '100%',
-          border: '3px solid rgba(255,235,0,0.7)', borderRadius: '6px',
-          pointerEvents: 'none', zIndex: 28,
-          animation: 'rf-bonus-shockwave-side-2 0.9s ease-out 0.15s forwards',
-          opacity: 0,
-        }} />
-        {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, pi) => {
-          const rad = angle * Math.PI / 180;
-          const dx = Math.cos(rad) * 50;
-          const dy = Math.sin(rad) * 50;
-          return (
-            <div key={pi} style={{
-              position: 'absolute', top: '50%', left: '50%',
-              width: 5, height: 5, marginLeft: -2.5, marginTop: -2.5,
-              background: '#FFD700', borderRadius: '50%',
-              pointerEvents: 'none', zIndex: 29,
-              boxShadow: '0 0 6px rgba(255,215,0,0.8)',
-              animation: 'rf-bonus-particle-side 0.6s ease-out forwards',
-              '--dx': dx + 'px', '--dy': dy + 'px',
-            }} />
-          );
-        })}
-        <span style={{
-          position: 'absolute', top: -8, left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)',
-          color: '#000',
-          fontSize: 13, fontWeight: 900,
-          padding: '4px 12px', borderRadius: 6,
-          zIndex: 40, letterSpacing: '0.8px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.95), 0 0 24px rgba(255,215,0,0.7), 0 0 48px rgba(255,165,0,0.4)',
-          pointerEvents: 'none', whiteSpace: 'nowrap',
-          textShadow: '0 1px 0 rgba(255,255,255,0.3)',
-          border: '1.5px solid #FFE566',
-        }}>
-          {`×${mult} BONUS`}
-        </span>
-        {persistentMarker}
-      </>
     );
   };
 
@@ -447,6 +400,7 @@ export default function RightSidebar({
                     }}
                   />
                 )}
+                {bonusRankMarker(rankIdx)}
                 {bonusBadge(rankIdx, 'rank')}
                 {isWinner && isResolved && (
                   <span style={{
@@ -504,6 +458,7 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusColorRiverStyle(colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
+                {bonusColorRiverMarker(colorIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/4568b2e6c_marker_color.png')}
                 {bonusBadge(colorIdx, 'colorRiver')}
                 <span style={{ ...colorTextStyle, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 {locked ? (
@@ -562,6 +517,7 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusColorRiverStyle(6 + riverIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
+                {bonusColorRiverMarker(6 + riverIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/71d042021_marker_river.png')}
                 {bonusBadge(6 + riverIdx, 'colorRiver')}
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>

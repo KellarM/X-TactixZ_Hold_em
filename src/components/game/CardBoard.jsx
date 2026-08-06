@@ -80,7 +80,12 @@ function injectStyles() {
     }
     /* Persistent marker — pulsing gold star tag that stays on the bonus-
        selected position until the player clicks to reveal the result. */
-    @keyframes rf-bonus-marker-pulse {
+  
+    @keyframes rf-badge-appear {
+      0%   { opacity: 0; transform: translateX(-50%) scale(0.8); }
+      100% { opacity: 1; transform: translateX(-50%) scale(1); }
+    }
+  @keyframes rf-bonus-marker-pulse {
       0%, 100% { opacity: 1;   box-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 12px rgba(255,215,0,0.5); transform: translateX(-50%) scale(1); }
       50%      { opacity: 0.85; box-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 22px rgba(255,215,0,0.9); transform: translateX(-50%) scale(1.06); }
     }
@@ -220,25 +225,20 @@ export function BettingSlot({
   // needs black text for contrast against the gold background.
   const goldHighlighted = isWinner || (isLeading && !isResolved);
 
-  // Bonus pulse state — overrides normal animations during bonus sequence
-  const isBonusPulsing = bonusPulse?.card === bonusIndex && !bonusPulse?.landed;
-  const isBonusLanded = bonusPulse?.landed && bonusPulse?.card === bonusIndex;
+  // Bonus marker state — image-based gold placemat overlay
+  const isBonusActive = bonusPulse?.card === bonusIndex;
+  const isBonusPulsing = isBonusActive && !bonusPulse?.landed;
+  const isBonusLanded = isBonusActive && bonusPulse?.landed;
+  const markerFading = isBonusLanded && bonusPulse?.markerFading;
 
-  if (isBonusLanded && bonusPulse?.cardWon) {
-    animation = 'rf-bonus-explode 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow 1.2s ease-in-out 0.9s infinite';
-    background = '#5a3a00';
-    borderColor = '#FFD700';
-    borderWidth = '4px';
-  } else if (isBonusLanded && !bonusPulse?.cardWon) {
-    animation = 'rf-bonus-land-lose 0.9s ease-out forwards';
-    background = '#181818';
-    // Keep a visible gold border on the bonus-selected losing position
-    // so the player can always see which hand was picked.
-    borderColor = '#C5A059';
-    borderWidth = '4px';
-  } else if (isBonusPulsing) {
-    animation = 'rf-bonus-pulse 0.3s ease-in-out';
+  if (isBonusLanded && !markerFading) {
     background = '#2a2000';
+    borderColor = '#FFD700';
+    borderWidth = '3px';
+  } else if (isBonusPulsing) {
+    background = '#2a2000';
+    borderColor = '#C5A059';
+    borderWidth = '3px';
   } else if (isWinner) {
     animation  = 'rf-winner-settle 0.6s ease-out forwards';
     background = 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)';
@@ -278,82 +278,26 @@ export function BettingSlot({
       onClick={() => { if (!locked) onPlace(); }}
       onContextMenu={(e) => { e.preventDefault(); if (!locked && bet > 0) onRemove(); }}
     >
-      {/* LANDING SHOCKWAVE — two expanding rings on bonus land */}
-      {isBonusLanded && (
-        <>
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
+      {/* BONUS MARKER — gold placemat image overlay */}
+      {isBonusActive && (
+        <img
+          src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/e7be53451_marker_card.png"
+          alt="Bonus Marker"
+          style={{
+            position: 'absolute',
+            top: 0, left: 0,
             width: '100%', height: '100%',
-            border: '4px solid #FFD700',
-            borderRadius: '8px',
-            pointerEvents: 'none', zIndex: 28,
-            animation: 'rf-bonus-shockwave-1 0.7s ease-out forwards',
-          }} />
-          <div style={{
-            position: 'absolute', top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '100%', height: '100%',
-            border: '3px solid rgba(255,235,0,0.7)',
-            borderRadius: '8px',
-            pointerEvents: 'none', zIndex: 28,
-            animation: 'rf-bonus-shockwave-2 0.9s ease-out 0.15s forwards',
-            opacity: 0,
-          }} />
-          {/* Particle burst — 8 gold dots flying outward */}
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, pi) => {
-            const rad = angle * Math.PI / 180;
-            const dx = Math.cos(rad) * 60;
-            const dy = Math.sin(rad) * 60;
-            return (
-              <div key={pi} style={{
-                position: 'absolute', top: '50%', left: '50%',
-                width: 6, height: 6,
-                marginLeft: -3, marginTop: -3,
-                background: '#FFD700',
-                borderRadius: '50%',
-                pointerEvents: 'none', zIndex: 29,
-                boxShadow: '0 0 8px rgba(255,215,0,0.8)',
-                animation: `rf-bonus-particle 0.6s ease-out forwards`,
-                '--dx': `${dx}px`,
-                '--dy': `${dy}px`,
-              }} />
-            );
-          })}
-        </>
+            objectFit: 'fill',
+            pointerEvents: 'none',
+            zIndex: 30,
+            opacity: markerFading ? 0 : 1,
+            transition: 'opacity 1s ease-out',
+          }}
+        />
       )}
 
-      {/* WIN FLASH — bright flashbulb burst on the exploding winner */}
-      {isBonusLanded && bonusPulse.cardWon && (
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '100%', height: '100%',
-          borderRadius: '50%',
-          pointerEvents: 'none', zIndex: 27,
-          background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,225,120,0.65) 45%, transparent 75%)',
-          animation: 'rf-bonus-flash 0.45s ease-out forwards',
-        }} />
-      )}
-
-      {/* FIZZLE RING — bonus landed here but no win. Quiet ripple, no text. */}
-      {isBonusLanded && !bonusPulse.cardWon && (
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '70%', height: '70%',
-          borderRadius: '50%',
-          border: '2px solid rgba(210,210,210,0.6)',
-          pointerEvents: 'none', zIndex: 26,
-          animation: 'rf-bonus-fizzle-ring 0.9s ease-out forwards',
-        }} />
-      )}
-
-      {/* PERSISTENT BONUS MARKER — stays on the selected position for BOTH
-          win and lose. This is the "which hand was picked" indicator that
-          remains visible after the one-shot shockwave/fizzle animations
-          fade out. Shows until the player clicks to reveal the result. */}
-      {isBonusLanded && (
+      {/* BONUS BADGE — appears after marker fades */}
+      {isBonusLanded && bonusPulse?.markerFading && (
         <div style={{
           position: 'absolute',
           bottom: -10,
@@ -373,35 +317,10 @@ export function BettingSlot({
           pointerEvents: 'none',
           whiteSpace: 'nowrap',
           border: '1px solid ' + (bonusPulse.cardWon ? '#FFE566' : '#aaa'),
-          animation: 'rf-bonus-marker-pulse 1.3s ease-in-out infinite',
+          opacity: 0,
+          animation: 'rf-badge-appear 0.4s ease-out 0.3s forwards',
         }}>
           {bonusPulse.cardWon ? `★ ×${bonusPulse.cardMult} BONUS` : '★ BONUS PICK'}
-        </div>
-      )}
-
-      {/* BONUS badge — only shown for wins now; pops in with the explode */}
-      {isBonusLanded && bonusPulse.cardWon && (
-        <div style={{
-          position: 'absolute',
-          top: -8,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)',
-          color: '#000',
-          fontSize: 14,
-          fontWeight: 900,
-          padding: '4px 14px',
-          borderRadius: 6,
-          zIndex: 40,
-          letterSpacing: '0.8px',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.95), 0 0 24px rgba(255,215,0,0.7), 0 0 48px rgba(255,165,0,0.4)',
-          pointerEvents: 'none',
-          whiteSpace: 'nowrap',
-          textShadow: '0 1px 0 rgba(255,255,255,0.3)',
-          border: '1.5px solid #FFE566',
-          animation: 'rf-bonus-explode 0.9s cubic-bezier(.36,1.65,.32,1) forwards',
-        }}>
-          {`×${bonusPulse.cardMult} BONUS`}
         </div>
       )}
 

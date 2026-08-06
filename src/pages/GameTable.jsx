@@ -36,7 +36,7 @@ export default function GameTable() {
   // Open Window" prompt shows -> player clicks anywhere -> showResult opens.
   const [showResult, setShowResult] = useState(false);
   const [awaitingReveal, setAwaitingReveal] = useState(false);
-  const [bonusPulse, setBonusPulse] = useState({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3 });
+  const [bonusPulse, setBonusPulse] = useState({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3, markerFading: false });
   const [bonusActive, setBonusActive] = useState(false);
   const [playerStats, setPlayerStats] = useState({
     totalBets: 0, totalWins: 0,
@@ -66,7 +66,7 @@ export default function GameTable() {
     if (phase === 'resolved' && game.result) {
       setShowResult(false);
       setAwaitingReveal(false);
-      setBonusPulse({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3 });
+      setBonusPulse({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3, markerFading: false });
 
       if (game.bonus) {
         // Start bonus sequence — BonusSequence component handles the animation
@@ -80,7 +80,7 @@ export default function GameTable() {
       setShowResult(false);
       setBonusActive(false);
       setAwaitingReveal(false);
-      setBonusPulse({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3 });
+      setBonusPulse({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3, markerFading: false });
     }
   }, [phase, game.result, game.bonus]);
 
@@ -102,6 +102,7 @@ export default function GameTable() {
       rank: rankIdx,
       colorRiver: colorRiverIdx,
       landed: true,
+      markerFading: false,
       cardWon: game.bonus.cardWon,
       rankWon: game.bonus.rankWon,
       colorRiverWon: game.bonus.colorRiverWon,
@@ -109,6 +110,10 @@ export default function GameTable() {
       rankMult: game.bonus.rankMult,
       colorRiverMult: game.bonus.colorRiverMult,
     });
+    // After 2 seconds, fade the marker to reveal the bonus badge underneath
+    setTimeout(() => {
+      setBonusPulse(prev => ({ ...prev, markerFading: true }));
+    }, 2000);
     // Play win or lose sound based on whether any bonus paid
     if (game.bonus.cardWon || game.bonus.rankWon || game.bonus.colorRiverWon) {
       playWin();
