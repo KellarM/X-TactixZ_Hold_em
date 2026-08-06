@@ -1,5 +1,5 @@
 import React from 'react';
-import { FIXED_HANDS, formatMoney, CAT_TO_LABEL, SIDE_BET_POSITIONS } from '@/lib/game/cards';
+import { FIXED_HANDS, formatMoney, CAT_TO_LABEL, SIDE_BET_POSITIONS, RANK_BONUS_POSITIONS, COLOR_RIVER_BONUS_POSITIONS } from '@/lib/game/cards';
 import PlayingCard from './PlayingCard';
 
 // ═══════════════════════════════════════════════════════════════════════════
