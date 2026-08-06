@@ -261,9 +261,9 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
     .filter(d => d.won)
     .map(d => {
       const win = { label: d.label, amt: d.amt, payout: d.payout };
-      if (bonus?.sideWon && bonus.sideIdx < 7 && d.label === SIDE_BET_POSITIONS[bonus.sideIdx]) {
-        win.bonusMult = bonus.sideMult;
-        win.bonusPayout = bonus.sidePayout;
+      if (bonus?.rankWon && d.label === RANK_BONUS_POSITIONS[bonus.rankIdx]) {
+        win.bonusMult = bonus.rankMult;
+        win.bonusPayout = bonus.rankPayout;
       }
       return win;
     });
@@ -272,9 +272,9 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
     .filter(d => d.won)
     .map(d => {
       const win = { label: `Color ${d.k}`, amt: d.amt, payout: d.payout };
-      if (bonus?.sideWon && bonus.sideIdx >= 7 && bonus.sideIdx < 13 && d.k === SIDE_BET_POSITIONS[bonus.sideIdx]) {
-        win.bonusMult = bonus.sideMult;
-        win.bonusPayout = bonus.sidePayout;
+      if (bonus?.colorRiverWon && bonus.colorRiverIdx < 6 && d.k === COLOR_RIVER_BONUS_POSITIONS[bonus.colorRiverIdx]) {
+        win.bonusMult = bonus.colorRiverMult;
+        win.bonusPayout = bonus.colorRiverPayout;
       }
       return win;
     });
@@ -283,9 +283,9 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
     .filter(r => r.won)
     .map(r => {
       const win = { label: `River ${r.side?.toUpperCase()}`, amt: r.amt, payout: r.payout };
-      if (bonus?.sideWon && bonus.sideIdx >= 13 && r.side === SIDE_BET_POSITIONS[bonus.sideIdx]) {
-        win.bonusMult = bonus.sideMult;
-        win.bonusPayout = bonus.sidePayout;
+      if (bonus?.colorRiverWon && bonus.colorRiverIdx >= 6 && r.side === COLOR_RIVER_BONUS_POSITIONS[bonus.colorRiverIdx]) {
+        win.bonusMult = bonus.colorRiverMult;
+        win.bonusPayout = bonus.colorRiverPayout;
       }
       return win;
     });

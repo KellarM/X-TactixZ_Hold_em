@@ -8,6 +8,8 @@ import {
   SUIT_COLOR,
   CAT_TO_LABEL,
   SIDE_BET_POSITIONS,
+  RANK_BONUS_POSITIONS,
+  COLOR_RIVER_BONUS_POSITIONS,
   formatMoney
 } from './cards';
 import { shuffleDeck, dealCommunity, secureRandInt } from './shuffle';
@@ -295,24 +297,25 @@ export function useGame() {
     setBank(b => +(b + settlement.winnings).toFixed(2));
     setResult(settlement);
 
-    // ── RNG BONUS ──────────────────────────────────────────────────────
-    // Two separate CSPRNG calls: one for card hands (0-9), one for side bets (0-14)
-    const bonusCardIdx = secureRandInt(9);
-    const bonusSideIdx = secureRandInt(14);
-    const cardMult = 2;
-    const sideMult = 3;
+    // ── RNG BONUS — 3 separate bonus areas ───────────────────────────────
+    // Area 1: Card Hands (10 positions, ×5 multiplier)
+    // Area 2: Rank Hands (7 positions, ×4 multiplier)
+    // Area 3: Color + River (8 positions = 6 color + 2 river, ×3 multiplier)
+    const bonusCardIdx = secureRandInt(9);      // 0-9
+    const bonusRankIdx = secureRandInt(6);      // 0-6
+    const bonusColorRiverIdx = secureRandInt(7); // 0-7 (0-5=color, 6-7=river)
+    const cardMult = 5;
+    const rankMult = 4;
+    const colorRiverMult = 3;
 
-    // Determine if bonus hits winning positions the player bet on
     let bonusWinnings = 0;
-    let cardWon = false;
-    let sideWon = false;
-    let cardPayout = 0;
-    let sidePayout = 0;
+    let cardWon = false, rankWon = false, colorRiverWon = false;
+    let cardPayout = 0, rankPayout = 0, colorRiverPayout = 0;
 
-    // Card hand bonus: check if the bonus card hand is a winner with a bet
+    // ── Area 1: Card Hands (×5) ──
     if (!settlement.resolution.boardWin) {
       const cardDetail = settlement.details.card.find(
-        d => d.won && Number(d.id) === (bonusCardIdx + 1) // hand ids are 1-10, indices 0-9
+        d => d.won && Number(d.id) === (bonusCardIdx + 1)
       );
       if (cardDetail) {
         cardWon = true;
@@ -321,42 +324,40 @@ export function useGame() {
       }
     }
 
-    // Side bet bonus: check the 15 side bet positions
-    const sidePosition = SIDE_BET_POSITIONS[bonusSideIdx];
-
-    // Check rank positions (indices 0-6)
-    if (bonusSideIdx < 7 && !settlement.resolution.boardWin) {
-      const rankLabel = SIDE_BET_POSITIONS[bonusSideIdx];
+    // ── Area 2: Rank Hands (×4) ──
+    if (!settlement.resolution.boardWin) {
+      const rankLabel = RANK_BONUS_POSITIONS[bonusRankIdx];
       const rankDetail = settlement.details.rank.find(
         d => d.won && d.label === rankLabel
       );
       if (rankDetail) {
-        sideWon = true;
-        sidePayout = Math.round(rankDetail.amt * rankDetail.payout * (sideMult - 1) * 100) / 100;
-        bonusWinnings += sidePayout;
+        rankWon = true;
+        rankPayout = Math.round(rankDetail.amt * rankDetail.payout * (rankMult - 1) * 100) / 100;
+        bonusWinnings += rankPayout;
       }
     }
-    // Check color positions (indices 7-12)
-    else if (bonusSideIdx < 13) {
-      const colorKey = SIDE_BET_POSITIONS[bonusSideIdx];
+
+    // ── Area 3: Color + River (×3) ──
+    if (bonusColorRiverIdx < 6) {
+      // Color position (indices 0-5)
+      const colorKey = COLOR_RIVER_BONUS_POSITIONS[bonusColorRiverIdx];
       const colorDetail = settlement.details.color.find(
         d => d.won && d.k === colorKey
       );
       if (colorDetail) {
-        sideWon = true;
-        sidePayout = Math.round(colorDetail.amt * colorDetail.payout * (sideMult - 1) * 100) / 100;
-        bonusWinnings += sidePayout;
+        colorRiverWon = true;
+        colorRiverPayout = Math.round(colorDetail.amt * colorDetail.payout * (colorRiverMult - 1) * 100) / 100;
+        bonusWinnings += colorRiverPayout;
       }
-    }
-    // Check river positions (indices 13-14)
-    else {
-      const riverSide = SIDE_BET_POSITIONS[bonusSideIdx];
+    } else {
+      // River position (indices 6-7)
+      const riverSide = COLOR_RIVER_BONUS_POSITIONS[bonusColorRiverIdx];
       const riverDetail = (Array.isArray(settlement.details.river) ? settlement.details.river : [])
         .find(d => d.won && d.side === riverSide);
       if (riverDetail) {
-        sideWon = true;
-        sidePayout = Math.round(riverDetail.amt * riverDetail.payout * (sideMult - 1) * 100) / 100;
-        bonusWinnings += sidePayout;
+        colorRiverWon = true;
+        colorRiverPayout = Math.round(riverDetail.amt * riverDetail.payout * (colorRiverMult - 1) * 100) / 100;
+        bonusWinnings += colorRiverPayout;
       }
     }
 
@@ -368,13 +369,17 @@ export function useGame() {
 
     setBonus({
       cardIdx: bonusCardIdx,
-      sideIdx: bonusSideIdx,
+      rankIdx: bonusRankIdx,
+      colorRiverIdx: bonusColorRiverIdx,
       cardMult,
-      sideMult,
+      rankMult,
+      colorRiverMult,
       cardWon,
-      sideWon,
+      rankWon,
+      colorRiverWon,
       cardPayout,
-      sidePayout,
+      rankPayout,
+      colorRiverPayout,
       bonusWinnings,
     });
     setHistory(prev => [settlement.historyEntry, ...prev].slice(0, 18));

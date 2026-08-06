@@ -36,7 +36,7 @@ export default function GameTable() {
   // Open Window" prompt shows -> player clicks anywhere -> showResult opens.
   const [showResult, setShowResult] = useState(false);
   const [awaitingReveal, setAwaitingReveal] = useState(false);
-  const [bonusPulse, setBonusPulse] = useState({ card: null, side: null, landed: false, cardWon: false, sideWon: false, cardMult: 2, sideMult: 3 });
+  const [bonusPulse, setBonusPulse] = useState({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3 });
   const [bonusActive, setBonusActive] = useState(false);
   const [playerStats, setPlayerStats] = useState({
     totalBets: 0, totalWins: 0,
@@ -66,7 +66,7 @@ export default function GameTable() {
     if (phase === 'resolved' && game.result) {
       setShowResult(false);
       setAwaitingReveal(false);
-      setBonusPulse({ card: null, side: null, landed: false, cardWon: false, sideWon: false, cardMult: 2, sideMult: 3 });
+      setBonusPulse({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3 });
 
       if (game.bonus) {
         // Start bonus sequence — BonusSequence component handles the animation
@@ -80,33 +80,37 @@ export default function GameTable() {
       setShowResult(false);
       setBonusActive(false);
       setAwaitingReveal(false);
-      setBonusPulse({ card: null, side: null, landed: false, cardWon: false, sideWon: false, cardMult: 2, sideMult: 3 });
+      setBonusPulse({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3 });
     }
   }, [phase, game.result, game.bonus]);
 
   // Bonus sequence callbacks
-  const handleBonusPulse = useCallback((cardPos, sidePos) => {
+  const handleBonusPulse = useCallback((cardPos, rankPos, colorRiverPos) => {
     setBonusPulse(prev => ({
       ...prev,
       card: cardPos !== null ? cardPos : prev.card,
-      side: sidePos !== null ? sidePos : prev.side,
+      rank: rankPos !== null ? rankPos : prev.rank,
+      colorRiver: colorRiverPos !== null ? colorRiverPos : prev.colorRiver,
       landed: false,
     }));
   }, []);
 
-  const handleBonusLand = useCallback((cardIdx, sideIdx) => {
+  const handleBonusLand = useCallback((cardIdx, rankIdx, colorRiverIdx) => {
     if (!game.bonus) return;
     setBonusPulse({
       card: cardIdx,
-      side: sideIdx,
+      rank: rankIdx,
+      colorRiver: colorRiverIdx,
       landed: true,
       cardWon: game.bonus.cardWon,
-      sideWon: game.bonus.sideWon,
+      rankWon: game.bonus.rankWon,
+      colorRiverWon: game.bonus.colorRiverWon,
       cardMult: game.bonus.cardMult,
-      sideMult: game.bonus.sideMult,
+      rankMult: game.bonus.rankMult,
+      colorRiverMult: game.bonus.colorRiverMult,
     });
-    // Play win or lose sound based on whether the bonus paid
-    if (game.bonus.cardWon || game.bonus.sideWon) {
+    // Play win or lose sound based on whether any bonus paid
+    if (game.bonus.cardWon || game.bonus.rankWon || game.bonus.colorRiverWon) {
       playWin();
     } else {
       playLose();
@@ -286,7 +290,8 @@ export default function GameTable() {
       {bonusActive && game.bonus && (
         <BonusSequence
           cardIdx={game.bonus.cardIdx}
-          sideIdx={game.bonus.sideIdx}
+          rankIdx={game.bonus.rankIdx}
+          colorRiverIdx={game.bonus.colorRiverIdx}
           onPulse={handleBonusPulse}
           onLand={handleBonusLand}
           onComplete={handleBonusComplete}

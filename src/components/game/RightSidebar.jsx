@@ -244,28 +244,41 @@ export default function RightSidebar({
   const riverOpen = phase === 'postturn' || phase === 'resolved';
   const isResolved = phase === 'resolved';
 
-  // ── Bonus pulse state helpers ──
-  // Side bet index mapping: 0-6 = Rank, 7-12 = Color, 13-14 = River
-  const isSidePulsing = (sideIdx) => bonusPulse?.side === sideIdx && !bonusPulse?.landed;
-  const isSideLanded = (sideIdx) => bonusPulse?.landed && bonusPulse?.side === sideIdx;
+  // ── Bonus pulse state helpers — 3 areas: card, rank, colorRiver ──
+  // Rank bonus: indices 0-6 (7 positions, x4 multiplier)
+  // Color+River bonus: indices 0-7 (0-5=color, 6-7=river, x3 multiplier)
+  const isRankPulsing = (rankIdx) => bonusPulse?.rank === rankIdx && !bonusPulse?.landed;
+  const isRankLanded = (rankIdx) => bonusPulse?.landed && bonusPulse?.rank === rankIdx;
 
-  const bonusSideStyle = (sideIdx) => {
-    if (isSideLanded(sideIdx) && bonusPulse?.sideWon) return { animation: 'rf-bonus-explode-side 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow-side 1.2s ease-in-out 0.9s infinite' };
-    if (isSideLanded(sideIdx) && !bonusPulse?.sideWon) return { animation: 'rf-bonus-land-lose-side 0.9s ease-out forwards' };
-    if (isSidePulsing(sideIdx)) return { animation: 'rf-bonus-pulse-side 0.3s ease-in-out' };
+  const isColorRiverPulsing = (crIdx) => bonusPulse?.colorRiver === crIdx && !bonusPulse?.landed;
+  const isColorRiverLanded = (crIdx) => bonusPulse?.landed && bonusPulse?.colorRiver === crIdx;
+
+  const bonusRankStyle = (rankIdx) => {
+    if (isRankLanded(rankIdx) && bonusPulse?.rankWon) return { animation: 'rf-bonus-explode-side 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow-side 1.2s ease-in-out 0.9s infinite' };
+    if (isRankLanded(rankIdx) && !bonusPulse?.rankWon) return { animation: 'rf-bonus-land-lose-side 0.9s ease-out forwards' };
+    if (isRankPulsing(rankIdx)) return { animation: 'rf-bonus-pulse-side 0.3s ease-in-out' };
     return {};
   };
 
-  const bonusBadge = (sideIdx) => {
-    if (!isSideLanded(sideIdx)) return null;
+  const bonusColorRiverStyle = (crIdx) => {
+    if (isColorRiverLanded(crIdx) && bonusPulse?.colorRiverWon) return { animation: 'rf-bonus-explode-side 0.9s cubic-bezier(.36,1.65,.32,1) forwards, rf-bonus-sustained-glow-side 1.2s ease-in-out 0.9s infinite' };
+    if (isColorRiverLanded(crIdx) && !bonusPulse?.colorRiverWon) return { animation: 'rf-bonus-land-lose-side 0.9s ease-out forwards' };
+    if (isColorRiverPulsing(crIdx)) return { animation: 'rf-bonus-pulse-side 0.3s ease-in-out' };
+    return {};
+  };
 
-    // ── PERSISTENT MARKER — stays on the selected position for BOTH win
-    //    and lose until the player clicks to reveal. ──
+  const bonusBadge = (idx, area) => {
+    const isLanded = area === 'rank' ? isRankLanded(idx) : isColorRiverLanded(idx);
+    if (!isLanded) return null;
+
+    const won = area === 'rank' ? bonusPulse?.rankWon : bonusPulse?.colorRiverWon;
+    const mult = area === 'rank' ? bonusPulse?.rankMult : bonusPulse?.colorRiverMult;
+
     const persistentMarker = (
       <span style={{
         position: 'absolute', bottom: -7, left: '50%',
         transform: 'translateX(-50%)',
-        background: bonusPulse.sideWon
+        background: won
           ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
           : 'linear-gradient(135deg, #888 0%, #555 50%, #888 100%)',
         color: '#000',
@@ -274,15 +287,14 @@ export default function RightSidebar({
         zIndex: 41, letterSpacing: '0.5px',
         boxShadow: '0 2px 6px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.5)',
         pointerEvents: 'none', whiteSpace: 'nowrap',
-        border: '1px solid ' + (bonusPulse.sideWon ? '#FFE566' : '#aaa'),
+        border: '1px solid ' + (won ? '#FFE566' : '#aaa'),
         animation: 'rf-bonus-marker-pulse-side 1.3s ease-in-out infinite',
       }}>
-        {bonusPulse.sideWon ? `★ ×${bonusPulse.sideMult} BONUS` : '★ BONUS PICK'}
+        {won ? `★ ×${mult} BONUS` : '★ BONUS PICK'}
       </span>
     );
 
-    // ── NO WIN: quiet fizzle ring + persistent marker. ──
-    if (!bonusPulse.sideWon) {
+    if (!won) {
       return (
         <>
           <div style={{
@@ -299,10 +311,8 @@ export default function RightSidebar({
       );
     }
 
-    // ── WIN: flashbulb burst + shockwave rings + particle burst + badge ──
     return (
       <>
-        {/* Flashbulb burst on impact */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
@@ -312,28 +322,23 @@ export default function RightSidebar({
           background: 'radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,225,120,0.65) 45%, transparent 75%)',
           animation: 'rf-bonus-flash-side 0.45s ease-out forwards',
         }} />
-        {/* Shockwave ring 1 */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '100%', height: '100%',
-          border: '4px solid #FFD700',
-          borderRadius: '6px',
+          border: '4px solid #FFD700', borderRadius: '6px',
           pointerEvents: 'none', zIndex: 28,
           animation: 'rf-bonus-shockwave-side-1 0.7s ease-out forwards',
         }} />
-        {/* Shockwave ring 2 (delayed) */}
         <div style={{
           position: 'absolute', top: '50%', left: '50%',
           transform: 'translate(-50%, -50%)',
           width: '100%', height: '100%',
-          border: '3px solid rgba(255,235,0,0.7)',
-          borderRadius: '6px',
+          border: '3px solid rgba(255,235,0,0.7)', borderRadius: '6px',
           pointerEvents: 'none', zIndex: 28,
           animation: 'rf-bonus-shockwave-side-2 0.9s ease-out 0.15s forwards',
           opacity: 0,
         }} />
-        {/* Particle burst */}
         {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, pi) => {
           const rad = angle * Math.PI / 180;
           const dx = Math.cos(rad) * 50;
@@ -341,19 +346,15 @@ export default function RightSidebar({
           return (
             <div key={pi} style={{
               position: 'absolute', top: '50%', left: '50%',
-              width: 5, height: 5,
-              marginLeft: -2.5, marginTop: -2.5,
-              background: '#FFD700',
-              borderRadius: '50%',
+              width: 5, height: 5, marginLeft: -2.5, marginTop: -2.5,
+              background: '#FFD700', borderRadius: '50%',
               pointerEvents: 'none', zIndex: 29,
               boxShadow: '0 0 6px rgba(255,215,0,0.8)',
               animation: 'rf-bonus-particle-side 0.6s ease-out forwards',
-              '--dx': dx + 'px',
-              '--dy': dy + 'px',
+              '--dx': dx + 'px', '--dy': dy + 'px',
             }} />
           );
         })}
-        {/* Badge — pops in with the explode */}
         <span style={{
           position: 'absolute', top: -8, left: '50%',
           transform: 'translateX(-50%)',
@@ -367,12 +368,13 @@ export default function RightSidebar({
           textShadow: '0 1px 0 rgba(255,255,255,0.3)',
           border: '1.5px solid #FFE566',
         }}>
-          {`×${bonusPulse.sideMult} BONUS`}
+          {`×${mult} BONUS`}
         </span>
         {persistentMarker}
       </>
     );
   };
+
 
   const rankLocked  = (l) => !flopOdds || !flopOdds.rankOdds[l] || flopOdds.rankOdds[l].locked;
   const rankPayout  = (l) => flopOdds?.rankOdds[l]?.payout ?? null;
@@ -419,7 +421,7 @@ export default function RightSidebar({
                 onClick={() => !locked && onPlace('rank', label)}
                 onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.rank[label]) onRemove('rank', label); }}
                 className="relative flex items-center justify-between flex-1"
-                style={{ ...style, ...bonusSideStyle(rankIdx), borderRadius: R, padding: '0 12px', minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
+                style={{ ...style, ...bonusRankStyle(rankIdx), borderRadius: R, padding: '0 12px', minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
                 <span style={{ color: 'rgba(0,0,0,0.88)', fontWeight: 900, fontSize: 15, lineHeight: 1, WebkitTextStroke: '0.4px currentColor' }}>
                   {label}
@@ -445,7 +447,7 @@ export default function RightSidebar({
                     }}
                   />
                 )}
-                {bonusBadge(rankIdx)}
+                {bonusBadge(rankIdx, 'rank')}
                 {isWinner && isResolved && (
                   <span style={{
                     position: 'absolute',
@@ -500,9 +502,9 @@ export default function RightSidebar({
                 onClick={() => !locked && onPlace('color', pos.key)}
                 onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.color[pos.key]) onRemove('color', pos.key); }}
                 className="relative flex flex-col items-center justify-center"
-                style={{ ...style, ...bonusSideStyle(7 + colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
+                style={{ ...style, ...bonusColorRiverStyle(colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {bonusBadge(7 + colorIdx)}
+                {bonusBadge(colorIdx, 'colorRiver')}
                 <span style={{ ...colorTextStyle, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 {locked ? (
                   <img
@@ -558,9 +560,9 @@ export default function RightSidebar({
                 onClick={() => !locked && onPlace('river', b.side)}
                 onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.river[b.side]) onRemove('river', b.side); }}
                 className="relative flex flex-col items-center justify-center"
-                style={{ ...style, ...bonusSideStyle(13 + riverIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
+                style={{ ...style, ...bonusColorRiverStyle(6 + riverIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {bonusBadge(13 + riverIdx)}
+                {bonusBadge(6 + riverIdx, 'colorRiver')}
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
                 {locked ? (

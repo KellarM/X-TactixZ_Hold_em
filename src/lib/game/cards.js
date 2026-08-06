@@ -87,10 +87,21 @@ export const COLOR_POSITIONS = ['3R', '4R', '5R', '3B', '4B', '5B'];
 
 // Side bet positions for RNG Bonus (15 total: 7 Rank + 6 Color + 2 River)
 // Index 0-6 = RANK_LABELS, 7-12 = Color positions, 13-14 = River (low, high)
-export const SIDE_BET_POSITIONS = [
+// Bonus positions — split into 3 separate bonus areas
+// Area 1: Card Hands (10 positions, ×5 multiplier)
+// Area 2: Rank Hands (7 positions, ×4 multiplier)
+// Area 3: Color + River (8 positions = 6 color + 2 river, ×3 multiplier)
+export const RANK_BONUS_POSITIONS = [
   '4 Of A Kind', 'Full House', 'Flush', 'Straight', '3 Of A Kind', '2 Pair', '1 Pair',
-  '3R', '3B', '4R', '4B', '5R', '5B',
-  'low', 'high',
+];
+export const COLOR_RIVER_BONUS_POSITIONS = [
+  '3R', '3B', '4R', '4B', '5R', '5B',  // 6 color positions (indices 0-5)
+  'low', 'high',                        // 2 river positions (indices 6-7)
+];
+// Legacy export kept for backwards compat (ResultOverlay still uses it for lookups)
+export const SIDE_BET_POSITIONS = [
+  ...RANK_BONUS_POSITIONS,
+  ...COLOR_RIVER_BONUS_POSITIONS,
 ];
 
 export function formatMoney(amount) {
