@@ -8,7 +8,7 @@ import { cardColor, isLowRank, cardKey, CAT_TO_LABEL } from './cards';
 export const HOUSE_EDGE_CARD  = 0.15;  // Card Board: player sees exact hand matchups post-flop
 export const HOUSE_EDGE_RANK  = 0.12;  // Rank Board: player sees rank distribution
 export const HOUSE_EDGE_COLOR = 0.04;  // Color Board: LOCKED at 96% RTP (4% HE) — 4 pre-certifiable states
-export const HOUSE_EDGE_RIVER = 0.08;  // River Board: only 1 card unknown, least info
+export const HOUSE_EDGE_RIVER = 0.035; // River Board: 96.5% RTP — certified 2M round simulation
 export const LOCKOUT_THRESHOLD = 0.80; // Lockout dominant positions at 80% (tightened from 90%)
 
 // Odds thresholds — positions outside this payout window are dead (not bettable)
@@ -22,8 +22,8 @@ export const ODDS_THRESHOLD_RANK_LOW  = 0.1;   // Rank Board min odds — locked
 // Color Board is locked at a pre-certified 96% RTP with fixed payouts as low as
 // 0.856:1 by design (3 positions always live per flop state) — a 1.1 floor would
 // falsely kill one of the 3 live positions on every single flop.
-// River Board is an inherently near-50/50 bet — at 8% house edge, payouts run
-// ~0.6-1.3:1 almost always, so a 1.1 floor locks BOTH sides most rounds.
+// River Board is an inherently near-50/50 bet — at 3.5% house edge (96.5% RTP),
+// payouts run ~0.69-1.25:1 almost always, so a 1.1 floor locks BOTH sides most rounds.
 // Bug found and fixed 2026-08-03: these were mistakenly added without being
 // requested (only Card/Rank thresholds were asked for) and broke live gameplay.
 
