@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle, RotateCcw } from 'lucide-react';
+import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle, RotateCcw, Layers } from 'lucide-react';
+import { ANTE_STRUCTURES } from '@/lib/game/anteStructures';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import { formatMoney } from '@/lib/game/cards';
 
@@ -41,7 +42,7 @@ function StatRow({ label, value, highlight }) {
   );
 }
 
-export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay, onResetBank }) {
+export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay, onResetBank, anteStructureId = 'C', onChangeAnteStructure }) {
   const sounds = useGameSounds();
   const [crowdOn, setCrowdOn] = useState(true);
   const [crowdVolume, setCrowdVolume] = useState(40);
@@ -144,12 +145,13 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
             { id: 'stats',      icon: <BarChart2  size={14} />, label: 'Player Stats'},
             { id: 'gamerules',  icon: <BookOpen   size={14} />, label: 'Game Rules'  },
             { id: 'howtoplay',  icon: <HelpCircle size={14} />, label: 'How to Play' },
+            { id: 'ante',      icon: <Layers size={14} />,     label: 'Ante Bonus' },
           ].map(t => (
             <button
               key={t.id}
               onClick={() => t.id === 'howtoplay' ? (onHowToPlay && onHowToPlay()) : setTab(t.id)}
               style={{
-                flex: '0 0 calc(50% - 4px)', padding: '7px 0', borderRadius: 8,
+                flex: '0 0 calc(33.33% - 6px)', padding: '7px 0', borderRadius: 8,
                 background: tab === t.id ? GOLD_BTN : 'rgba(197,160,89,0.1)',
                 border: `1px solid ${tab === t.id ? GOLD : 'rgba(197,160,89,0.3)'}`,
                 color: tab === t.id ? GOLD_DARK : GOLD,
@@ -264,6 +266,77 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '10px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10, minHeight: 80, alignItems: 'center', justifyContent: 'center' }}>
             <HelpCircle size={28} color="rgba(197,160,89,0.4)" />
             <span style={{ color: 'rgba(197,160,89,0.5)', fontSize: 12, fontWeight: 600 }}>How To Play — Coming Soon</span>
+          </div>
+        )}
+
+        {/* Ante Bonus Tab */}
+        {tab === 'ante' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(197,160,89,0.6)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 2 }}>
+              Ante Bonus Structure
+            </div>
+            <div style={{ fontSize: 10, color: '#6a7a8a', marginBottom: 4 }}>
+              Qualifier: Bet full Ante on 1 position per board. Win that position to count the board.
+            </div>
+            {ANTE_STRUCTURES.map(s => {
+              const isSelected = anteStructureId === s.id;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => onChangeAnteStructure && onChangeAnteStructure(s.id)}
+                  style={{
+                    display: 'flex', flexDirection: 'column', gap: 6, padding: '10px 12px',
+                    borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+                    border: isSelected ? '2px solid #facc15' : '1px solid rgba(197,160,89,0.25)',
+                    background: isSelected ? 'rgba(100,60,0,0.55)' : 'rgba(0,0,0,0.3)',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: isSelected ? '#fde047' : '#fff', fontWeight: 800, fontSize: 12 }}>
+                      {s.id}: {s.name}
+                    </span>
+                    {s.viable
+                      ? <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, background: 'rgba(34,197,94,0.15)', padding: '2px 6px', borderRadius: 4 }}>VIABLE</span>
+                      : <span style={{ fontSize: 9, color: '#ef4444', fontWeight: 700, background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: 4 }}>PLAYER EDGE</span>
+                    }
+                  </div>
+                  <div style={{ fontSize: 10, color: '#8a9ab0' }}>{s.short}</div>
+                  {/* Mini bar chart row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                    <div style={{ flex: 1, height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                      <div style={{
+                        width: `${Math.min(100, Math.max(0, s.blendedRtp))}%`,
+                        height: '100%',
+                        borderRadius: 3,
+                        background: s.blendedRtp > 100
+                          ? 'linear-gradient(90deg, #ef4444, #dc2626)'
+                          : s.blendedRtp >= 95
+                            ? 'linear-gradient(90deg, #22c55e, #16a34a)'
+                            : 'linear-gradient(90deg, #f59e0b, #d97706)',
+                      }} />
+                    </div>
+                    <span style={{
+                      fontSize: 10, fontWeight: 800, minWidth: 52, textAlign: 'right',
+                      color: s.blendedRtp > 100 ? '#ef4444' : s.blendedRtp >= 95 ? '#22c55e' : '#f59e0b',
+                    }}>
+                      {s.blendedRtp.toFixed(1)}% RTP
+                    </span>
+                  </div>
+                  {/* Stats row */}
+                  <div style={{ display: 'flex', gap: 12, fontSize: 9, color: '#6a7a8a' }}>
+                    <span>Ante RTP: <b style={{ color: '#94a3b8' }}>{s.anteRtp.toFixed(0)}%</b></span>
+                    <span>Edge: <b style={{ color: s.houseEdge >= 0 ? '#22c55e' : '#ef4444' }}>{s.houseEdge >= 0 ? '+' : ''}{s.houseEdge.toFixed(1)}%</b></span>
+                  </div>
+                </button>
+              );
+            })}
+            {/* Legend */}
+            <div style={{ display: 'flex', gap: 12, fontSize: 9, color: '#5a6a7a', paddingTop: 4, borderTop: '1px solid rgba(197,160,89,0.1)' }}>
+              <span>🟢 95-100% RTP</span>
+              <span>🟡 85-95% RTP</span>
+              <span>🔴 &gt;100% (player edge)</span>
+            </div>
           </div>
         )}
 

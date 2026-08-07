@@ -315,6 +315,8 @@ export default function GameTable() {
         setBoardTheme={setBoardTheme}
         onHowToPlay={() => { setShowSettings(false); setShowHowToPlay(true); }}
         onResetBank={actions.resetBank}
+        anteStructureId={game.anteStructure}
+        onChangeAnteStructure={actions.changeAnteStructure}
       />
       <HowToPlayModal isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
       <OnboardingIndicator />

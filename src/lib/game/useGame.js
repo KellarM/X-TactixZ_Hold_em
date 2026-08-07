@@ -16,6 +16,7 @@ import { shuffleDeck, dealCommunity, secureRandInt } from './shuffle';
 import { computePostFlopOdds, computeRiverOdds } from './oddsEngine';
 import { captureHand } from '../captureApi';
 import { settleRound } from './gameLogic';
+import { getStructureById, getSavedStructureId, saveStructureId, resolveAnteBonus, boardQualifies } from './anteStructures';
 import { playChipSound } from './useGameSounds';
 import { bestHand, compare5, evaluate5, combinations } from './pokerEvaluator';
 
@@ -120,6 +121,7 @@ export function useGame() {
   const handCounter = useRef(0);
   const [phase, setPhase] = useState('ante');
   const [bonus, setBonus] = useState(null);
+  const [anteStructure, setAnteStructure] = useState(() => { try { return getSavedStructureId(); } catch { return 'C'; } });
   const [bank, setBank] = useState(START_BANK);
   const [ante, setAnte] = useState(0);
   const [deck, setDeck] = useState([]);
@@ -210,6 +212,11 @@ export function useGame() {
     setBank(b => +(b + ante).toFixed(2));  // Refund the ante back to bank
     setAnte(0);
   }, [ante]);
+
+  const changeAnteStructure = useCallback((id) => {
+    saveStructureId(id);
+    setAnteStructure(id);
+  }, []);
 
   const deal = useCallback(() => {
     if (ante <= 0) return;
@@ -389,6 +396,34 @@ export function useGame() {
       colorRiverPayout,
       bonusWinnings,
     });
+
+    // ── ANTE BONUS RESOLUTION ───────────────────────────────────────────
+    // Check qualifying boards: player bet >= ante on one winning position per board
+    const anteStruct = getStructureById(anteStructure);
+    const cardQual = boardQualifies(settlement.details.card, ante);
+    const rankQual = boardQualifies(settlement.details.rank, ante);
+    const colorQual = boardQualifies(settlement.details.color, ante);
+    const riverQual = boardQualifies(settlement.details.river, ante);
+    const qualifyingBoardsWon = [cardQual, rankQual, colorQual, riverQual].filter(Boolean).length;
+    const anteResult = resolveAnteBonus(anteStruct, qualifyingBoardsWon, ante);
+
+    // Add ante return + bonus to bank
+    let anteReturn = 0;
+    if (anteResult.returned) {
+      anteReturn = ante + anteResult.bonus;
+      setBank(b => +(b + anteReturn).toFixed(2));
+    }
+
+    // Attach ante bonus to result for display
+    settlement.anteBonus = {
+      structureId: anteStructure,
+      structureName: anteStruct.name,
+      boardsWon: qualifyingBoardsWon,
+      cardQual, rankQual, colorQual, riverQual,
+      returned: anteResult.returned,
+      bonus: anteResult.bonus,
+      anteAmount: ante,
+    };
     setHistory(prev => [settlement.historyEntry, ...prev].slice(0, 18));
     setPhase('resolved');
 
@@ -646,6 +681,7 @@ export function useGame() {
     leadingRiverSide,
     winnerRiverSide,
     bonus,
+    anteStructure,
     actions: {
       addToAnte,
       clearAnte,
@@ -658,7 +694,8 @@ export function useGame() {
       fold,
       newHand,
       resetBank,
-      setSelectedChip
+      setSelectedChip,
+      changeAnteStructure
     }
   };
 }

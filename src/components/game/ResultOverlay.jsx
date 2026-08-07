@@ -229,11 +229,17 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
   // Bonus winnings fold into the combined total (already credited to bank in useGame.js)
   const bonusWin = bonus?.bonusWinnings || 0;
 
-  // Net win = what came back (board wins + bonus) minus everything spent (ante + bets)
-  const netWin = Math.round(((winnings + bonusWin) - totalWagered) * 100) / 100;
+  // ── Ante bonus (from selected structure) ──
+  const anteBonus = result?.anteBonus;
+  const anteReturned = anteBonus?.returned ? anteBonus.anteAmount : 0;
+  const anteBonusPayout = anteBonus?.bonus || 0;
+  const anteTotalReturn = anteReturned + anteBonusPayout;
 
-  // Total win = board winnings + bonus, combined as one number
-  const totalWin = Math.round((winnings + bonusWin) * 100) / 100;
+  // Net win = what came back (board wins + bonus + ante return/bonus) minus everything spent (ante + bets)
+  const netWin = Math.round(((winnings + bonusWin + anteTotalReturn) - totalWagered) * 100) / 100;
+
+  // Total win = board winnings + bonus + ante return/bonus, combined as one number
+  const totalWin = Math.round((winnings + bonusWin + anteTotalReturn) * 100) / 100;
 
   const isBoardWin = resolution.boardWin;
   const hasWin = winnings > 0;
@@ -492,12 +498,14 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
           </div>
 
           {/* ── Totals bar — 3 columns: Total Wagered | Net Win | Total Win ── */}
-          {/* Ante row above totals */}
+          {/* Ante row above totals — shows bonus result when structure applies */}
           {ante > 0 && (
             <div style={{
               flexShrink: 0,
-              background: 'rgba(180,0,0,0.18)',
-              borderTop: '1px solid rgba(239,68,68,0.3)',
+              background: anteBonus?.returned
+                ? 'rgba(34,197,94,0.15)'
+                : 'rgba(180,0,0,0.18)',
+              borderTop: `1px solid ${anteBonus?.returned ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`,
               padding: '4px 12px',
               display: 'flex',
               justifyContent: 'space-between',
@@ -506,22 +514,26 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
               <div style={{
                 fontSize: '0.68rem',
                 fontWeight: 700,
-                color: 'rgba(255,180,180,0.75)',
+                color: anteBonus?.returned ? 'rgba(180,255,200,0.85)' : 'rgba(255,180,180,0.75)',
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
                 fontFamily: 'Oswald, sans-serif',
               }}>
-                Ante (dead money — price to see the flop)
+                {anteBonus
+                  ? `Ante — ${anteBonus.structureName} (${anteBonus.boardsWon}/4 boards)`
+                  : 'Ante (dead money)'}
               </div>
               <div style={{
                 fontSize: '0.88rem',
                 fontWeight: 900,
-                color: '#f87171',
+                color: anteBonus?.returned ? '#4ade80' : '#f87171',
                 fontFamily: 'Oswald, sans-serif',
                 ...blackOutline,
                 whiteSpace: 'nowrap',
               }}>
-                -{formatMoney(ante)}
+                {anteBonus?.returned
+                  ? `+${formatMoney(anteTotalReturn)}${anteBonusPayout > 0 ? ' (bonus!)' : ''}`
+                  : `-${formatMoney(ante)}`}
               </div>
             </div>
           )}
