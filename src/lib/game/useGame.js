@@ -16,6 +16,7 @@ import { shuffleDeck, dealCommunity, secureRandInt } from './shuffle';
 import { computePostFlopOdds, computeRiverOdds } from './oddsEngine';
 import { captureHand } from '../captureApi';
 import { settleRound } from './gameLogic';
+import { playChipSound } from './useGameSounds';
 import { bestHand, compare5, evaluate5, combinations } from './pokerEvaluator';
 
 const SHORT_SUIT = { spades: "s", hearts: "h", diamonds: "d", clubs: "c" };
@@ -225,7 +226,7 @@ export function useGame() {
     setPhase('postflop');
   }, [ante, bank]);
 
-  const placeBet = useCallback((board, position, onSuccess) => {
+  const placeBet = useCallback((board, position) => {
     // Phase guard: card/rank/color only during postflop; river only during postturn
     if (board === 'river' && phase !== 'postturn') return;
     if (board !== 'river' && phase !== 'postflop') return;
@@ -259,8 +260,8 @@ export function useGame() {
       const pc = prevBets[board][position] || 0;
       return { ...prevBets, [board]: { ...prevBets[board], [position]: +(pc + amount).toFixed(2) } };
     });
-    // Fire success callback (for chip sound) — only when bet is actually placed
-    if (onSuccess) onSuccess();
+    // Play chip sound directly — no callback, no return value, no middleman
+    playChipSound();
   }, [phase, selectedChip, ante, bank, bets]);
 
   const removeBet = useCallback((board, position) => {

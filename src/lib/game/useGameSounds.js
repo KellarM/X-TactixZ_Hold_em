@@ -88,6 +88,11 @@ function preloadOnce() {
   Object.values(POOLS).flat().forEach(a => a.load());
 }
 
+// ── Standalone SFX — usable outside React component tree ──
+export function playChipSound()    { play('chipPlace', 0.8); }
+export function playChipRemoveSound() { play('chipRemove', 0.7); }
+export function playCardDealSound() { play('cardDeal', 0.9); }
+
 export function useGameSounds() {
   return {
     // ── SFX (chips, cards, bonus) ──
