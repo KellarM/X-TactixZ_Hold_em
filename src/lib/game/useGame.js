@@ -58,7 +58,7 @@ export const CHIPS = [
   { value: 5.00, label: '$5' }
 ];
 
-const START_BANK = 99.99;
+const START_BANK = 1000;
 function emptyBets() {
   return {
     card: {},
@@ -498,7 +498,7 @@ export function useGame() {
 
   // Test-mode helper: full reset to a fresh $100 bankroll + new ante round
   const resetBank = useCallback(() => {
-    setBank(100);
+    setBank(1000);
     setDeck([]);
     setRevealed(0);
     setBets(emptyBets());
