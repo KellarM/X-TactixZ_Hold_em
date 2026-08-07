@@ -245,6 +245,17 @@ export default function BottomFooter({
                 How The Ante Pays
               </div>
 
+              {/* Qualifying rule — plain language for first-time players */}
+              <div style={{
+                fontSize: 10, color: '#c4b896', lineHeight: 1.45,
+                marginBottom: 8, paddingBottom: 7,
+                borderBottom: '1px solid rgba(202,138,4,0.3)',
+              }}>
+                Bet the <b style={{ color: '#facc15' }}>full Ante</b> on
+                one position per board to qualify that board.
+                All payouts are based on the <b style={{ color: '#facc15' }}>Ante amount</b>.
+              </div>
+
               <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                 {anteTiers.map((tier, i) => {
                   const color = tier.kind === 'loss' ? '#f87171' : tier.kind === 'bonus' ? '#4ade80' : '#facc15';
