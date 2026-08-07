@@ -496,7 +496,7 @@ export function useGame() {
     setPhase('ante');
   }, []);
 
-  // Test-mode helper: full reset to a fresh $100 bankroll + new ante round
+  // Test-mode helper: full reset to a fresh $1000 bankroll + new ante round
   const resetBank = useCallback(() => {
     setBank(1000);
     setDeck([]);
