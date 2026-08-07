@@ -4,7 +4,7 @@ import { Settings, RotateCcw, Info } from 'lucide-react';
 import { CHIPS } from '@/lib/game/useGame';
 import Chip from '@/components/game/Chip';
 import { formatMoney } from '@/lib/game/cards';
-import { ANTE_STRUCTURES, getStructureById, getSavedStructureId, ANTE_STRUCTURE_EVENT } from '@/lib/game/anteStructures';
+import { ANTE_STRUCTURES, getStructureById, getSavedStructureId, getAnteTierDescriptions, ANTE_STRUCTURE_EVENT } from '@/lib/game/anteStructures';
 
 const GOLD_BTN = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
 
@@ -76,6 +76,7 @@ export default function BottomFooter({
   }, []);
 
   const activeStruct = getStructureById(structureId);
+  const anteTiers = activeStruct ? getAnteTierDescriptions(activeStruct) : [];
 
   return (
     <div
@@ -189,7 +190,11 @@ export default function BottomFooter({
               onClick={() => setShowBubble(false)}
               style={{ position: 'fixed', inset: 0, zIndex: 9998 }}
             />
-            {/* Speech bubble — overlays the card board, well above the footer */}
+            {/* Speech bubble — overlays the card board, well above the footer.
+                 Player-facing plain-language explainer ONLY: no operator
+                 jargon (no "Ante Structure", no name, no RTP/Edge numbers).
+                 A tiny letter badge in the top corner is the sole reference
+                 to which structure is active (for staff, at a glance). */}
             <div style={{
               position: 'fixed',
               left: bubblePos.left,
@@ -199,9 +204,9 @@ export default function BottomFooter({
               background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
               border: '1.5px solid rgba(202,138,4,0.7)',
               borderRadius: 10,
-              padding: '10px 14px',
-              minWidth: 200,
-              maxWidth: 240,
+              padding: '14px 14px 10px',
+              minWidth: 220,
+              maxWidth: 260,
               boxShadow: '0 8px 32px rgba(0,0,0,0.9)',
               pointerEvents: 'auto',
             }}>
@@ -216,27 +221,47 @@ export default function BottomFooter({
                 borderRight: '1.5px solid rgba(202,138,4,0.7)',
                 borderBottom: '1.5px solid rgba(202,138,4,0.7)',
               }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                <span style={{
-                  fontSize: 10, fontWeight: 900, color: '#facc15',
-                  letterSpacing: '0.1em', textTransform: 'uppercase',
-                }}>
-                  Ante Structure: {activeStruct.id}
+
+              {/* Structure letter badge — top corner, staff reference only */}
+              <div style={{
+                position: 'absolute',
+                top: -9, right: -9,
+                width: 22, height: 22, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%, #e8c22a 100%)',
+                border: '1.5px solid #FFD700',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.6)',
+              }}>
+                <span style={{ fontSize: 11, fontWeight: 900, color: '#1a0f00' }}>
+                  {activeStruct.id}
                 </span>
-                {activeStruct.viable
-                  ? <span style={{ fontSize: 8, color: '#4ade80', fontWeight: 700, background: 'rgba(34,197,94,0.15)', padding: '1px 5px', borderRadius: 3 }}>VIABLE</span>
-                  : <span style={{ fontSize: 8, color: '#f87171', fontWeight: 700, background: 'rgba(239,68,68,0.15)', padding: '1px 5px', borderRadius: 3 }}>PLAYER EDGE</span>
-                }
               </div>
-              <div style={{ fontSize: 11, color: '#e5c158', fontWeight: 700, marginBottom: 4 }}>
-                {activeStruct.name}
+
+              <div style={{
+                fontSize: 10, fontWeight: 800, color: '#e5c158',
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                marginBottom: 8, textAlign: 'center',
+              }}>
+                How The Ante Pays
               </div>
-              <div style={{ fontSize: 10, color: '#c4b896', marginBottom: 6, lineHeight: 1.4 }}>
-                {activeStruct.short}
-              </div>
-              <div style={{ display: 'flex', gap: 10, fontSize: 9, color: '#8a8a8a' }}>
-                <span>RTP: <b style={{ color: activeStruct.blendedRtp > 100 ? '#f87171' : '#4ade80' }}>{activeStruct.blendedRtp.toFixed(2)}%</b></span>
-                <span>Edge: <b style={{ color: activeStruct.houseEdge >= 0 ? '#4ade80' : '#f87171' }}>{activeStruct.houseEdge >= 0 ? '+' : ''}{activeStruct.houseEdge.toFixed(2)}%</b></span>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                {anteTiers.map((tier, i) => {
+                  const color = tier.kind === 'loss' ? '#f87171' : tier.kind === 'bonus' ? '#4ade80' : '#facc15';
+                  return (
+                    <div key={i} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                      gap: 10, fontSize: 11, lineHeight: 1.3,
+                    }}>
+                      <span style={{ color: '#c4b896', whiteSpace: 'nowrap' }}>
+                        {tier.range} {tier.boardWord} Win
+                      </span>
+                      <span style={{ color, fontWeight: 700, textAlign: 'right' }}>
+                        {tier.outcome}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </>,

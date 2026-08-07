@@ -131,3 +131,52 @@ export function boardQualifies(details, ante) {
   if (!details || !ante || ante <= 0) return false;
   return details.some(d => d.won && d.amt >= ante - 0.01); // 0.01 for float tolerance
 }
+
+// Generate a player-facing, plain-language description of what happens at
+// each board-win tier for a given structure — used by the in-game Ante
+// info bubble so a first-time player understands the Ante payout function
+// at a glance, with zero operator/certification jargon.
+// Returns an ordered array of { range, outcome, kind }.
+// kind: 'loss' | 'push' | 'bonus' — used for text color in the UI.
+// NOTE: mirrors the exact math in resolveAnteBonus() above — if that
+// function's stacking logic changes, this must be updated to match, or the
+// displayed text will misrepresent the real payout (regulatory risk).
+export function getAnteTierDescriptions(structure, maxBoards = 4) {
+  if (!structure) return [];
+  const { returnThreshold: R, bonus1Boards: b1B, bonus1Mult: b1M, bonus2Boards: b2B, bonus2Mult: b2M } = structure;
+
+  const breakpoints = new Set([0, R]);
+  if (b1B <= maxBoards) breakpoints.add(b1B);
+  if (b2B <= maxBoards) breakpoints.add(b2B);
+  const points = Array.from(breakpoints).sort((a, b) => a - b);
+
+  const tiers = [];
+  for (let i = 0; i < points.length; i++) {
+    const start = points[i];
+    if (start > maxBoards) continue;
+    const end = i + 1 < points.length ? points[i + 1] - 1 : maxBoards;
+    if (end < start) continue;
+
+    let mult = 0;
+    if (start >= b1B) mult += b1M;
+    if (start >= b2B) mult += b2M;
+
+    const range = start === end ? `${start}` : `${start}-${end}`;
+    const boardWord = start === end && start === 1 ? 'Board' : 'Boards';
+
+    let outcome, kind;
+    if (start < R) {
+      outcome = 'Ante Lost';
+      kind = 'loss';
+    } else if (mult > 0) {
+      outcome = `Ante Returned + ${mult}:1 Bonus`;
+      kind = 'bonus';
+    } else {
+      outcome = 'Ante Returned';
+      kind = 'push';
+    }
+
+    tiers.push({ range, boardWord, outcome, kind });
+  }
+  return tiers;
+}
