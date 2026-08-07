@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { Wrench } from 'lucide-react';
+import { Wrench, Layers } from 'lucide-react';
 import { fetchCapturedHands, recalcHandRtp, recalcPayout } from '../../lib/captureApi';
+import { ANTE_STRUCTURES, getSavedStructureId, saveStructureId } from '../../lib/game/anteStructures';
 
 // ── Inject toolbar animations once ───────────────────────────────────────────
 const STYLE_ID = 'rf-toolbar-style';
@@ -235,6 +236,160 @@ function CertificationTestModal({ onClose }) {
         }}>
           <span style={{ color: MUTED, fontSize: 10 }}>
             {data ? `${data.totalHands || 0} hands captured` : ''}
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
+              color: '#3d3013', fontWeight: 800, fontSize: 12,
+              letterSpacing: '0.08em', padding: '8px 24px',
+              borderRadius: 7, border: 'none', cursor: 'pointer',
+            }}
+          >
+            CLOSE
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Ante Structure Modal (Operator Tool) ────────────────────────────────────
+// Lets the operator select which Ante Bonus threshold structure is active.
+// Selection is stored in localStorage and live-synced to any running game
+// session via a custom event (see anteStructures.js / useGame.js).
+function AnteStructureModal({ onClose }) {
+  const [selectedId, setSelectedId] = useState(() => getSavedStructureId());
+
+  const handleSelect = (id) => {
+    saveStructureId(id);
+    setSelectedId(id);
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 2000,
+      background: 'rgba(0,0,0,0.88)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{
+        background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
+        border: '2px solid rgba(202,138,4,0.7)',
+        borderRadius: 16,
+        width: 640,
+        maxHeight: '85vh',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 12px 60px rgba(0,0,0,0.95)',
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '14px 22px',
+          borderBottom: '1px solid rgba(202,138,4,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flexShrink: 0,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Layers size={16} color="#1a0f00" />
+            </div>
+            <span style={{
+              fontSize: 15, fontWeight: 900, color: '#facc15',
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+            }}>
+              Ante Structure
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              color: '#facc15', background: 'none', border: 'none',
+              cursor: 'pointer', fontSize: 20, lineHeight: 1, opacity: 0.8,
+            }}
+          >✕</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ overflowY: 'auto', padding: '18px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>
+            Qualifier: player must bet the full Ante on ONE position per board and win it for that board to count.
+            Changes apply live to the current session (GLI-21: allow idle time before switching mid-shift).
+          </div>
+
+          {ANTE_STRUCTURES.map(s => {
+            const isSelected = selectedId === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => handleSelect(s.id)}
+                style={{
+                  display: 'flex', flexDirection: 'column', gap: 6, padding: '12px 14px',
+                  borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+                  border: isSelected ? '2px solid #facc15' : '1px solid rgba(197,160,89,0.25)',
+                  background: isSelected ? 'rgba(100,60,0,0.55)' : 'rgba(0,0,0,0.3)',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: isSelected ? '#fde047' : '#fff', fontWeight: 800, fontSize: 13 }}>
+                    {s.id}: {s.name}
+                  </span>
+                  {s.viable
+                    ? <span style={{ fontSize: 9, color: GREEN, fontWeight: 700, background: 'rgba(34,197,94,0.15)', padding: '2px 6px', borderRadius: 4 }}>VIABLE</span>
+                    : <span style={{ fontSize: 9, color: RED, fontWeight: 700, background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: 4 }}>PLAYER EDGE</span>
+                  }
+                </div>
+                <div style={{ fontSize: 11, color: BODY_TEXT }}>{s.short}</div>
+                {/* RTP bar chart */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                  <div style={{ flex: 1, height: 7, background: 'rgba(255,255,255,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+                    <div style={{
+                      width: `${Math.min(100, Math.max(0, s.blendedRtp))}%`,
+                      height: '100%',
+                      borderRadius: 3,
+                      background: s.blendedRtp > 100
+                        ? 'linear-gradient(90deg, #ef4444, #dc2626)'
+                        : s.blendedRtp >= 95
+                          ? 'linear-gradient(90deg, #22c55e, #16a34a)'
+                          : 'linear-gradient(90deg, #f59e0b, #d97706)',
+                    }} />
+                  </div>
+                  <span style={{
+                    fontSize: 11, fontWeight: 800, minWidth: 62, textAlign: 'right',
+                    color: s.blendedRtp > 100 ? RED : s.blendedRtp >= 95 ? GREEN : '#f59e0b',
+                  }}>
+                    {s.blendedRtp.toFixed(2)}% RTP
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: 14, fontSize: 10, color: MUTED }}>
+                  <span>Ante RTP: <b style={{ color: BODY_TEXT }}>{s.anteRtp.toFixed(2)}%</b></span>
+                  <span>House Edge: <b style={{ color: s.houseEdge >= 0 ? GREEN : RED }}>{s.houseEdge >= 0 ? '+' : ''}{s.houseEdge.toFixed(2)}%</b></span>
+                </div>
+              </button>
+            );
+          })}
+
+          {/* Legend */}
+          <div style={{ display: 'flex', gap: 14, fontSize: 10, color: 'rgba(197,160,89,0.5)', paddingTop: 6, borderTop: '1px solid rgba(202,138,4,0.2)' }}>
+            <span>🟢 95–100% RTP</span>
+            <span>🟡 85–95% RTP</span>
+            <span>🔴 &gt;100% (player edge — non-viable)</span>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: '10px 22px',
+          borderTop: '1px solid rgba(202,138,4,0.2)',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          flexShrink: 0,
+        }}>
+          <span style={{ color: MUTED, fontSize: 10 }}>
+            Active: <b style={{ color: GOLD_BRIGHT }}>{ANTE_STRUCTURES.find(s => s.id === selectedId)?.name || selectedId}</b>
           </span>
           <button
             onClick={onClose}
@@ -736,6 +891,7 @@ export default function ToolBar() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [showCertTest, setShowCertTest] = useState(false);
+  const [showAnteStructure, setShowAnteStructure] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const [visible, setVisible] = useState(false); // hidden by default -- summoned via hotkey only
   const btnRef = useRef(null);
@@ -888,6 +1044,19 @@ export default function ToolBar() {
             POST FLOP POSSIBILITIES
           </button>
 
+          <button
+            className="rf-tool-btn"
+            onClick={() => { setOpen(false); setShowAnteStructure(true); }}
+          >
+            <span style={{
+              width: 22, height: 22, borderRadius: 5,
+              background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+            }}><Layers size={12} color="#1a0f00" /></span>
+            ANTE STRUCTURE
+          </button>
+
           <div style={{
             color: 'rgba(197,160,89,0.3)', fontSize: 9, fontWeight: 600,
             letterSpacing: '0.08em', textAlign: 'center',
@@ -901,6 +1070,10 @@ export default function ToolBar() {
 
       {showCertTest && (
         <CertificationTestModal onClose={() => setShowCertTest(false)} />
+      )}
+
+      {showAnteStructure && (
+        <AnteStructureModal onClose={() => setShowAnteStructure(false)} />
       )}
     </>
   );

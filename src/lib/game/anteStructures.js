@@ -92,9 +92,14 @@ export function getSavedStructureId() {
   }
 }
 
+export const ANTE_STRUCTURE_EVENT = 'rfpf-ante-structure-changed';
+
 export function saveStructureId(id) {
   try {
     localStorage.setItem('rfpf_ante_structure', id);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(ANTE_STRUCTURE_EVENT, { detail: id }));
+    }
   } catch {}
 }
 

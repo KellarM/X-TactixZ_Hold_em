@@ -16,7 +16,7 @@ import { shuffleDeck, dealCommunity, secureRandInt } from './shuffle';
 import { computePostFlopOdds, computeRiverOdds } from './oddsEngine';
 import { captureHand } from '../captureApi';
 import { settleRound } from './gameLogic';
-import { getStructureById, getSavedStructureId, saveStructureId, resolveAnteBonus, boardQualifies } from './anteStructures';
+import { getStructureById, getSavedStructureId, saveStructureId, resolveAnteBonus, boardQualifies, ANTE_STRUCTURE_EVENT } from './anteStructures';
 import { playChipSound } from './useGameSounds';
 import { bestHand, compare5, evaluate5, combinations } from './pokerEvaluator';
 
@@ -122,6 +122,18 @@ export function useGame() {
   const [phase, setPhase] = useState('ante');
   const [bonus, setBonus] = useState(null);
   const [anteStructure, setAnteStructure] = useState(() => { try { return getSavedStructureId(); } catch { return 'C'; } });
+
+  // ── Live-sync Ante Structure from the Operator Tools menu ──────────────
+  // The operator changes this via ToolBar > Ante Structure (independent
+  // component). We listen for the custom event so a running game session
+  // picks up the new structure immediately without a page reload.
+  useEffect(() => {
+    const handler = (e) => {
+      try { setAnteStructure(e.detail || getSavedStructureId()); } catch { /* noop */ }
+    };
+    window.addEventListener(ANTE_STRUCTURE_EVENT, handler);
+    return () => window.removeEventListener(ANTE_STRUCTURE_EVENT, handler);
+  }, []);
   const [bank, setBank] = useState(START_BANK);
   const [ante, setAnte] = useState(0);
   const [deck, setDeck] = useState([]);
