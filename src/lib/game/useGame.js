@@ -225,13 +225,13 @@ export function useGame() {
     setPhase('postflop');
   }, [ante, bank]);
 
-  const placeBet = useCallback((board, position) => {
+  const placeBet = useCallback((board, position, onSuccess) => {
     // Phase guard: card/rank/color only during postflop; river only during postturn
-    if (board === 'river' && phase !== 'postturn') return false;
-    if (board !== 'river' && phase !== 'postflop') return false;
+    if (board === 'river' && phase !== 'postturn') return;
+    if (board !== 'river' && phase !== 'postflop') return;
     const amount = selectedChip;
-    if (!amount || amount <= 0) return false;  // No chip selected
-    if (bank < amount) return false;  // Insufficient funds
+    if (!amount || amount <= 0) return;  // No chip selected
+    if (bank < amount) return;  // Insufficient funds
 
     // Check cap synchronously using current bets state (closure is fresh — bets in deps)
     const cap = board === 'river'
@@ -247,12 +247,11 @@ export function useGame() {
       positionCurrent = bets[board][position] || 0;
       boardCurrent = Object.values(bets[board]).reduce((a, b) => a + b, 0);
     }
-    if (boardCurrent + amount > cap + 1e-9) return false;  // over cap — reject
+    if (boardCurrent + amount > cap + 1e-9) return;  // over cap — reject, no sound
 
     // Bet is accepted — deduct from bank and update bets
     setBank(b => Math.max(0, +(b - amount).toFixed(2)));
     setBets(prevBets => {
-      // Use functional updater for safety, but cap was already checked above
       if (board === 'river') {
         const pc = prevBets.river[position] || 0;
         return { ...prevBets, river: { ...prevBets.river, [position]: +(pc + amount).toFixed(2) } };
@@ -260,7 +259,8 @@ export function useGame() {
       const pc = prevBets[board][position] || 0;
       return { ...prevBets, [board]: { ...prevBets[board], [position]: +(pc + amount).toFixed(2) } };
     });
-    return true;
+    // Fire success callback (for chip sound) — only when bet is actually placed
+    if (onSuccess) onSuccess();
   }, [phase, selectedChip, ante, bank, bets]);
 
   const removeBet = useCallback((board, position) => {
