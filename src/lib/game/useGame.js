@@ -200,7 +200,7 @@ export function useGame() {
     setAnte(a => {
       const next = +(a + amount).toFixed(2);
       if (next > bank) return bank;  // Can't ante more than you have
-      setBank(b => +(b - amount).toFixed(2));  // Deduct immediately
+      setBank(b => Math.max(0, +(b - amount).toFixed(2)));  // Deduct immediately, never negative
       return next;
     });
   }, [bank]);
@@ -227,12 +227,14 @@ export function useGame() {
 
   const placeBet = useCallback((board, position) => {
     // Phase guard: card/rank/color only during postflop; river only during postturn
-    if (board === 'river' && phase !== 'postturn') return;
-    if (board !== 'river' && phase !== 'postflop') return;
+    if (board === 'river' && phase !== 'postturn') return false;
+    if (board !== 'river' && phase !== 'postflop') return false;
     const amount = selectedChip;
-    if (!amount || amount <= 0) return;  // No chip selected — can't place bet
+    if (!amount || amount <= 0) return false;  // No chip selected — can't place bet
+    if (bank < amount) return false;  // Insufficient funds — reject silently
 
     // Use functional updaters to avoid stale closure issues — reads fresh state every time
+    let accepted = false;
     setBets(prevBets => {
       const cap = board === 'river'
         ? (Object.values(prevBets.card).reduce((a,b)=>a+b,0) +
@@ -249,13 +251,15 @@ export function useGame() {
       }
       if (boardCurrent + amount > cap + 1e-9) return prevBets; // over cap — no change
       // Deduct from bank only when bet is actually accepted
-      setBank(b => +(b - amount).toFixed(2));
+      setBank(b => Math.max(0, +(b - amount).toFixed(2)));
+      accepted = true;
       if (board === 'river') {
         return { ...prevBets, river: { ...prevBets.river, [position]: +(positionCurrent + amount).toFixed(2) } };
       }
       return { ...prevBets, [board]: { ...prevBets[board], [position]: +(positionCurrent + amount).toFixed(2) } };
     });
-  }, [phase, selectedChip, ante]);
+    return accepted;
+  }, [phase, selectedChip, ante, bank]);
 
   const removeBet = useCallback((board, position) => {
     // Phase guard: can only remove bets during the phase they were placed

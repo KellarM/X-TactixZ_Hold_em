@@ -153,8 +153,8 @@ export default function GameTable() {
   }, [phase]);
 
   const handlePlaceBet = useCallback((...args) => {
-    sounds.playChipPlace();
-    actions.placeBet(...args);
+    const accepted = actions.placeBet(...args);
+    if (accepted) sounds.playChipPlace();
   }, [actions]);
 
   const handleRemoveBet = useCallback((...args) => {
