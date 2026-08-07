@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Settings, RotateCcw, Info } from 'lucide-react';
 import { CHIPS } from '@/lib/game/useGame';
 import Chip from '@/components/game/Chip';
@@ -44,10 +45,24 @@ export default function BottomFooter({
   // speech-bubble above the Ante circle when the info button is pressed.
   const [structureId, setStructureId] = useState(anteStructureId || (() => { try { return getSavedStructureId(); } catch { return 'C'; } }));
   const [showBubble, setShowBubble] = useState(false);
+  const [bubblePos, setBubblePos] = useState(null);
+  const infoBtnRef = useRef(null);
 
   useEffect(() => {
     setStructureId(anteStructureId || structureId);
   }, [anteStructureId]);
+
+  // Compute fixed-position coords for the portal bubble, anchored to the
+  // info button, so it renders ABOVE the footer's overflow:hidden clip
+  // boundary and overlays the card board for readability.
+  useEffect(() => {
+    if (!showBubble || !infoBtnRef.current) return;
+    const rect = infoBtnRef.current.getBoundingClientRect();
+    setBubblePos({
+      left: rect.left + rect.width / 2,
+      bottom: window.innerHeight - rect.top + 10, // 10px gap above button
+    });
+  }, [showBubble]);
 
   // Listen for live structure changes from the Tools menu
   useEffect(() => {
@@ -140,9 +155,15 @@ export default function BottomFooter({
         )}
       </div>
 
-      {/* ── 3a. ANTE STRUCTURE INFO BUTTON + BUBBLE ── */}
+      {/* ── 3a. ANTE STRUCTURE INFO BUTTON + BUBBLE ──
+             Bubble is rendered via a portal to document.body with
+             position:fixed, anchored to the button's getBoundingClientRect.
+             This escapes the footer's overflow:hidden clip so the bubble
+             floats freely ABOVE the footer and overlays the card board,
+             instead of being squashed at the footer's top edge. ── */}
       <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
         <button
+          ref={infoBtnRef}
           onClick={() => setShowBubble(s => !s)}
           title="Ante Bonus Structure"
           style={{
@@ -161,20 +182,20 @@ export default function BottomFooter({
           <Info size={11} color={showBubble ? '#1a0f00' : '#C5A059'} />
         </button>
 
-        {showBubble && activeStruct && (
+        {showBubble && activeStruct && bubblePos && typeof document !== 'undefined' && createPortal(
           <>
             {/* Click-away overlay */}
             <div
               onClick={() => setShowBubble(false)}
-              style={{ position: 'fixed', inset: 0, zIndex: 998 }}
+              style={{ position: 'fixed', inset: 0, zIndex: 9998 }}
             />
-            {/* Speech bubble */}
+            {/* Speech bubble — overlays the card board, well above the footer */}
             <div style={{
-              position: 'absolute',
-              bottom: 'calc(100% + 10px)',
-              left: '50%',
+              position: 'fixed',
+              left: bubblePos.left,
+              bottom: bubblePos.bottom,
               transform: 'translateX(-50%)',
-              zIndex: 999,
+              zIndex: 9999,
               background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
               border: '1.5px solid rgba(202,138,4,0.7)',
               borderRadius: 10,
@@ -218,7 +239,8 @@ export default function BottomFooter({
                 <span>Edge: <b style={{ color: activeStruct.houseEdge >= 0 ? '#4ade80' : '#f87171' }}>{activeStruct.houseEdge >= 0 ? '+' : ''}{activeStruct.houseEdge.toFixed(2)}%</b></span>
               </div>
             </div>
-          </>
+          </>,
+          document.body
         )}
       </div>
 
