@@ -230,36 +230,38 @@ export function useGame() {
     if (board === 'river' && phase !== 'postturn') return false;
     if (board !== 'river' && phase !== 'postflop') return false;
     const amount = selectedChip;
-    if (!amount || amount <= 0) return false;  // No chip selected — can't place bet
-    if (bank < amount) return false;  // Insufficient funds — reject silently
+    if (!amount || amount <= 0) return false;  // No chip selected
+    if (bank < amount) return false;  // Insufficient funds
 
-    // Use functional updaters to avoid stale closure issues — reads fresh state every time
-    let accepted = false;
+    // Check cap synchronously using current bets state (closure is fresh — bets in deps)
+    const cap = board === 'river'
+      ? (Object.values(bets.card).reduce((a,b)=>a+b,0) +
+         Object.values(bets.rank).reduce((a,b)=>a+b,0) +
+         Object.values(bets.color).reduce((a,b)=>a+b,0))
+      : ante;
+    let boardCurrent, positionCurrent;
+    if (board === 'river') {
+      positionCurrent = bets.river[position] || 0;
+      boardCurrent = (bets.river.low || 0) + (bets.river.high || 0);
+    } else {
+      positionCurrent = bets[board][position] || 0;
+      boardCurrent = Object.values(bets[board]).reduce((a, b) => a + b, 0);
+    }
+    if (boardCurrent + amount > cap + 1e-9) return false;  // over cap — reject
+
+    // Bet is accepted — deduct from bank and update bets
+    setBank(b => Math.max(0, +(b - amount).toFixed(2)));
     setBets(prevBets => {
-      const cap = board === 'river'
-        ? (Object.values(prevBets.card).reduce((a,b)=>a+b,0) +
-           Object.values(prevBets.rank).reduce((a,b)=>a+b,0) +
-           Object.values(prevBets.color).reduce((a,b)=>a+b,0))
-        : ante;
-      let boardCurrent, positionCurrent;
+      // Use functional updater for safety, but cap was already checked above
       if (board === 'river') {
-        positionCurrent = prevBets.river[position] || 0;
-        boardCurrent = (prevBets.river.low || 0) + (prevBets.river.high || 0);
-      } else {
-        positionCurrent = prevBets[board][position] || 0;
-        boardCurrent = Object.values(prevBets[board]).reduce((a, b) => a + b, 0);
+        const pc = prevBets.river[position] || 0;
+        return { ...prevBets, river: { ...prevBets.river, [position]: +(pc + amount).toFixed(2) } };
       }
-      if (boardCurrent + amount > cap + 1e-9) return prevBets; // over cap — no change
-      // Deduct from bank only when bet is actually accepted
-      setBank(b => Math.max(0, +(b - amount).toFixed(2)));
-      accepted = true;
-      if (board === 'river') {
-        return { ...prevBets, river: { ...prevBets.river, [position]: +(positionCurrent + amount).toFixed(2) } };
-      }
-      return { ...prevBets, [board]: { ...prevBets[board], [position]: +(positionCurrent + amount).toFixed(2) } };
+      const pc = prevBets[board][position] || 0;
+      return { ...prevBets, [board]: { ...prevBets[board], [position]: +(pc + amount).toFixed(2) } };
     });
-    return accepted;
-  }, [phase, selectedChip, ante, bank]);
+    return true;
+  }, [phase, selectedChip, ante, bank, bets]);
 
   const removeBet = useCallback((board, position) => {
     // Phase guard: can only remove bets during the phase they were placed
