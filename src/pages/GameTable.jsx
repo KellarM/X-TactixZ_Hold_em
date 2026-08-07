@@ -273,6 +273,7 @@ export default function GameTable() {
           canDeal={canDeal}
           dealLabel={dealLabel}
           subLabel={subLabel}
+          anteStructureId={game.anteStructure}
           onChipSelect={(v) => {
             if (phase === 'ante') {
               sounds.playChipPlace();

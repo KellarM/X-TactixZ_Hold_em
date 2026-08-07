@@ -1,8 +1,9 @@
-import React from 'react';
-import { Settings, RotateCcw } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Settings, RotateCcw, Info } from 'lucide-react';
 import { CHIPS } from '@/lib/game/useGame';
 import Chip from '@/components/game/Chip';
 import { formatMoney } from '@/lib/game/cards';
+import { ANTE_STRUCTURES, getStructureById, getSavedStructureId, ANTE_STRUCTURE_EVENT } from '@/lib/game/anteStructures';
 
 const GOLD_BTN = 'linear-gradient(135deg, #e5c158 0%, #d4af37 50%, #bf953f 100%)';
 
@@ -33,8 +34,33 @@ export default function BottomFooter({
   phase, canDeal, dealLabel, subLabel,
   onChipSelect, onClearAnte, onDeal, onNewHand,
   onClearBets, onFold, onSettings,
+  anteStructureId,
 }) {
   const showActions = phase === 'postflop' || phase === 'postturn';
+
+  // ── Ante Structure info bubble ──────────────────────────────────────
+  // Reads the active structure from props (live-synced from ToolBar changes
+  // via the ANTE_STRUCTURE_EVENT). Falls back to localStorage. Shows a
+  // speech-bubble above the Ante circle when the info button is pressed.
+  const [structureId, setStructureId] = useState(anteStructureId || (() => { try { return getSavedStructureId(); } catch { return 'C'; } }));
+  const [showBubble, setShowBubble] = useState(false);
+
+  useEffect(() => {
+    setStructureId(anteStructureId || structureId);
+  }, [anteStructureId]);
+
+  // Listen for live structure changes from the Tools menu
+  useEffect(() => {
+    const handler = (e) => {
+      setStructureId(e.detail || 'C');
+      setShowBubble(true); // flash the bubble so operator sees the change
+      setTimeout(() => setShowBubble(false), 4000);
+    };
+    window.addEventListener(ANTE_STRUCTURE_EVENT, handler);
+    return () => window.removeEventListener(ANTE_STRUCTURE_EVENT, handler);
+  }, []);
+
+  const activeStruct = getStructureById(structureId);
 
   return (
     <div
@@ -111,6 +137,88 @@ export default function BottomFooter({
           }}>
             ANTE
           </span>
+        )}
+      </div>
+
+      {/* ── 3a. ANTE STRUCTURE INFO BUTTON + BUBBLE ── */}
+      <div style={{ position: 'relative', flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+        <button
+          onClick={() => setShowBubble(s => !s)}
+          title="Ante Bonus Structure"
+          style={{
+            background: showBubble
+              ? 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)'
+              : 'rgba(197,160,89,0.15)',
+            border: showBubble ? '1px solid #FFD700' : '1px solid rgba(197,160,89,0.4)',
+            borderRadius: '50%',
+            width: 22, height: 22,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', padding: 0,
+            transition: 'all 0.15s',
+            flexShrink: 0,
+          }}
+        >
+          <Info size={11} color={showBubble ? '#1a0f00' : '#C5A059'} />
+        </button>
+
+        {showBubble && activeStruct && (
+          <>
+            {/* Click-away overlay */}
+            <div
+              onClick={() => setShowBubble(false)}
+              style={{ position: 'fixed', inset: 0, zIndex: 998 }}
+            />
+            {/* Speech bubble */}
+            <div style={{
+              position: 'absolute',
+              bottom: 'calc(100% + 10px)',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 999,
+              background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
+              border: '1.5px solid rgba(202,138,4,0.7)',
+              borderRadius: 10,
+              padding: '10px 14px',
+              minWidth: 200,
+              maxWidth: 240,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.9)',
+              pointerEvents: 'auto',
+            }}>
+              {/* Bubble tail */}
+              <div style={{
+                position: 'absolute',
+                bottom: -7,
+                left: '50%',
+                transform: 'translateX(-50%) rotate(45deg)',
+                width: 12, height: 12,
+                background: '#0a0600',
+                borderRight: '1.5px solid rgba(202,138,4,0.7)',
+                borderBottom: '1.5px solid rgba(202,138,4,0.7)',
+              }} />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                <span style={{
+                  fontSize: 10, fontWeight: 900, color: '#facc15',
+                  letterSpacing: '0.1em', textTransform: 'uppercase',
+                }}>
+                  Ante Structure: {activeStruct.id}
+                </span>
+                {activeStruct.viable
+                  ? <span style={{ fontSize: 8, color: '#4ade80', fontWeight: 700, background: 'rgba(34,197,94,0.15)', padding: '1px 5px', borderRadius: 3 }}>VIABLE</span>
+                  : <span style={{ fontSize: 8, color: '#f87171', fontWeight: 700, background: 'rgba(239,68,68,0.15)', padding: '1px 5px', borderRadius: 3 }}>PLAYER EDGE</span>
+                }
+              </div>
+              <div style={{ fontSize: 11, color: '#e5c158', fontWeight: 700, marginBottom: 4 }}>
+                {activeStruct.name}
+              </div>
+              <div style={{ fontSize: 10, color: '#c4b896', marginBottom: 6, lineHeight: 1.4 }}>
+                {activeStruct.short}
+              </div>
+              <div style={{ display: 'flex', gap: 10, fontSize: 9, color: '#8a8a8a' }}>
+                <span>RTP: <b style={{ color: activeStruct.blendedRtp > 100 ? '#f87171' : '#4ade80' }}>{activeStruct.blendedRtp.toFixed(2)}%</b></span>
+                <span>Edge: <b style={{ color: activeStruct.houseEdge >= 0 ? '#4ade80' : '#f87171' }}>{activeStruct.houseEdge >= 0 ? '+' : ''}{activeStruct.houseEdge.toFixed(2)}%</b></span>
+              </div>
+            </div>
+          </>
         )}
       </div>
 
