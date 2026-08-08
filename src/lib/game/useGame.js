@@ -17,6 +17,7 @@ import { computePostFlopOdds, computeRiverOdds } from './oddsEngine';
 import { captureHand } from '../captureApi';
 import { settleRound } from './gameLogic';
 import { getStructureById, getSavedStructureId, saveStructureId, resolveAnteBonus, boardQualifies, ANTE_STRUCTURE_EVENT } from './anteStructures';
+import { getSavedBonusMultipliers, BONUS_MULTIPLIER_EVENT } from './bonusMultipliers';
 import { playChipSound } from './useGameSounds';
 import { bestHand, compare5, evaluate5, combinations } from './pokerEvaluator';
 
@@ -133,6 +134,19 @@ export function useGame() {
     };
     window.addEventListener(ANTE_STRUCTURE_EVENT, handler);
     return () => window.removeEventListener(ANTE_STRUCTURE_EVENT, handler);
+  }, []);
+
+  // ── Live-sync Bonus Multipliers from the Operator Tools menu ───────────
+  // The operator sets gross multipliers via ToolBar > Bonus Multiplier.
+  // We listen for the custom event so a running game session picks up the
+  // new values immediately without a page reload.
+  const [bonusMultipliers, setBonusMultipliers] = useState(() => { try { return getSavedBonusMultipliers(); } catch { return { card: 5, rank: 4, colorRiver: 3 }; } });
+  useEffect(() => {
+    const handler = (e) => {
+      try { setBonusMultipliers(e.detail || getSavedBonusMultipliers()); } catch { /* noop */ }
+    };
+    window.addEventListener(BONUS_MULTIPLIER_EVENT, handler);
+    return () => window.removeEventListener(BONUS_MULTIPLIER_EVENT, handler);
   }, []);
   const [bank, setBank] = useState(START_BANK);
   const [ante, setAnte] = useState(0);
@@ -330,9 +344,9 @@ export function useGame() {
     const bonusCardIdx = secureRandInt(9);      // 0-9
     const bonusRankIdx = secureRandInt(6);      // 0-6
     const bonusColorRiverIdx = secureRandInt(7); // 0-7 (0-5=color, 6-7=river)
-    const cardMult = 5;
-    const rankMult = 4;
-    const colorRiverMult = 3;
+    const cardMult = bonusMultipliers.card;
+    const rankMult = bonusMultipliers.rank;
+    const colorRiverMult = bonusMultipliers.colorRiver;
 
     let bonusWinnings = 0;
     let cardWon = false, rankWon = false, colorRiverWon = false;
@@ -508,7 +522,7 @@ export function useGame() {
       console.error('[Capture] Error:', captureErr);
     }
 
-  }, [deck, bets, flopOdds, riverOdds]);
+  }, [deck, bets, flopOdds, riverOdds, anteStructure, bonusMultipliers]);
 
   const fold = useCallback(() => {
     const refund = boardTotals.card + boardTotals.rank + boardTotals.color + boardTotals.river;

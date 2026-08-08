@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Wrench, Layers } from 'lucide-react';
 import { fetchCapturedHands, recalcHandRtp, recalcPayout } from '../../lib/captureApi';
 import { ANTE_STRUCTURES, getSavedStructureId, saveStructureId } from '../../lib/game/anteStructures';
+import { DEFAULT_BONUS_MULTIPLIERS, getSavedBonusMultipliers, saveBonusMultipliers } from '../../lib/game/bonusMultipliers';
 
 // ── Inject toolbar animations once ───────────────────────────────────────────
 const STYLE_ID = 'rf-toolbar-style';
@@ -402,6 +403,171 @@ function AnteStructureModal({ onClose }) {
           >
             CLOSE
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Bonus Multiplier Modal (Operator Tool) ──────────────────────────────────
+// Lets the operator manually set the gross RNG Bonus multiplier for each of
+// the 3 bonus areas. "Gross" = total payout multiple on the winning bet
+// (e.g. 5 means the position pays out at 5x total on that bonus draw).
+// Selection is stored in localStorage and live-synced to any running game
+// session via a custom event (see bonusMultipliers.js / useGame.js).
+function BonusMultiplierModal({ onClose }) {
+  const [values, setValues] = useState(() => getSavedBonusMultipliers());
+  const [savedFlash, setSavedFlash] = useState(false);
+
+  const LINES = [
+    { key: 'card', label: 'Card Hands', desc: '10 positions — bonus draw picks 1 of 10' },
+    { key: 'rank', label: 'Rank Hands', desc: '7 positions — bonus draw picks 1 of 7' },
+    { key: 'colorRiver', label: 'Color & River', desc: '8 positions — 6 Color + 2 River' },
+  ];
+
+  const handleChange = (key, raw) => {
+    const num = raw === '' ? '' : Number(raw);
+    setValues(v => ({ ...v, [key]: num }));
+    setSavedFlash(false);
+  };
+
+  const handleSave = () => {
+    const clean = {
+      card: Number.isFinite(values.card) && values.card >= 1 ? values.card : DEFAULT_BONUS_MULTIPLIERS.card,
+      rank: Number.isFinite(values.rank) && values.rank >= 1 ? values.rank : DEFAULT_BONUS_MULTIPLIERS.rank,
+      colorRiver: Number.isFinite(values.colorRiver) && values.colorRiver >= 1 ? values.colorRiver : DEFAULT_BONUS_MULTIPLIERS.colorRiver,
+    };
+    const saved = saveBonusMultipliers(clean);
+    setValues(saved);
+    setSavedFlash(true);
+  };
+
+  const handleResetDefaults = () => {
+    const saved = saveBonusMultipliers(DEFAULT_BONUS_MULTIPLIERS);
+    setValues(saved);
+    setSavedFlash(true);
+  };
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 2000,
+      background: 'rgba(0,0,0,0.88)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <div style={{
+        background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
+        border: '2px solid rgba(202,138,4,0.7)',
+        borderRadius: 16,
+        width: 520,
+        maxHeight: '85vh',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 12px 60px rgba(0,0,0,0.95)',
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: '14px 22px',
+          borderBottom: '1px solid rgba(202,138,4,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          flexShrink: 0,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ fontSize: 16 }}>×</span>
+            </div>
+            <span style={{
+              fontSize: 15, fontWeight: 900, color: '#facc15',
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+            }}>
+              Bonus Multiplier
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              color: '#facc15', background: 'none', border: 'none',
+              cursor: 'pointer', fontSize: 20, lineHeight: 1, opacity: 0.8,
+            }}
+          >✕</button>
+        </div>
+
+        {/* Body */}
+        <div style={{ overflowY: 'auto', padding: '18px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ fontSize: 11, color: MUTED }}>
+            Set the gross multiplier for each RNG Bonus area — enter the TOTAL payout multiple
+            on the winning bet (e.g. 5 = position pays 5x total). Changes apply live to the
+            current session. For testing purposes only until values are re-certified.
+          </div>
+
+          {LINES.map(line => (
+            <div key={line.key} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 14, padding: '12px 14px',
+              borderRadius: 10, border: '1px solid rgba(197,160,89,0.25)',
+              background: 'rgba(0,0,0,0.3)',
+            }}>
+              <div>
+                <div style={{ color: '#fff', fontWeight: 800, fontSize: 13 }}>{line.label}</div>
+                <div style={{ color: BODY_TEXT, fontSize: 10, marginTop: 2 }}>{line.desc}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                <input
+                  type="number"
+                  min={1}
+                  step={0.5}
+                  value={values[line.key]}
+                  onChange={(e) => handleChange(line.key, e.target.value)}
+                  style={{
+                    width: 64, padding: '8px 10px', textAlign: 'center',
+                    background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(197,160,89,0.4)',
+                    borderRadius: 7, color: GOLD_BRIGHT, fontWeight: 800, fontSize: 14,
+                    outline: 'none',
+                  }}
+                />
+                <span style={{ color: MUTED, fontSize: 13, fontWeight: 700 }}>×</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          padding: '10px 22px',
+          borderTop: '1px solid rgba(202,138,4,0.2)',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          flexShrink: 0,
+        }}>
+          <button
+            onClick={handleResetDefaults}
+            style={{
+              background: 'rgba(202,138,4,0.15)',
+              border: `1px solid ${GOLD}66`,
+              color: GOLD, fontSize: 11, fontWeight: 700,
+              padding: '8px 16px', borderRadius: 7, cursor: 'pointer',
+            }}
+          >
+            RESET DEFAULTS
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {savedFlash && (
+              <span style={{ color: GREEN, fontSize: 10, fontWeight: 700 }}>SAVED ✓</span>
+            )}
+            <button
+              onClick={handleSave}
+              style={{
+                background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
+                color: '#3d3013', fontWeight: 800, fontSize: 12,
+                letterSpacing: '0.08em', padding: '8px 24px',
+                borderRadius: 7, border: 'none', cursor: 'pointer',
+              }}
+            >
+              SAVE
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -892,6 +1058,7 @@ export default function ToolBar() {
   const [open, setOpen] = useState(false);
   const [showCertTest, setShowCertTest] = useState(false);
   const [showAnteStructure, setShowAnteStructure] = useState(false);
+  const [showBonusMultiplier, setShowBonusMultiplier] = useState(false);
   const [menuPos, setMenuPos] = useState(null);
   const [visible, setVisible] = useState(false); // hidden by default -- summoned via hotkey only
   const btnRef = useRef(null);
@@ -1057,6 +1224,19 @@ export default function ToolBar() {
             ANTE STRUCTURE
           </button>
 
+          <button
+            className="rf-tool-btn"
+            onClick={() => { setOpen(false); setShowBonusMultiplier(true); }}
+          >
+            <span style={{
+              width: 22, height: 22, borderRadius: 5,
+              background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, fontSize: 13, fontWeight: 900, color: '#1a0f00',
+            }}>×</span>
+            BONUS MULTIPLIER
+          </button>
+
           <div style={{
             color: 'rgba(197,160,89,0.3)', fontSize: 9, fontWeight: 600,
             letterSpacing: '0.08em', textAlign: 'center',
@@ -1074,6 +1254,10 @@ export default function ToolBar() {
 
       {showAnteStructure && (
         <AnteStructureModal onClose={() => setShowAnteStructure(false)} />
+      )}
+
+      {showBonusMultiplier && (
+        <BonusMultiplierModal onClose={() => setShowBonusMultiplier(false)} />
       )}
     </>
   );
