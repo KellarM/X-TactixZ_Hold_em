@@ -432,11 +432,13 @@ function BonusMultiplierModal({ onClose }) {
   };
 
   const handleSave = () => {
+    console.log('[ToolBar] handleSave: raw values state =', JSON.parse(JSON.stringify(values)));
     const clean = {
       card: Number.isFinite(values.card) && values.card >= 1 ? values.card : DEFAULT_BONUS_MULTIPLIERS.card,
       rank: Number.isFinite(values.rank) && values.rank >= 1 ? values.rank : DEFAULT_BONUS_MULTIPLIERS.rank,
       colorRiver: Number.isFinite(values.colorRiver) && values.colorRiver >= 1 ? values.colorRiver : DEFAULT_BONUS_MULTIPLIERS.colorRiver,
     };
+    console.log('[ToolBar] handleSave: clean =', clean);
     const saved = saveBonusMultipliers(clean);
     setValues(saved);
     setSavedFlash(true);

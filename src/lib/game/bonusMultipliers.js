@@ -34,26 +34,35 @@ export function getSavedBonusMultipliers() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      return {
+      const result = {
         card: Number.isFinite(parsed.card) ? parsed.card : DEFAULT_BONUS_MULTIPLIERS.card,
         rank: Number.isFinite(parsed.rank) ? parsed.rank : DEFAULT_BONUS_MULTIPLIERS.rank,
         colorRiver: Number.isFinite(parsed.colorRiver) ? parsed.colorRiver : DEFAULT_BONUS_MULTIPLIERS.colorRiver,
       };
+      console.log('[bonusMultipliers] LOAD from localStorage:', raw, '→', result);
+      return result;
     }
-  } catch {}
+  } catch (e) {
+    console.warn('[bonusMultipliers] localStorage read failed:', e);
+  }
   // 2) Fall back to cookie
   const ck = readCookie(COOKIE_KEY);
   if (ck) {
     try {
       const parsed = JSON.parse(ck);
-      return {
+      const result = {
         card: Number.isFinite(parsed.card) ? parsed.card : DEFAULT_BONUS_MULTIPLIERS.card,
         rank: Number.isFinite(parsed.rank) ? parsed.rank : DEFAULT_BONUS_MULTIPLIERS.rank,
         colorRiver: Number.isFinite(parsed.colorRiver) ? parsed.colorRiver : DEFAULT_BONUS_MULTIPLIERS.colorRiver,
       };
-    } catch {}
+      console.log('[bonusMultipliers] LOAD from cookie:', ck, '→', result);
+      return result;
+    } catch (e) {
+      console.warn('[bonusMultipliers] cookie parse failed:', e, 'raw:', ck);
+    }
   }
   // 3) Default
+  console.log('[bonusMultipliers] LOAD: no saved data, returning defaults');
   return { ...DEFAULT_BONUS_MULTIPLIERS };
 }
 
@@ -66,9 +75,22 @@ export function saveBonusMultipliers(values) {
     colorRiver: Number.isFinite(values.colorRiver) ? values.colorRiver : DEFAULT_BONUS_MULTIPLIERS.colorRiver,
   };
   const serialized = JSON.stringify(toSave);
+  console.log('[bonusMultipliers] SAVE:', toSave, '→ serialized:', serialized);
+
   // Write to both layers so a refresh always finds the value
-  try { localStorage.setItem(STORAGE_KEY, serialized); } catch {}
+  try { localStorage.setItem(STORAGE_KEY, serialized); } catch (e) {
+    console.warn('[bonusMultipliers] localStorage write failed:', e);
+  }
   writeCookie(COOKIE_KEY, serialized);
+
+  // Verify the write actually landed
+  try {
+    const verify = localStorage.getItem(STORAGE_KEY);
+    console.log('[bonusMultipliers] VERIFY localStorage:', verify);
+  } catch {}
+  const ckVerify = readCookie(COOKIE_KEY);
+  console.log('[bonusMultipliers] VERIFY cookie:', ckVerify);
+
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(BONUS_MULTIPLIER_EVENT, { detail: toSave }));
   }
