@@ -257,14 +257,22 @@ function CertificationTestModal({ onClose }) {
 
 // ── Ante Structure Modal (Operator Tool) ────────────────────────────────────
 // Lets the operator select which Ante Bonus threshold structure is active.
-// Selection is stored in localStorage and live-synced to any running game
-// session via a custom event (see anteStructures.js / useGame.js).
+// Selection is staged until SAVE is pressed, then stored in localStorage and
+// live-synced to any running game session via a custom event.
 function AnteStructureModal({ onClose }) {
   const [selectedId, setSelectedId] = useState(() => getSavedStructureId());
+  const [activeId, setActiveId]     = useState(() => getSavedStructureId());
+  const [savedFlash, setSavedFlash] = useState(false);
 
   const handleSelect = (id) => {
-    saveStructureId(id);
     setSelectedId(id);
+    setSavedFlash(false);
+  };
+
+  const handleSave = () => {
+    saveStructureId(selectedId);
+    setActiveId(selectedId);
+    setSavedFlash(true);
   };
 
   return (
@@ -318,11 +326,13 @@ function AnteStructureModal({ onClose }) {
         <div style={{ overflowY: 'auto', padding: '18px 22px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontSize: 11, color: MUTED, marginBottom: 4 }}>
             Qualifier: player must bet the full Ante on ONE position per board and win it for that board to count.
-            Changes apply live to the current session (GLI-21: allow idle time before switching mid-shift).
+            Select a structure, then press SAVE to apply. Changes go live to the current session
+            (GLI-21: allow idle time before switching mid-shift).
           </div>
 
           {ANTE_STRUCTURES.map(s => {
             const isSelected = selectedId === s.id;
+            const isActive   = activeId   === s.id;
             return (
               <button
                 key={s.id}
@@ -339,10 +349,15 @@ function AnteStructureModal({ onClose }) {
                   <span style={{ color: isSelected ? '#fde047' : '#fff', fontWeight: 800, fontSize: 13 }}>
                     {s.id}: {s.name}
                   </span>
-                  {s.viable
-                    ? <span style={{ fontSize: 9, color: GREEN, fontWeight: 700, background: 'rgba(34,197,94,0.15)', padding: '2px 6px', borderRadius: 4 }}>VIABLE</span>
-                    : <span style={{ fontSize: 9, color: RED, fontWeight: 700, background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: 4 }}>PLAYER EDGE</span>
-                  }
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    {isActive && (
+                      <span style={{ fontSize: 9, color: GOLD_BRIGHT, fontWeight: 700, background: 'rgba(202,138,4,0.15)', padding: '2px 6px', borderRadius: 4 }}>ACTIVE</span>
+                    )}
+                    {s.viable
+                      ? <span style={{ fontSize: 9, color: GREEN, fontWeight: 700, background: 'rgba(34,197,94,0.15)', padding: '2px 6px', borderRadius: 4 }}>VIABLE</span>
+                      : <span style={{ fontSize: 9, color: RED, fontWeight: 700, background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: 4 }}>PLAYER EDGE</span>
+                    }
+                  </div>
                 </div>
                 <div style={{ fontSize: 11, color: BODY_TEXT }}>{s.short}</div>
                 {/* RTP bar chart */}
@@ -390,19 +405,24 @@ function AnteStructureModal({ onClose }) {
           flexShrink: 0,
         }}>
           <span style={{ color: MUTED, fontSize: 10 }}>
-            Active: <b style={{ color: GOLD_BRIGHT }}>{ANTE_STRUCTURES.find(s => s.id === selectedId)?.name || selectedId}</b>
+            Active: <b style={{ color: GOLD_BRIGHT }}>{ANTE_STRUCTURES.find(s => s.id === activeId)?.name || activeId}</b>
           </span>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
-              color: '#3d3013', fontWeight: 800, fontSize: 12,
-              letterSpacing: '0.08em', padding: '8px 24px',
-              borderRadius: 7, border: 'none', cursor: 'pointer',
-            }}
-          >
-            CLOSE
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {savedFlash && (
+              <span style={{ color: GREEN, fontSize: 10, fontWeight: 700 }}>SAVED ✓</span>
+            )}
+            <button
+              onClick={handleSave}
+              style={{
+                background: 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)',
+                color: '#3d3013', fontWeight: 800, fontSize: 12,
+                letterSpacing: '0.08em', padding: '8px 24px',
+                borderRadius: 7, border: 'none', cursor: 'pointer',
+              }}
+            >
+              SAVE
+            </button>
+          </div>
         </div>
       </div>
     </div>
