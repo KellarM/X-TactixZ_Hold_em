@@ -4,7 +4,7 @@
 // badge strip with live config values, scrollable collapsible sections.
 // Triggered from SettingsModal "Game Rules" tab (same pattern as How to Play).
 
-import { useState, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { X, BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -51,14 +51,22 @@ function Badge({ label, value }) {
 }
 
 export default function GameRulesModal({ isOpen, onClose }) {
-  // Pull live config values so rules always match what's active
-  const structureId = useMemo(() => { try { return getSavedStructureId(); } catch { return 'C'; } }, []);
-  const structure = useMemo(() => getStructureById(structureId), [structureId]);
-  const tiers = useMemo(() => getAnteTierDescriptions(structure, 4), [structure]);
-  const bonusMults = useMemo(() => {
-    try { return getSavedBonusMultipliers(); }
-    catch { return { card: 5, rank: 4, colorRiver: 3 }; }
-  }, []);
+  // Re-read live config values every time the modal opens so the rules
+  // always reflect whatever the operator tools are currently set to.
+  const [structure, setStructure] = useState(null);
+  const [tiers, setTiers] = useState([]);
+  const [bonusMults, setBonusMults] = useState({ card: 5, rank: 4, colorRiver: 3 });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    try {
+      const sid = getSavedStructureId();
+      const s = getStructureById(sid);
+      setStructure(s);
+      setTiers(getAnteTierDescriptions(s, 4));
+    } catch {}
+    try { setBonusMults(getSavedBonusMultipliers()); } catch {}
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
@@ -104,14 +112,15 @@ export default function GameRulesModal({ isOpen, onClose }) {
 
               <Section title="How the Game Works" defaultOpen={true}>
                 <Rule label="Objective">Bet on the outcome of a poker round across three boards — Card, Rank, and Color — as community cards are revealed. All bets are optional at every stage.</Rule>
+                <Rule label="Round Flow">Place your Ante to start the round and reveal the Flop. Then bet on the Card, Rank, and Color boards as they open, reveal the Turn, bet the River, and reveal the final card to resolve everything.</Rule>
                 <Rule label="10 Fixed Hands">Ten two-card hands are dealt face-up before each round. The best 5-card poker hand formed from each hand's 2 cards plus the 5 community cards determines the winner.</Rule>
                 <Rule label="32-Card Stock">After the 10 hands are removed, 32 community cards remain. Five are dealt as community cards: Flop (3), Turn (1), and River (1).</Rule>
                 <Rule label="Dynamic Odds">All odds are calculated from the remaining cards in the deck after the Flop. They update in real time as each card is revealed.</Rule>
+                <Rule label="Locked Positions">As the board develops, some betting positions may lock and become unavailable. This happens when a position becomes impossible to hit, becomes heavily favored beyond a set threshold, or its resulting payout would fall outside the game's posted odds range. Locked positions cannot be bet on for that round.</Rule>
               </Section>
 
               <Section title="The Ante">
-                <Rule label="Ante">Select a chip denomination and place your Ante, then press Deal. The Ante is your cost to see the Flop — it is not returned by default.</Rule>
-                <Rule label="Dead Money">The Ante is dead money. It does not count toward any board bet or the River cap. You win it back only through the Ante return rules below.</Rule>
+                <Rule label="Ante">Select a chip denomination and place your Ante, then press Deal. Your Ante is your entry into the round — it doesn't count toward any board bet or the River cap, and it gives you a real shot at winning it back plus a bonus, based on how many boards you qualify on. See Ante Return below for the exact payout tiers.</Rule>
                 <Rule label="All Bets Optional">All subsequent bets are optional. You may place bets on any or all boards, or fold at any stage.</Rule>
               </Section>
 
