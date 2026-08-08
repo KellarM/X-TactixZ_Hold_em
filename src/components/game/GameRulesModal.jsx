@@ -111,7 +111,7 @@ export default function GameRulesModal({ isOpen, onClose }) {
             <div className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
 
               <Section title="How the Game Works" defaultOpen={true}>
-                <Rule label="Objective">Bet on the outcome of a poker round across three boards — Card, Rank, and Color — as community cards are revealed. All bets are optional at every stage.</Rule>
+                <Rule label="Objective">Bet on the outcome of a poker round across four boards — Card, Rank, Color, and River — through two separate stages as community cards are revealed. All bets are optional at every stage.</Rule>
                 <Rule label="Round Flow">Place your Ante to start the round and reveal the Flop. Then bet on the Card, Rank, and Color boards as they open, reveal the Turn, bet the River, and reveal the final card to resolve everything.</Rule>
                 <Rule label="10 Fixed Hands">Ten two-card hands are dealt face-up before each round. The best 5-card poker hand formed from each hand's 2 cards plus the 5 community cards determines the winner.</Rule>
                 <Rule label="32-Card Stock">After the 10 hands are removed, 32 community cards remain. Five are dealt as community cards: Flop (3), Turn (1), and River (1).</Rule>
