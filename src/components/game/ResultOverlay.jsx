@@ -216,7 +216,7 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
   if (!result) return null;
   const { resolution, details, winnings, historyEntry } = result;
 
-  // ── Board bet totals (excluding ante — ante is dead money) ──
+  // ── Board bet totals (excluding ante) ──
   const boardBetTotal =
     details.card.reduce((a, b) => a + b.amt, 0) +
     details.rank.reduce((a, b) => a + b.amt, 0) +
@@ -381,7 +381,7 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
             <div style={{ textAlign: 'center', marginBottom: 28 }}>
               {ante > 0 && (
                 <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,100,100,0.6)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 3 }}>
-                  Ante (dead money): -{formatMoney(ante)}
+                  Ante: -{formatMoney(ante)}
                 </div>
               )}
               <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 4 }}>
@@ -521,7 +521,7 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
               }}>
                 {anteBonus
                   ? `Ante — ${anteBonus.structureName} (${anteBonus.boardsWon}/4 boards)`
-                  : 'Ante (dead money)'}
+                  : 'Ante'}
               </div>
               <div style={{
                 fontSize: '0.88rem',

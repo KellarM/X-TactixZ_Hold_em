@@ -13,7 +13,7 @@ function GameRulesModal({ onClose }) {
     },
     {
       title: '3. HOW TO START — THE ANTE',
-      body: `Before any cards are dealt, you must place an Ante. The Ante is a mandatory entry fee (dead money) that unlocks access to all four betting boards and sets the maximum bet cap for each. Once the Ante is placed, press DEAL to receive the Flop.`,
+      body: `Before any cards are dealt, you must place an Ante. Your Ante is your entry into the round — it unlocks all four betting boards and sets the maximum bet cap for each. You can win it back plus a bonus based on how many boards you qualify on. Once the Ante is placed, press DEAL to receive the Flop.`,
     },
     {
       title: '4. POST-FLOP BETTING — PHASE 2',
@@ -37,7 +37,7 @@ function GameRulesModal({ onClose }) {
     },
     {
       title: '9. FOLD',
-      body: `At any point during the post-flop or river betting phase, you may click FOLD to abandon the round. All bets placed after the Ante are refunded to your bank. The Ante is forfeited (dead money). Use FOLD to cut your losses if the board odds turn unfavourable.`,
+      body: `At any point during the post-flop or river betting phase, you may click FOLD to abandon the round. All bets placed after the Ante are refunded to your bank. The Ante is forfeited. Use FOLD to cut your losses if the board odds turn unfavourable.`,
     },
     {
       title: '10. RTP & FAIRNESS',
