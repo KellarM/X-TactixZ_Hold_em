@@ -136,7 +136,8 @@ export default function GameRulesModal({ isOpen, onClose }) {
 
               <Section title="After the Turn — The River">
                 <p className="text-gray-400 text-xs mb-3">Once the Turn is dealt, the River board opens for betting. Betting the River is optional.</p>
-                <Rule label="River Cap">You may wager up to the combined total of your Card, Rank, and Color bets. The Ante does not count toward this cap.</Rule>
+                <Rule label="Unlocking the River">The total sum of the Ante must be placed across the three post-flop boards (Card, Rank, and Color combined) for the River board to open. If you have not placed bets totalling at least the Ante across those boards, the River board remains closed.</Rule>
+                <Rule label="River Cap">Once open, you may wager up to the combined total of your Card, Rank, and Color bets. The Ante does not count toward this cap.</Rule>
                 <Rule label="Qualifying for Ante Return">The same qualifying rule applies: the full Ante must be placed on a single winning River position for the River board to count toward your Ante return.</Rule>
                 <Rule label="Low / High">Bet whether the River card will be Low (2 through 7) or High (8 through Ace). Odds are calculated from the remaining unseen cards.</Rule>
                 <p className="text-gray-400 text-xs mt-2">Press Deal to reveal the River card and resolve all boards.</p>
