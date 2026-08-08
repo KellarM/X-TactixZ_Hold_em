@@ -13,6 +13,7 @@ import RevealPrompt from '@/components/game/RevealPrompt';
 import { playWin, playLose, setBonusSfxEnabled } from '@/lib/game/useBonusAudio';
 import SettingsModal from '@/components/game/SettingsModal';
 import HowToPlayModal from '@/components/game/HowToPlayModal';
+import GameRulesModal from '@/components/game/GameRulesModal';
 import OnboardingIndicator from '@/components/game/OnboardingIndicator';
 
 export default function GameTable() {
@@ -22,6 +23,7 @@ export default function GameTable() {
 
   const [showSettings, setShowSettings] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
+  const [showGameRules, setShowGameRules] = useState(false);
   const [boardTheme, setBoardThemeState] = useState(() => {
     try { return localStorage.getItem('rfpf_theme') || 'blue'; } catch { return 'blue'; }
   });
@@ -315,9 +317,11 @@ export default function GameTable() {
         boardTheme={boardTheme}
         setBoardTheme={setBoardTheme}
         onHowToPlay={() => { setShowSettings(false); setShowHowToPlay(true); }}
+        onGameRules={() => { setShowSettings(false); setShowGameRules(true); }}
         onResetBank={actions.resetBank}
       />
       <HowToPlayModal isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
+      <GameRulesModal isOpen={showGameRules} onClose={() => setShowGameRules(false)} />
       <OnboardingIndicator />
     </div>
   );

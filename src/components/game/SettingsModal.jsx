@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle, RotateCcw } from 'lucide-react';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import { formatMoney } from '@/lib/game/cards';
-import GameRulesContent from './GameRulesContent';
 
 const COLORS = [
   { id: 'red',   label: 'Red',   dot: '#b30000' },
@@ -42,7 +41,7 @@ function StatRow({ label, value, highlight }) {
   );
 }
 
-export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay, onResetBank }) {
+export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay, onGameRules, onResetBank }) {
   const sounds = useGameSounds();
   const [crowdOn, setCrowdOn] = useState(true);
   const [crowdVolume, setCrowdVolume] = useState(40);
@@ -148,7 +147,7 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
           ].map(t => (
             <button
               key={t.id}
-              onClick={() => t.id === 'howtoplay' ? (onHowToPlay && onHowToPlay()) : setTab(t.id)}
+              onClick={() => t.id === 'howtoplay' ? (onHowToPlay && onHowToPlay()) : t.id === 'gamerules' ? (onGameRules && onGameRules()) : setTab(t.id)}
               style={{
                 flex: '0 0 calc(50% - 4px)', padding: '7px 0', borderRadius: 8,
                 background: tab === t.id ? GOLD_BTN : 'rgba(197,160,89,0.1)',
@@ -252,10 +251,6 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
           </div>
         )}
 
-        {/* Game Rules Tab */}
-        {tab === 'gamerules' && (
-          <GameRulesContent />
-        )}
 
         {/* How To Play Tab */}
         {tab === 'howtoplay' && (
