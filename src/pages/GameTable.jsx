@@ -25,12 +25,19 @@ export default function GameTable() {
   const [showHowToPlay, setShowHowToPlay] = useState(false);
   const [showGameRules, setShowGameRules] = useState(false);
   const [boardTheme, setBoardThemeState] = useState(() => {
-    try { return localStorage.getItem('rfpf_theme') || 'blue'; } catch { return 'blue'; }
+    try { return localStorage.getItem('rfpf_theme') || (() => {
+      const m = document.cookie.match(/(?:^|;\s*)rfpf_theme=([^;]*)/);
+      return m ? decodeURIComponent(m[1]) : 'blue';
+    })(); } catch { return 'blue'; }
   });
 
   const setBoardTheme = (t) => {
     setBoardThemeState(t);
     try { localStorage.setItem('rfpf_theme', t); } catch {}
+    try {
+      const expires = new Date(Date.now() + 365 * 864e5).toUTCString();
+      document.cookie = `rfpf_theme=${encodeURIComponent(t)}; expires=${expires}; path=/; SameSite=Lax`;
+    } catch {}
   };
   // ── Result overlay — NEVER auto-opens ──────────────────────────────────
   // After resolution: bonus sequence runs (or is skipped in the no-bonus

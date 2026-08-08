@@ -1,7 +1,7 @@
 // Ante Bonus Structure definitions — 6 configurable threshold structures
 // Each defines how many qualifying boards are needed to return the Ante
-// and earn bonus payouts. Selected structure is stored in localStorage
-// and applied at round resolution.
+// and earn bonus payouts. Selected structure is persisted to localStorage
+// with a cookie fallback, and applied at round resolution.
 
 export const ANTE_STRUCTURES = [
   {
@@ -80,27 +80,53 @@ export const ANTE_STRUCTURES = [
 
 export const DEFAULT_ANTE_STRUCTURE_ID = 'C';
 
+// ── Dual persistence: localStorage + cookie fallback ─────────────────────
+// localStorage can be silently blocked in sandboxed iframe environments
+// (e.g. Base44 preview). Cookies persist independently of the iframe
+// sandbox, so we write to both and read localStorage-first, cookie-fallback.
+const LS_KEY = 'rfpf_ante_structure';
+const COOKIE_KEY = 'rfpf_ante_structure';
+
+function writeCookie(name, value, days = 365) {
+  try {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  } catch {}
+}
+
+function readCookie(name) {
+  try {
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch { return null; }
+}
+
 export function getStructureById(id) {
   return ANTE_STRUCTURES.find(s => s.id === id) || ANTE_STRUCTURES.find(s => s.id === DEFAULT_ANTE_STRUCTURE_ID);
 }
 
 export function getSavedStructureId() {
+  // 1) Try localStorage
   try {
-    return localStorage.getItem('rfpf_ante_structure') || DEFAULT_ANTE_STRUCTURE_ID;
-  } catch {
-    return DEFAULT_ANTE_STRUCTURE_ID;
-  }
+    const ls = localStorage.getItem(LS_KEY);
+    if (ls) return ls;
+  } catch {}
+  // 2) Fall back to cookie
+  const ck = readCookie(COOKIE_KEY);
+  if (ck) return ck;
+  // 3) Default
+  return DEFAULT_ANTE_STRUCTURE_ID;
 }
 
 export const ANTE_STRUCTURE_EVENT = 'rfpf-ante-structure-changed';
 
 export function saveStructureId(id) {
-  try {
-    localStorage.setItem('rfpf_ante_structure', id);
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent(ANTE_STRUCTURE_EVENT, { detail: id }));
-    }
-  } catch {}
+  // Write to both layers so a refresh always finds the value
+  try { localStorage.setItem(LS_KEY, id); } catch {}
+  writeCookie(COOKIE_KEY, id);
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent(ANTE_STRUCTURE_EVENT, { detail: id }));
+  }
 }
 
 // Resolve Ante bonus given a structure, number of qualifying boards won, and ante amount
