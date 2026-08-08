@@ -18,7 +18,7 @@ import { captureHand } from '../captureApi';
 import { settleRound } from './gameLogic';
 import { getStructureById, getSavedStructureId, saveStructureId, resolveAnteBonus, boardQualifies, ANTE_STRUCTURE_EVENT } from './anteStructures';
 import { getSavedBonusMultipliers, BONUS_MULTIPLIER_EVENT } from './bonusMultipliers';
-import { playChipSound } from './useGameSounds';
+import { playChipSound, resetSoundToDefaults } from './useGameSounds';
 import { bestHand, compare5, evaluate5, combinations } from './pokerEvaluator';
 
 const SHORT_SUIT = { spades: "s", hearts: "h", diamonds: "d", clubs: "c" };
@@ -61,6 +61,73 @@ export const CHIPS = [
 ];
 
 const START_BANK = 1000;
+
+// ── Bank persistence (localStorage + cookie fallback) ─────────────────────
+const BANK_STORAGE_KEY = 'rfpf_bank';
+const BANK_COOKIE_KEY   = 'rfpf_bank';
+
+function writeBankCookie(value, days = 365) {
+  try {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${BANK_COOKIE_KEY}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  } catch {}
+}
+function readBankCookie() {
+  try {
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${BANK_COOKIE_KEY}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch { return null; }
+}
+function saveBankValue(value) {
+  try { localStorage.setItem(BANK_STORAGE_KEY, String(value)); } catch {}
+  writeBankCookie(String(value));
+}
+function loadBankValue() {
+  try {
+    const raw = localStorage.getItem(BANK_STORAGE_KEY);
+    if (raw) { const v = parseFloat(raw); return Number.isFinite(v) ? v : START_BANK; }
+  } catch {}
+  const ck = readBankCookie();
+  if (ck) { const v = parseFloat(ck); return Number.isFinite(v) ? v : START_BANK; }
+  return START_BANK;
+}
+function clearBankValue() {
+  try { localStorage.removeItem(BANK_STORAGE_KEY); } catch {}
+  try { document.cookie = `${BANK_COOKIE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`; } catch {}
+}
+
+// Stats persistence helpers (defined here so resetBank can clear them)
+const STATS_STORAGE_KEY = 'rfpf_stats';
+const STATS_COOKIE_KEY   = 'rfpf_stats';
+function writeStatsCookie(value, days = 365) {
+  try {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${STATS_COOKIE_KEY}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  } catch {}
+}
+function readStatsCookie() {
+  try {
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${STATS_COOKIE_KEY}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch { return null; }
+}
+export function saveStatsValue(stats) {
+  try { localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(stats)); } catch {}
+  writeStatsCookie(JSON.stringify(stats));
+}
+export function loadStatsValue() {
+  try {
+    const raw = localStorage.getItem(STATS_STORAGE_KEY);
+    if (raw) { try { return JSON.parse(raw); } catch {} }
+  } catch {}
+  const ck = readStatsCookie();
+  if (ck) { try { return JSON.parse(ck); } catch {} }
+  return null;
+}
+export function clearStatsValue() {
+  try { localStorage.removeItem(STATS_STORAGE_KEY); } catch {}
+  try { document.cookie = `${STATS_COOKIE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`; } catch {}
+}
 function emptyBets() {
   return {
     card: {},
@@ -148,7 +215,9 @@ export function useGame() {
     window.addEventListener(BONUS_MULTIPLIER_EVENT, handler);
     return () => window.removeEventListener(BONUS_MULTIPLIER_EVENT, handler);
   }, []);
-  const [bank, setBank] = useState(START_BANK);
+  const [bank, setBank] = useState(() => loadBankValue());
+  // Persist bank value to localStorage + cookie on every change
+  useEffect(() => { saveBankValue(bank); }, [bank]);
   const [ante, setAnte] = useState(0);
   const [deck, setDeck] = useState([]);
   const [revealed, setRevealed] = useState(0);
@@ -557,9 +626,13 @@ export function useGame() {
     setPhase('ante');
   }, []);
 
-  // Test-mode helper: full reset to a fresh $1000 bankroll + new ante round
+  // Full player reset: bank → $1000, stats → zeros, sound → defaults.
+  // All three persistence layers are cleared so a fresh page load also
+  // starts clean. This is the player's deliberate "start fresh" action.
   const resetBank = useCallback(() => {
-    setBank(1000);
+    setBank(1000);              // useEffect will persist this via saveBankValue
+    clearStatsValue();          // Clear persisted stats
+    resetSoundToDefaults();     // Clear + reset sound to defaults
     setDeck([]);
     setRevealed(0);
     setBets(emptyBets());

@@ -17,13 +17,79 @@ const POOLS = {
 
 const POOL_IDX = { cardDeal: 0, chipPlace: 0, chipRemove: 0 };
 
+// ── Persistence helpers (localStorage + cookie fallback) ──────────────────
+// Same dual-layer pattern used by anteStructures.js and bonusMultipliers.js.
+// Survives the Base44 sandboxed-iframe localStorage issue.
+const SOUND_STORAGE_KEY = 'rfpf_sound';
+const SOUND_COOKIE_KEY   = 'rfpf_sound';
+const SOUND_COOKIE_DAYS  = 365;
+
+// Default sound settings — restored on bank reset
+export const DEFAULT_SOUND_SETTINGS = {
+  crowdEnabled: true,
+  crowdVolume: 0.4,
+  sfxEnabled: true,
+  sfxVolume: 1.0,
+};
+
+function writeCookie(name, value, days = SOUND_COOKIE_DAYS) {
+  try {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  } catch {}
+}
+
+function readCookie(name) {
+  try {
+    const match = document.cookie.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch { return null; }
+}
+
+function saveSoundSettings(settings) {
+  const json = JSON.stringify(settings);
+  try { localStorage.setItem(SOUND_STORAGE_KEY, json); } catch {}
+  writeCookie(SOUND_COOKIE_KEY, json);
+}
+
+function loadSoundSettings() {
+  try {
+    const raw = localStorage.getItem(SOUND_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        crowdEnabled: typeof parsed.crowdEnabled === 'boolean' ? parsed.crowdEnabled : DEFAULT_SOUND_SETTINGS.crowdEnabled,
+        crowdVolume:  typeof parsed.crowdVolume  === 'number'  ? parsed.crowdVolume  : DEFAULT_SOUND_SETTINGS.crowdVolume,
+        sfxEnabled:   typeof parsed.sfxEnabled   === 'boolean' ? parsed.sfxEnabled   : DEFAULT_SOUND_SETTINGS.sfxEnabled,
+        sfxVolume:    typeof parsed.sfxVolume    === 'number'  ? parsed.sfxVolume    : DEFAULT_SOUND_SETTINGS.sfxVolume,
+      };
+    }
+  } catch {}
+  const ck = readCookie(SOUND_COOKIE_KEY);
+  if (ck) {
+    try {
+      const parsed = JSON.parse(ck);
+      return {
+        crowdEnabled: typeof parsed.crowdEnabled === 'boolean' ? parsed.crowdEnabled : DEFAULT_SOUND_SETTINGS.crowdEnabled,
+        crowdVolume:  typeof parsed.crowdVolume  === 'number'  ? parsed.crowdVolume  : DEFAULT_SOUND_SETTINGS.crowdVolume,
+        sfxEnabled:   typeof parsed.sfxEnabled   === 'boolean' ? parsed.sfxEnabled   : DEFAULT_SOUND_SETTINGS.sfxEnabled,
+        sfxVolume:    typeof parsed.sfxVolume    === 'number'  ? parsed.sfxVolume    : DEFAULT_SOUND_SETTINGS.sfxVolume,
+      };
+    } catch {}
+  }
+  return { ...DEFAULT_SOUND_SETTINGS };
+}
+
+// Clear all persisted sound settings (used on bank reset)
+export function clearSoundSettings() {
+  try { localStorage.removeItem(SOUND_STORAGE_KEY); } catch {}
+  try { document.cookie = `${SOUND_COOKIE_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`; } catch {}
+}
+
 // ── Crowd / Ambient — global singleton to survive hot-reloads ──
-// If a previous module evaluation created an AMBIENT, grab it and pause it.
-// This prevents orphaned Audio elements from playing forever.
 function getOrCreateAmbient() {
   if (typeof window === 'undefined') return null;
   if (window.__RF_AMBIENT__) {
-    // Kill the old one — we'll create a fresh one with current settings
     try { window.__RF_AMBIENT__.pause(); } catch (e) {}
   }
   const a = new Audio('https://media.base44.com/files/public/6a1a6f6e670be2c42b2d0a99/033e65cf3_freesound_community-poker-room-33521.mp3');
@@ -36,12 +102,22 @@ function getOrCreateAmbient() {
 
 const AMBIENT = getOrCreateAmbient();
 
-// ── Two independent channels ──
-let crowdEnabled = true;
-let crowdVolume = 0.4;    // 0..1
+// ── Load persisted settings on module init ──
+const _initial = loadSoundSettings();
 
-let sfxEnabled = true;
-let sfxVolume  = 1.0;    // 0..1 master multiplier for all SFX
+// ── Two independent channels ──
+let crowdEnabled = _initial.crowdEnabled;
+let crowdVolume  = _initial.crowdVolume;    // 0..1
+
+let sfxEnabled = _initial.sfxEnabled;
+let sfxVolume   = _initial.sfxVolume;       // 0..1 master multiplier for all SFX
+
+// Apply initial crowd volume to ambient element
+if (AMBIENT) AMBIENT.volume = crowdVolume;
+
+function persistSound() {
+  saveSoundSettings({ crowdEnabled, crowdVolume, sfxEnabled, sfxVolume });
+}
 
 // ── SFX playback ──
 function play(key, volume) {
@@ -93,6 +169,17 @@ export function playChipSound()    { play('chipPlace', 0.8); }
 export function playChipRemoveSound() { play('chipRemove', 0.7); }
 export function playCardDealSound() { play('cardDeal', 0.9); }
 
+// ── Reset sound to defaults (called on bank reset) ──
+export function resetSoundToDefaults() {
+  crowdEnabled = DEFAULT_SOUND_SETTINGS.crowdEnabled;
+  crowdVolume  = DEFAULT_SOUND_SETTINGS.crowdVolume;
+  sfxEnabled   = DEFAULT_SOUND_SETTINGS.sfxEnabled;
+  sfxVolume    = DEFAULT_SOUND_SETTINGS.sfxVolume;
+  clearSoundSettings();
+  if (AMBIENT) AMBIENT.volume = crowdVolume;
+  applyCrowdVolume();
+}
+
 export function useGameSounds() {
   return {
     // ── SFX (chips, cards, bonus) ──
@@ -101,9 +188,9 @@ export function useGameSounds() {
     playCardDeal:     () => play('cardDeal', 0.9),
     preloadSounds:    preloadOnce,
 
-    setSfxEnabled:  (enabled) => { sfxEnabled = enabled; },
+    setSfxEnabled:  (enabled) => { sfxEnabled = enabled; persistSound(); },
     isSfxEnabled:   () => sfxEnabled,
-    setSfxVolume:   (v) => { sfxVolume = Math.max(0, Math.min(1, v)); },
+    setSfxVolume:   (v) => { sfxVolume = Math.max(0, Math.min(1, v)); persistSound(); },
     getSfxVolume:   () => sfxVolume,
 
     // ── Crowd / Ambient — fully independent ──
@@ -111,20 +198,22 @@ export function useGameSounds() {
       crowdEnabled = enabled;
       if (!enabled) stopAmbient();
       else startAmbient();
+      persistSound();
     },
     isCrowdEnabled:  () => crowdEnabled,
     setCrowdVolume:  (v) => {
       crowdVolume = Math.max(0, Math.min(1, v));
       applyCrowdVolume();
+      persistSound();
     },
     getCrowdVolume:  () => crowdVolume,
 
     // ── Legacy compat — maps to SFX channel ──
-    setSoundEnabled: (enabled) => { sfxEnabled = enabled; },
+    setSoundEnabled: (enabled) => { sfxEnabled = enabled; persistSound(); },
     isSoundEnabled:  () => sfxEnabled,
 
     // ── Ambient legacy compat — maps to crowd channel ──
-    setAmbientVolume: (v) => { crowdVolume = Math.max(0, Math.min(1, v)); applyCrowdVolume(); },
+    setAmbientVolume: (v) => { crowdVolume = Math.max(0, Math.min(1, v)); applyCrowdVolume(); persistSound(); },
     getAmbientVolume: () => crowdVolume,
   };
 }

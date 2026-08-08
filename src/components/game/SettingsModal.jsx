@@ -264,7 +264,7 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
         <button
           onClick={onResetBank}
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(180,40,40,0.25)', color: '#ff6b6b', border: '1px solid #ff6b6b', borderRadius: 8, padding: '9px 0', fontWeight: 800, fontSize: 13, cursor: 'pointer', letterSpacing: '0.5px' }}
-          title="Reset your bankroll to $1000 (test mode)"
+          title="Reset bankroll to $1000, clear stats, and restore default sound settings"
         >
           <RotateCcw size={15} /> RESET BANK TO $1000
         </button>

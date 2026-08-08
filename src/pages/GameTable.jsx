@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useGame } from '@/lib/game/useGame';
+import { useGame, loadStatsValue, saveStatsValue, clearStatsValue } from '@/lib/game/useGame';
 import { formatMoney } from '@/lib/game/cards';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import PreviousHands from '@/components/game/PreviousHands';
@@ -47,11 +47,25 @@ export default function GameTable() {
   const [awaitingReveal, setAwaitingReveal] = useState(false);
   const [bonusPulse, setBonusPulse] = useState({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3, markerFading: false });
   const [bonusActive, setBonusActive] = useState(false);
-  const [playerStats, setPlayerStats] = useState({
-    totalBets: 0, totalWins: 0,
-    roundsPlayed: 0, roundsWon: 0,
-    highestMultiplier: 0,
-    highestBalance: null, lowestBalance: null,
+  const [playerStats, setPlayerStats] = useState(() => {
+    const saved = loadStatsValue();
+    if (saved && typeof saved.roundsPlayed === 'number') {
+      return {
+        totalBets: saved.totalBets || 0,
+        totalWins: saved.totalWins || 0,
+        roundsPlayed: saved.roundsPlayed || 0,
+        roundsWon: saved.roundsWon || 0,
+        highestMultiplier: saved.highestMultiplier || 0,
+        highestBalance: saved.highestBalance ?? null,
+        lowestBalance: saved.lowestBalance ?? null,
+      };
+    }
+    return {
+      totalBets: 0, totalWins: 0,
+      roundsPlayed: 0, roundsWon: 0,
+      highestMultiplier: 0,
+      highestBalance: null, lowestBalance: null,
+    };
   });
 
   // Start ambient on first user interaction
@@ -160,6 +174,9 @@ export default function GameTable() {
       }));
     }
   }, [phase]);
+
+  // Persist player stats to localStorage + cookie on every change
+  useEffect(() => { saveStatsValue(playerStats); }, [playerStats]);
 
   const handlePlaceBet = useCallback((...args) => {
     actions.placeBet(...args);
@@ -325,7 +342,7 @@ export default function GameTable() {
         setBoardTheme={setBoardTheme}
         onHowToPlay={() => { setShowSettings(false); setShowHowToPlay(true); }}
         onGameRules={() => { setShowSettings(false); setShowGameRules(true); }}
-        onResetBank={actions.resetBank}
+        onResetBank={() => { actions.resetBank(); setPlayerStats({ totalBets: 0, totalWins: 0, roundsPlayed: 0, roundsWon: 0, highestMultiplier: 0, highestBalance: null, lowestBalance: null }); }}
       />
       <HowToPlayModal isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
       <GameRulesModal isOpen={showGameRules} onClose={() => setShowGameRules(false)} />
