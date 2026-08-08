@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle, RotateCcw } from 'lucide-react';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import { formatMoney } from '@/lib/game/cards';
+import GameRulesContent from './GameRulesContent';
 
 const COLORS = [
   { id: 'red',   label: 'Red',   dot: '#b30000' },
@@ -253,10 +254,7 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
 
         {/* Game Rules Tab */}
         {tab === 'gamerules' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '10px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10, minHeight: 80, alignItems: 'center', justifyContent: 'center' }}>
-            <BookOpen size={28} color="rgba(197,160,89,0.4)" />
-            <span style={{ color: 'rgba(197,160,89,0.5)', fontSize: 12, fontWeight: 600 }}>Game Rules — Coming Soon</span>
-          </div>
+          <GameRulesContent />
         )}
 
         {/* How To Play Tab */}
