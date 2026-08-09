@@ -261,7 +261,7 @@ export default function RightSidebar({
   const bonusRankStyle = (rankIdx) => ({});
   const bonusColorRiverStyle = (crIdx) => ({});
 
-  const RANK_SHIELD_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/fff65b884_shield_gold_transparent.png';
+  const RANK_SHIELD_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/a8fb25353_gold_shield_master.png';
   const bonusRankMarker = (rankIdx) => {
     if (!isRankActive(rankIdx)) return null;
     const fading = isRankLanded(rankIdx) && bonusPulse?.markerFading;
@@ -306,7 +306,7 @@ export default function RightSidebar({
         style={{
           position: 'absolute', top: 0, left: 0,
           width: '100%', height: '100%',
-          objectFit: 'fill',
+          objectFit: 'contain',
           pointerEvents: 'none', zIndex: 30,
           opacity: fading ? 0 : 1,
           transition: 'opacity 1s ease-out',
@@ -474,7 +474,7 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusColorRiverStyle(colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {bonusColorRiverMarker(colorIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/77f177f51_marker_color_bonus.png')}
+                {bonusColorRiverMarker(colorIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/a8fb25353_gold_shield_master.png')}
                 {bonusBadge(colorIdx, 'colorRiver')}
                 <span style={{ ...colorTextStyle, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 {locked ? (
@@ -533,7 +533,7 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusColorRiverStyle(6 + riverIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {bonusColorRiverMarker(6 + riverIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/6881ad0cb_marker_river_bonus.png')}
+                {bonusColorRiverMarker(6 + riverIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/a8fb25353_gold_shield_master.png')}
                 {bonusBadge(6 + riverIdx, 'colorRiver')}
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>

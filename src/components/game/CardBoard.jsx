@@ -281,13 +281,13 @@ export function BettingSlot({
       {/* BONUS MARKER — gold placemat image overlay */}
       {isBonusActive && (
         <img
-          src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/dffab7af4_marker_card_bonus.png"
+          src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/a8fb25353_gold_shield_master.png"
           alt="Bonus Marker"
           style={{
             position: 'absolute',
             top: 0, left: 0,
             width: '100%', height: '100%',
-            objectFit: 'fill',
+            objectFit: 'contain',
             pointerEvents: 'none',
             zIndex: 30,
             opacity: markerFading ? 0 : 1,
