@@ -261,22 +261,39 @@ export default function RightSidebar({
   const bonusRankStyle = (rankIdx) => ({});
   const bonusColorRiverStyle = (crIdx) => ({});
 
+  const RANK_MARKER_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/b9951ebca_marker_rank_bonus.png';
   const bonusRankMarker = (rankIdx) => {
     if (!isRankActive(rankIdx)) return null;
     const fading = isRankLanded(rankIdx) && bonusPulse?.markerFading;
     return (
-      <img
-        src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/b9951ebca_marker_rank_bonus.png"
-        alt="Bonus Marker"
+      <div
         style={{
           position: 'absolute', top: 0, left: 0,
           width: '100%', height: '100%',
-          objectFit: 'fill',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '4px',
           pointerEvents: 'none', zIndex: 30,
           opacity: fading ? 0 : 1,
           transition: 'opacity 1s ease-out',
         }}
-      />
+      >
+        {[0, 1, 2, 3, 4].map(i => (
+          <img
+            key={i}
+            src={RANK_MARKER_URL}
+            alt="Bonus Marker"
+            style={{
+              height: '85%',
+              width: 'auto',
+              objectFit: 'contain',
+              flexShrink: 1,
+              maxWidth: '18%',
+            }}
+          />
+        ))}
+      </div>
     );
   };
 
