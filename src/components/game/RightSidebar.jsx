@@ -443,7 +443,7 @@ export default function RightSidebar({
 
       <div className={mobileLayout ? "flex flex-col" : "contents"} style={mobileLayout ? { flex: 1, minHeight: 0, gap: GAP } : {}}>
       {/* ■■ COLOR BOARD — flex: 3, chip LEFT, text CENTRED, winning color PULSES ■■ */}
-      <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 3, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
+      <div style={{ ...boardPanelStyle, flex: mobileLayout ? '0 0 auto' : 3, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {colorPositions.map((pos, colorIdx) => {
