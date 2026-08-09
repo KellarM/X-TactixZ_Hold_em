@@ -60,6 +60,14 @@ export const CHIPS = [
   { value: 5.00, label: '$5' }
 ];
 
+// Mobile portrait only — reduced chip set (4 chips)
+export const MOBILE_CHIPS = [
+  { value: 0.01, label: '1¢' },
+  { value: 0.10, label: '10¢' },
+  { value: 0.50, label: '50¢' },
+  { value: 5.00, label: '$5' }
+];
+
 const START_BANK = 1000;
 
 // ── Bank persistence (localStorage + cookie fallback) ─────────────────────

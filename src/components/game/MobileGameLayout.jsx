@@ -11,7 +11,7 @@ import GameRulesModal from './GameRulesModal';
 import OnboardingIndicator from './OnboardingIndicator';
 import PreviousHands from './PreviousHands';
 import { FIXED_HANDS, formatPayout, SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
-import { CHIPS } from '@/lib/game/useGame';
+import { MOBILE_CHIPS } from '@/lib/game/useGame';
 import { formatMoney } from '@/lib/game/cards';
 import { Settings } from 'lucide-react';
 
@@ -359,7 +359,7 @@ export default function MobileGameLayout({
         }}>
           {/* Chips */}
           <div style={{ display: 'flex', gap: 1, alignItems: 'center', flexShrink: 0 }}>
-            {CHIPS.map(chip => {
+            {MOBILE_CHIPS.map(chip => {
               const active = game.selectedChip === chip.value;
               return (
                 <button
