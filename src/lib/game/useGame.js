@@ -416,6 +416,12 @@ export function useGame() {
     const cardMult = bonusMultipliers.card;
     const rankMult = bonusMultipliers.rank;
     const colorRiverMult = bonusMultipliers.colorRiver;
+    // ── DIAGNOSTIC: trace multiplier values at resolution time ──
+    console.log("[useGame] BONUS RESOLVE — multipliers in use:", { card: cardMult, rank: rankMult, colorRiver: colorRiverMult, rawState: bonusMultipliers });
+    try {
+      const stored = localStorage.getItem("rfpf_bonus_multipliers");
+      console.log("[useGame] BONUS RESOLVE — localStorage raw:", stored);
+    } catch {}
 
     let bonusWinnings = 0;
     let cardWon = false, rankWon = false, colorRiverWon = false;

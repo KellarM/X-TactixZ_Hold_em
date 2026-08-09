@@ -266,7 +266,7 @@ export default function RightSidebar({
     const fading = isRankLanded(rankIdx) && bonusPulse?.markerFading;
     return (
       <img
-        src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/789f97df6_marker_rank.png"
+        src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/b9951ebca_marker_rank_bonus.png"
         alt="Bonus Marker"
         style={{
           position: 'absolute', top: 0, left: 0,
@@ -458,7 +458,7 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusColorRiverStyle(colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {bonusColorRiverMarker(colorIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/4568b2e6c_marker_color.png')}
+                {bonusColorRiverMarker(colorIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/77f177f51_marker_color_bonus.png')}
                 {bonusBadge(colorIdx, 'colorRiver')}
                 <span style={{ ...colorTextStyle, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 {locked ? (
@@ -517,7 +517,7 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusColorRiverStyle(6 + riverIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {bonusColorRiverMarker(6 + riverIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/71d042021_marker_river.png')}
+                {bonusColorRiverMarker(6 + riverIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/6881ad0cb_marker_river_bonus.png')}
                 {bonusBadge(6 + riverIdx, 'colorRiver')}
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
