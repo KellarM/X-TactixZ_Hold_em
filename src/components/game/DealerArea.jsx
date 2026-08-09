@@ -90,7 +90,7 @@ const LOGO_BADGE_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/fil
 
 function BrandLogo({ side = 'right' }) {
   return (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}>
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}>
       <img
         src={LOGO_BADGE_URL}
         alt="X-TactixZ Hold'em"
@@ -171,6 +171,7 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
         {/* ── Left side: Logo badge + ToolBar (hidden by default, summoned via Ctrl+Alt+J+L) ── */}
         <div style={{
           flex: 1,
+          minWidth: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'flex-start',
@@ -178,6 +179,7 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
           paddingLeft: 8,
           userSelect: 'none',
           minHeight: 0,
+          overflow: 'visible',
         }}>
           <img
             src={LOGO_BADGE_URL}
