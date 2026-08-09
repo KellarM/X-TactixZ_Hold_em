@@ -1148,7 +1148,7 @@ export default function ToolBar() {
 
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, marginTop: 34, marginLeft: 120 }}>
         <button
           ref={btnRef}
           onClick={() => setOpen(o => !o)}
