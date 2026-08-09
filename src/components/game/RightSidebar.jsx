@@ -443,7 +443,16 @@ export default function RightSidebar({
 
       <div className={mobileLayout ? "flex flex-col" : "contents"} style={mobileLayout ? { flex: 1, minHeight: 0, gap: GAP } : {}}>
       {/* ■■ COLOR BOARD — flex: 3, chip LEFT, text CENTRED, winning color PULSES ■■ */}
-      <div style={{ ...boardPanelStyle, flex: mobileLayout ? '0 0 auto' : 3, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
+      <div style={{
+        ...boardPanelStyle,
+        // Locked to its PRE-footer-expansion absolute height: 3/5 of the column
+        // height as it existed before the Player Area grew by exactly 20px
+        // (padding 3px->8px = +10px, ante circle 28px->38px = +10px). River
+        // (flex:1, below) absorbs 100% of that 20px on its own — Color never
+        // shrinks or grows again regardless of future footer changes here.
+        flex: mobileLayout ? '0 0 calc((100% + 20px) * 0.6)' : 3,
+        ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}),
+      }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {colorPositions.map((pos, colorIdx) => {
