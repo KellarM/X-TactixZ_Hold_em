@@ -95,52 +95,52 @@ function injectStyles() {
 export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove, compact = false,
   handEvals = {}, leadingHandIds = [], winnerHandIds = [], bonusPulse = null }) {
 
-  useEffect(() => { injectStyles(); }, []);
+  useEffect(() => {injectStyles();}, []);
 
   const locked = (id) => {
     if (!odds) return true;
-    const o = odds.cardOdds.find(x => x.handId === id);
+    const o = odds.cardOdds.find((x) => x.handId === id);
     return !o || o.locked;
   };
   const lockReason = (id) => {
     if (!odds) return null;
-    const o = odds.cardOdds.find(x => x.handId === id);
+    const o = odds.cardOdds.find((x) => x.handId === id);
     return o ? o.reason : null;
   };
   const payout = (id) => {
     if (!odds) return null;
-    const o = odds.cardOdds.find(x => x.handId === id);
+    const o = odds.cardOdds.find((x) => x.handId === id);
     return o ? o.payout : null;
   };
 
   const isAntePhase = phase === 'ante';
-  const isResolved  = phase === 'resolved';
+  const isResolved = phase === 'resolved';
 
   return (
     <div
-      className="rounded-lg flex flex-col"
+      className="rounded-lg flex flex-col mx-auto"
       style={{
         background: 'var(--theme-bg, #051532)',
         border: '1.5px solid #C5A059',
         flex: '1 1 0',
         minHeight: 0,
         height: '100%',
-        padding: compact ? '4px' : '12px',
-      }}
-    >
+        padding: compact ? '4px' : '12px'
+      }}>
+      
       {compact ? null : <SectionTitle capValue={caps ? caps.card : undefined}>CARD BOARD — HAND POSITIONS</SectionTitle>}
 
       <div
         className="grid grid-cols-5 grid-rows-2"
-        style={{ gap: compact ? 3 : 6, flex: 1, minHeight: 0 }}
-      >
+        style={{ gap: compact ? 3 : 6, flex: 1, minHeight: 0 }}>
+        
         {FIXED_HANDS.map((hand, handArrayIdx) => {
-          const isLocked   = locked(hand.id);
-          const p          = payout(hand.id);
-          const bet        = bets.card[hand.id] || 0;
-          const rankLabel  = handEvals[hand.id] || null;
-          const isLeading  = leadingHandIds.includes(hand.id);
-          const isWinner   = winnerHandIds.includes(hand.id);
+          const isLocked = locked(hand.id);
+          const p = payout(hand.id);
+          const bet = bets.card[hand.id] || 0;
+          const rankLabel = handEvals[hand.id] || null;
+          const isLeading = leadingHandIds.includes(hand.id);
+          const isWinner = winnerHandIds.includes(hand.id);
 
           return (
             <BettingSlot
@@ -156,19 +156,19 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove, 
               bonusPulse={bonusPulse}
               bonusIndex={handArrayIdx}
               onPlace={() => onPlace('card', hand.id)}
-              onRemove={() => onRemove('card', hand.id)}
-            >
+              onRemove={() => onRemove('card', hand.id)}>
+              
               <div style={{ display: 'flex', gap: 3, alignItems: 'center', justifyContent: 'center' }}>
-                {hand.cards.map((c, i) => (
-                  <PlayingCard key={i} card={c} size="sm" />
-                ))}
+                {hand.cards.map((c, i) =>
+                <PlayingCard key={i} card={c} size="sm" />
+                )}
               </div>
-            </BettingSlot>
-          );
+            </BettingSlot>);
+
         })}
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 const capBadgeStyle = {
@@ -179,7 +179,7 @@ const capBadgeStyle = {
   fontWeight: 900,
   borderRadius: 99,
   padding: '1px 7px',
-  whiteSpace: 'nowrap',
+  whiteSpace: 'nowrap'
 };
 
 export function SectionTitle({ children, capValue }) {
@@ -187,25 +187,25 @@ export function SectionTitle({ children, capValue }) {
   return (
     <div
       className="flex items-center justify-between flex-shrink-0 mb-2"
-      style={{ padding: '0 2px' }}
-    >
+      style={{ padding: '0 2px' }}>
+      
       <span style={{ flex: 1 }} />
       <span style={{ color: '#E5B64E', fontSize: 11, fontWeight: 700, letterSpacing: '1.5px', textAlign: 'center', flex: 'auto' }}>
         {children}
       </span>
       <span style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-        {capValue !== undefined && (
-          <span style={capBadgeStyle}>Match Ante: {formatMoney(capValue)}</span>
-        )}
+        {capValue !== undefined &&
+        <span style={capBadgeStyle}>Match Ante: {formatMoney(capValue)}</span>
+        }
       </span>
-    </div>
-  );
+    </div>);
+
 }
 
 export function BettingSlot({
   oddsLabel, locked, lockReason = null, bet, onPlace, onRemove, children,
   rankLabel = null, isLeading = false, isWinner = false, isResolved = false,
-  bonusPulse = null, bonusIndex = null,
+  bonusPulse = null, bonusIndex = null
 }) {
   // ── Vault tint locked treatment (Option A) ──────────────────────────────────
   // When locked: dulled gold border, grayscale cards, dark scrim with padlock
@@ -215,16 +215,16 @@ export function BettingSlot({
   // ── Border colour ──────────────────────────────────────────────────────────
   let borderColor = '#C5A059';
   let borderWidth = '3px';
-  if (isWinner)                      { borderColor = '#FFD700'; borderWidth = '4px'; }
-  else if (isLeading && !isResolved) { borderColor = '#e5c158'; borderWidth = '3.5px'; }
-  else if (locked)                   { borderColor = '#6b6146'; borderWidth = '3px'; }
+  if (isWinner) {borderColor = '#FFD700';borderWidth = '4px';} else
+  if (isLeading && !isResolved) {borderColor = '#e5c158';borderWidth = '3.5px';} else
+  if (locked) {borderColor = '#6b6146';borderWidth = '3px';}
 
   // ── Animation ──────────────────────────────────────────────────────────────
   let animation = 'none';
   let background = 'var(--theme-bg, #04122b)';
   // Any gold-highlighted state (confirmed winner OR currently-leading pre-resolution)
   // needs black text for contrast against the gold background.
-  const goldHighlighted = isWinner || (isLeading && !isResolved);
+  const goldHighlighted = isWinner || isLeading && !isResolved;
 
   // Bonus marker state — image-based gold placemat overlay
   const isBonusActive = bonusPulse?.card === bonusIndex;
@@ -241,22 +241,22 @@ export function BettingSlot({
     borderColor = '#C5A059';
     borderWidth = '3px';
   } else if (isWinner) {
-    animation  = 'rf-winner-settle 0.6s ease-out forwards';
+    animation = 'rf-winner-settle 0.6s ease-out forwards';
     background = 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)';
   } else if (isLeading && !isResolved) {
-    animation  = 'rf-leader-pulse 2.0s ease-in-out infinite';
+    animation = 'rf-leader-pulse 2.0s ease-in-out infinite';
     background = 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)';
   }
 
   // ── Rank label colour ──────────────────────────────────────────────────────
-  const rankColor = goldHighlighted ? '#000'
-    : locked ? '#5a5240'
-    : '#8a9ab0';
+  const rankColor = goldHighlighted ? '#000' :
+  locked ? '#5a5240' :
+  '#8a9ab0';
 
   // Bottom label: show rank if available, "Dead" if no rank, or nothing pre-flop
-  const bottomLabel = locked
-    ? (rankLabel || 'Dead Hand')
-    : rankLabel;
+  const bottomLabel = locked ?
+  rankLabel || 'Dead Hand' :
+  rankLabel;
 
   return (
     <div
@@ -274,81 +274,81 @@ export function BettingSlot({
         cursor: locked ? 'not-allowed' : 'pointer',
         transition: 'border-color 0.2s, border-width 0.2s',
         overflow: 'visible',
-        userSelect: 'none',
+        userSelect: 'none'
       }}
-      onClick={() => { if (!locked) onPlace(); }}
-      onContextMenu={(e) => { e.preventDefault(); if (!locked && bet > 0) onRemove(); }}
-    >
+      onClick={() => {if (!locked) onPlace();}}
+      onContextMenu={(e) => {e.preventDefault();if (!locked && bet > 0) onRemove();}}>
+      
       {/* BONUS MARKER — gold placemat image overlay */}
-      {isBonusActive && (
-        <img
-          src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png"
-          alt="Bonus Marker"
-          style={{
-            position: 'absolute',
-            top: 0, left: 0,
-            width: '100%', height: '100%',
-            objectFit: 'contain',
-            pointerEvents: 'none',
-            zIndex: 30,
-            opacity: markerFading ? 0 : 1,
-            transition: 'opacity 1s ease-out',
-          }}
-        />
-      )}
+      {isBonusActive &&
+      <img
+        src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png"
+        alt="Bonus Marker"
+        style={{
+          position: 'absolute',
+          top: 0, left: 0,
+          width: '100%', height: '100%',
+          objectFit: 'contain',
+          pointerEvents: 'none',
+          zIndex: 30,
+          opacity: markerFading ? 0 : 1,
+          transition: 'opacity 1s ease-out'
+        }} />
+
+      }
 
       {/* BONUS BADGE — appears after marker fades */}
-      {isBonusLanded && bonusPulse?.markerFading && (
-        <div style={{
-          position: 'absolute',
-          bottom: -10,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: bonusPulse.cardWon
-            ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
-            : 'linear-gradient(135deg, #888 0%, #555 50%, #888 100%)',
-          color: '#000',
-          fontSize: 11,
-          fontWeight: 900,
-          padding: '2px 10px',
-          borderRadius: 5,
-          zIndex: 41,
-          letterSpacing: '0.5px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 12px rgba(255,215,0,0.5)',
-          pointerEvents: 'none',
-          whiteSpace: 'nowrap',
-          border: '1px solid ' + (bonusPulse.cardWon ? '#FFE566' : '#aaa'),
-          opacity: 0,
-          animation: 'rf-badge-appear 0.4s ease-out 0.3s forwards',
-        }}>
+      {isBonusLanded && bonusPulse?.markerFading &&
+      <div style={{
+        position: 'absolute',
+        bottom: -10,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: bonusPulse.cardWon ?
+        'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)' :
+        'linear-gradient(135deg, #888 0%, #555 50%, #888 100%)',
+        color: '#000',
+        fontSize: 11,
+        fontWeight: 900,
+        padding: '2px 10px',
+        borderRadius: 5,
+        zIndex: 41,
+        letterSpacing: '0.5px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 12px rgba(255,215,0,0.5)',
+        pointerEvents: 'none',
+        whiteSpace: 'nowrap',
+        border: '1px solid ' + (bonusPulse.cardWon ? '#FFE566' : '#aaa'),
+        opacity: 0,
+        animation: 'rf-badge-appear 0.4s ease-out 0.3s forwards'
+      }}>
           {bonusPulse.cardWon ? `★ ×${bonusPulse.cardMult} BONUS` : '★ BONUS PICK'}
         </div>
-      )}
+      }
 
       {/* WIN badge — shows on winning positions at resolution */}
-      {isWinner && isResolved && (
-        <div style={{
-          position: 'absolute',
-          top: 2,
-          right: 4,
-          background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
-          color: '#000',
-          fontSize: 9,
-          fontWeight: 900,
-          padding: '1px 5px',
-          borderRadius: 3,
-          zIndex: 20,
-          letterSpacing: '0.5px',
-          boxShadow: '0 1px 4px rgba(0,0,0,0.8)',
-          pointerEvents: 'none',
-        }}>
+      {isWinner && isResolved &&
+      <div style={{
+        position: 'absolute',
+        top: 2,
+        right: 4,
+        background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+        color: '#000',
+        fontSize: 9,
+        fontWeight: 900,
+        padding: '1px 5px',
+        borderRadius: 3,
+        zIndex: 20,
+        letterSpacing: '0.5px',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.8)',
+        pointerEvents: 'none'
+      }}>
           WIN
         </div>
-      )}
+      }
 
       {/* Odds label — top (shows actual odds even when locked) */}
       <div style={{
-        color: goldHighlighted ? '#000' : (locked ? '#9a8f6e' : '#FFD700'),
+        color: goldHighlighted ? '#000' : locked ? '#9a8f6e' : '#FFD700',
         fontSize: 13.5,
         fontWeight: 700,
         fontFamily: "'Playfair Display', serif",
@@ -356,7 +356,7 @@ export function BettingSlot({
         flexShrink: 0,
         lineHeight: 1,
         textAlign: 'center',
-        width: '100%',
+        width: '100%'
       }}>
         {oddsLabel}
       </div>
@@ -370,73 +370,73 @@ export function BettingSlot({
         width: '100%',
         padding: '0 4px',
         position: 'relative',
-        filter: locked ? 'grayscale(1) brightness(0.6)' : 'none',
+        filter: locked ? 'grayscale(1) brightness(0.6)' : 'none'
       }}>
         {children}
       </div>
 
       {/* Vault tint scrim + real gold padlock image (only when locked) */}
-      {locked && (
-        <div style={{
-          position: 'absolute',
-          inset: '28px 0 18px 0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 5,
-          pointerEvents: 'none',
-        }}>
+      {locked &&
+      <div style={{
+        position: 'absolute',
+        inset: '28px 0 18px 0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 5,
+        pointerEvents: 'none'
+      }}>
           <img
-            src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
-            alt="Locked"
-            style={{
-              width: 34,
-              height: 'auto',
-              opacity: 0.95,
-              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))',
-            }}
-          />
+          src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
+          alt="Locked"
+          style={{
+            width: 34,
+            height: 'auto',
+            opacity: 0.95,
+            filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.7))'
+          }} />
+        
         </div>
-      )}
+      }
 
       {/* Bottom label — rank evaluation (or "Dead"), shown even when locked */}
-      {bottomLabel && (
-        <div style={{
-          fontSize: 10.5,
-          fontWeight: 700,
-          fontFamily: "'Cinzel', serif",
-          letterSpacing: '1px',
-          textAlign: 'center',
-          padding: '2px 4px 3px',
-          width: '100%',
-          flexShrink: 0,
-          lineHeight: 1,
-          color: rankColor,
-          textTransform: 'uppercase',
-        }}>
+      {bottomLabel &&
+      <div style={{
+        fontSize: 10.5,
+        fontWeight: 700,
+        fontFamily: "'Cinzel', serif",
+        letterSpacing: '1px',
+        textAlign: 'center',
+        padding: '2px 4px 3px',
+        width: '100%',
+        flexShrink: 0,
+        lineHeight: 1,
+        color: rankColor,
+        textTransform: 'uppercase'
+      }}>
           {bottomLabel}
         </div>
-      )}
+      }
 
       {/* Chip — centered on top of the cards */}
-      {bet > 0 && !locked && (
-        <span
-          onClick={(e) => { e.stopPropagation(); onRemove(); }}
-          title="Click to remove bet"
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 20,
-            cursor: 'pointer',
-            filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.95))',
-            pointerEvents: 'auto',
-          }}
-        >
+      {bet > 0 && !locked &&
+      <span
+        onClick={(e) => {e.stopPropagation();onRemove();}}
+        title="Click to remove bet"
+        style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 20,
+          cursor: 'pointer',
+          filter: 'drop-shadow(0 3px 8px rgba(0,0,0,0.95))',
+          pointerEvents: 'auto'
+        }}>
+        
           <Chip amount={bet} scale={0.65} />
         </span>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
