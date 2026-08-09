@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { RANK_LABELS, formatPayout, formatMoney } from '@/lib/game/cards';
 import Chip from '@/components/game/Chip';
 
@@ -247,6 +247,24 @@ export default function RightSidebar({
 }) {
   useEffect(() => { injectStyles(); }, []);
 
+  // ── Mobile: sync River's row height to Color's actual per-row height ──
+  // Color (3 stacked rows) and River (1 row) get their heights from
+  // independent flex shares, so they don't naturally match. Measuring
+  // Color's real rendered row height and applying it directly to River
+  // is exact — no guessing at flex-basis/gap/header-height arithmetic.
+  const colorRowRef = useRef(null);
+  const [colorRowHeight, setColorRowHeight] = useState(null);
+  useEffect(() => {
+    if (!mobileLayout) return;
+    const el = colorRowRef.current;
+    if (!el) return;
+    const measure = () => setColorRowHeight(el.getBoundingClientRect().height);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [mobileLayout]);
+
   const riverOpen = phase === 'postturn' || phase === 'resolved';
   const isResolved = phase === 'resolved';
 
@@ -407,9 +425,12 @@ export default function RightSidebar({
                     alt="Locked"
                     style={{
                       position: 'absolute',
-                      top: '50%', left: '50%',
+                      // Shrunk (26->20px) so it never exceeds the row's border,
+                      // and nudged right (50%->64%) so it clears the hand-name
+                      // text on the left instead of sitting on top of it.
+                      top: '50%', left: '64%',
                       transform: 'translate(-50%, -50%)',
-                      width: 26, height: 'auto',
+                      width: 20, height: 'auto',
                       opacity: 0.95,
                       filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))',
                       pointerEvents: 'none',
@@ -479,6 +500,7 @@ export default function RightSidebar({
             return (
               <button
                 key={pos.key}
+                ref={colorIdx === 0 ? colorRowRef : undefined}
                 disabled={locked}
                 onClick={() => !locked && onPlace('color', pos.key)}
                 onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.color[pos.key]) onRemove('color', pos.key); }}
@@ -492,7 +514,7 @@ export default function RightSidebar({
                   <img
                     src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
                     alt="Locked"
-                    style={{ width: 26, height: 'auto', opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
+                    style={{ width: 20, height: 'auto', opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
                   />
                 ) : (
                   <span style={{ ...colorTextStyle, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
@@ -524,7 +546,10 @@ export default function RightSidebar({
       {/* ■■ RIVER — flex: 2, chip LEFT, text CENTRED, winning side PULSES ■■ */}
       <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 2, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
         <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
-        <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
+        <div className="grid grid-cols-2" style={{
+          flex: 1, minHeight: 0, gap: GAP,
+          alignContent: mobileLayout && colorRowHeight ? 'center' : 'stretch',
+        }}>
           {[
             { side: 'low',  label: 'LOW',  range: '2–7' },
             { side: 'high', label: 'HIGH', range: '8–A' },
@@ -542,7 +567,13 @@ export default function RightSidebar({
                 onClick={() => !locked && onPlace('river', b.side)}
                 onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.river[b.side]) onRemove('river', b.side); }}
                 className="relative flex flex-col items-center justify-center"
-                style={{ ...style, ...bonusColorRiverStyle(6 + riverIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
+                style={{
+                  ...style, ...bonusColorRiverStyle(6 + riverIdx), borderRadius: R, minHeight: 0,
+                  cursor: locked ? 'not-allowed' : 'pointer',
+                  // Locked to Color's measured row height so both boards' betting
+                  // positions are the exact same height, not independently flexed.
+                  ...(mobileLayout && colorRowHeight ? { height: colorRowHeight, flexShrink: 0 } : {}),
+                }}
               >
                 {bonusColorRiverMarker(6 + riverIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png')}
                 {bonusBadge(6 + riverIdx, 'colorRiver')}
@@ -552,7 +583,7 @@ export default function RightSidebar({
                   <img
                     src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
                     alt="Locked"
-                    style={{ width: 32, height: 'auto', marginTop: 2, opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
+                    style={{ width: 22, height: 'auto', marginTop: 2, opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
                   />
                 ) : (
                   <span style={{ color: '#000', fontWeight: 900, fontSize: 13, lineHeight: 1 }}>
