@@ -340,9 +340,9 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
 
           {/* Logo */}
           <img
-            src="https://media.base44.com/images/public/69f3a45ad82dff5b772d4de2/2667063a3_image.png"
-            alt="Rapid Fire Texas Hold'em"
-            style={{ width: 90, height: 'auto', marginBottom: 18, filter: 'drop-shadow(0 0 12px rgba(239,68,68,0.5))' }}
+            src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/a8b20c3bd_xtactixz_official_logo.png"
+            alt="X-TactixZ Hold'em"
+            style={{ width: 90, height: 'auto', marginBottom: 18, filter: 'drop-shadow(0 0 12px rgba(197,160,89,0.6))' }}
           />
 
           {/* Headline */}
