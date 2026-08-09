@@ -1,6 +1,8 @@
 import React from 'react';
-import { Flame } from 'lucide-react';
 import { SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
+
+// Official X-TactixZ Hold'em crest logo (locked 2026-08-08)
+const CARD_BACK_LOGO = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/a8b20c3bd_xtactixz_official_logo.png';
 
 // Real card image URLs — all fixed hand cards
 const CARD_IMAGES = {
@@ -72,37 +74,29 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
     lg: { w: 80, h: 112, rank: '26px', suit: '24px', big: 40, pad: '6px' },
   }[size];
 
-  // Card back (face down or no card yet)
+  // Card back (face down or no card yet) — Official X-TactixZ crest logo
   if (faceDown || !card || !card.rank || !card.suit) {
     return (
       <div
-        className={`relative flex flex-col items-center justify-center rounded-[6px] ${className}`}
+        className={`relative flex items-center justify-center rounded-[6px] ${className}`}
         style={{
           width: dims.w,
           height: dims.h,
-          background: 'linear-gradient(135deg, #1a0a12 0%, #2a0a14 50%, #1a0a12 100%)',
+          background: '#0d0d0f',
           border: '1.5px solid #C5A059',
           boxShadow: 'inset 0 0 6px rgba(0,0,0,0.6)',
         }}
       >
-        <div
-          className="absolute inset-1 rounded-[4px] opacity-30"
+        <img
+          src={CARD_BACK_LOGO}
+          alt="X-TactixZ Hold'em"
           style={{
-            backgroundImage:
-              'repeating-linear-gradient(45deg, #4a1020 0px, #4a1020 2px, transparent 2px, transparent 6px), repeating-linear-gradient(-45deg, #4a1020 0px, #4a1020 2px, transparent 2px, transparent 6px)',
+            width: '92%',
+            height: '92%',
+            objectFit: 'contain',
+            display: 'block',
           }}
         />
-        <div className="relative flex flex-col items-center justify-center" style={{ gap: 1 }}>
-          <Flame size={size === 'sm' ? 12 : 18} color="#E5B64E" strokeWidth={2} />
-          <div style={{ fontSize: (size === 'sm') ? 5 : 7, fontWeight: 800, color: '#E5B64E', letterSpacing: '0.5px', lineHeight: 1 }}>
-            RAPID FIRE
-          </div>
-          {size !== 'sm' && (
-            <div style={{ fontSize: 5.5, fontWeight: 700, color: '#C5A059', letterSpacing: '0.8px', lineHeight: 1 }}>
-              TEXAS HOLD'EM
-            </div>
-          )}
-        </div>
       </div>
     );
   }
