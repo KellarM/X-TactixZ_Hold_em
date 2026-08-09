@@ -545,7 +545,7 @@ export default function RightSidebar({
 
       {/* ■■ RIVER — flex: 2, chip LEFT, text CENTRED, winning side PULSES ■■ */}
       <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 2, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
-        <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
+        <SectionHeader capValue={caps.river}>RIVER</SectionHeader>
         <div className="grid grid-cols-2" style={{
           flex: 1, minHeight: 0, gap: GAP,
           alignContent: mobileLayout && colorRowHeight ? 'center' : 'stretch',
@@ -579,13 +579,27 @@ export default function RightSidebar({
                 {bonusBadge(6 + riverIdx, 'colorRiver')}
                 <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
                 <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
-                {locked ? (
+                {locked && (
                   <img
                     src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
                     alt="Locked"
-                    style={{ width: 22, height: 'auto', marginTop: 2, opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
+                    style={{
+                      // Overlaid directly on top of the range number instead of
+                      // stacking below it — the lock disappears once the board
+                      // opens, so covering the number here costs nothing and
+                      // lets the cell's content height stay just label+range.
+                      position: 'absolute',
+                      top: '68%', left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      width: 22, height: 'auto',
+                      opacity: 0.95,
+                      filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))',
+                      pointerEvents: 'none',
+                      zIndex: 6,
+                    }}
                   />
-                ) : (
+                )}
+                {!locked && (
                   <span style={{ color: '#000', fontWeight: 900, fontSize: 13, lineHeight: 1 }}>
                     {formatPayout(riverPayout(b.side))}
                   </span>
