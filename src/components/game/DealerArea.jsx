@@ -86,13 +86,15 @@ function CardGroup({ cards, indices, label }) {
   );
 }
 
-function BrandLogo() {
+const LOGO_BADGE_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/7a23486be_xtactixz_template_badge.png';
+
+function BrandLogo({ side = 'right' }) {
   return (
     <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}>
       <img
-        src="https://media.base44.com/images/public/69fcabf54838c8e18515a406/RapidFire_Logo.png"
-        alt="Rapid Fire Texas Hold'em"
-        style={{ width: 72, height: 'auto', display: 'block', borderRadius: 8, opacity: 0.9 }}
+        src={LOGO_BADGE_URL}
+        alt="X-TactixZ Hold'em"
+        style={{ width: 64, height: 'auto', display: 'block', borderRadius: 6, opacity: 0.92 }}
         onError={(e) => { e.target.style.display = 'none'; }}
       />
     </div>
@@ -166,16 +168,23 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
         overflow: 'visible',
         position: 'relative',
       }}>
-        {/* ── Left side: ToolBar (hidden by default, summoned via Ctrl+Alt+J+L) ── */}
+        {/* ── Left side: Logo badge + ToolBar (hidden by default, summoned via Ctrl+Alt+J+L) ── */}
         <div style={{
           flex: 1,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'flex-start',
+          gap: 10,
           paddingLeft: 8,
           userSelect: 'none',
           minHeight: 0,
         }}>
+          <img
+            src={LOGO_BADGE_URL}
+            alt="X-TactixZ Hold'em"
+            style={{ width: 64, height: 'auto', display: 'block', borderRadius: 6, opacity: 0.92, flexShrink: 0 }}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
           <ToolBar />
         </div>
 
@@ -186,7 +195,7 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
           <CardGroup cards={cards} indices={[4]} label="River" />
         </div>
 
-        <BrandLogo />
+        <BrandLogo side="right" />
       </div>
 
     </div>
