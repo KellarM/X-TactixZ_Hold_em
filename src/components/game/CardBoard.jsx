@@ -92,7 +92,7 @@ function injectStyles() {
   `;
 }
 
-export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
+export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove, compact = false,
   handEvals = {}, leadingHandIds = [], winnerHandIds = [], bonusPulse = null }) {
 
   useEffect(() => { injectStyles(); }, []);
@@ -118,20 +118,21 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove,
 
   return (
     <div
-      className="rounded-lg p-3 flex flex-col"
+      className="rounded-lg flex flex-col"
       style={{
         background: 'var(--theme-bg, #051532)',
         border: '1.5px solid #C5A059',
         flex: '1 1 0',
         minHeight: 0,
         height: '100%',
+        padding: compact ? '4px' : '12px',
       }}
     >
-      <SectionTitle capValue={caps ? caps.card : undefined}>CARD BOARD — HAND POSITIONS</SectionTitle>
+      {compact ? null : <SectionTitle capValue={caps ? caps.card : undefined}>CARD BOARD — HAND POSITIONS</SectionTitle>}
 
       <div
         className="grid grid-cols-5 grid-rows-2"
-        style={{ gap: 6, flex: 1, minHeight: 0 }}
+        style={{ gap: compact ? 3 : 6, flex: 1, minHeight: 0 }}
       >
         {FIXED_HANDS.map((hand, handArrayIdx) => {
           const isLocked   = locked(hand.id);
