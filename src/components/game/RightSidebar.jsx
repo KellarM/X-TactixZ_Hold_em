@@ -261,7 +261,7 @@ export default function RightSidebar({
   const bonusRankStyle = (rankIdx) => ({});
   const bonusColorRiverStyle = (crIdx) => ({});
 
-  const RANK_MARKER_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/b9951ebca_marker_rank_bonus.png';
+  const RANK_SHIELD_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/1a89182f8_shield_only.png';
   const bonusRankMarker = (rankIdx) => {
     if (!isRankActive(rankIdx)) return null;
     const fading = isRankLanded(rankIdx) && bonusPulse?.markerFading;
@@ -281,13 +281,14 @@ export default function RightSidebar({
         {[0, 1, 2, 3, 4].map(i => (
           <img
             key={i}
-            src={RANK_MARKER_URL}
-            alt="Bonus Marker"
+            src={RANK_SHIELD_URL}
+            alt="X-TactixZ Shield"
             style={{
-              height: '95%',
+              height: '100%',
               width: 'auto',
               objectFit: 'contain',
-              flex: '0 1 auto',
+              flex: '0 0 auto',
+              maxWidth: '19%',
             }}
           />
         ))}
