@@ -243,6 +243,7 @@ export default function RightSidebar({
   leadingRiverSide = null, winnerRiverSide = null,
   ante = 0, boardTotals = { card: 0, rank: 0, color: 0, river: 0 },
   bonusPulse = null,
+  mobileLayout = false,
 }) {
   useEffect(() => { injectStyles(); }, []);
 
@@ -365,10 +366,10 @@ export default function RightSidebar({
   const riverPayout = (s) => riverOdds?.[s]?.payout ?? null;
 
   return (
-    <div className="flex flex-col h-full" style={{ gap: GAP }}>
+    <div className={mobileLayout ? "flex h-full" : "flex flex-col h-full"} style={{ gap: GAP }}>
 
       {/* ■■ HAND RANKING BOARD — flex: 5, chip CENTRED, winning rank PULSES ■■ */}
-      <div style={{ ...boardPanelStyle, flex: 5 }}>
+      <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 5, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
         <SectionHeader capValue={caps.rank}>HAND RANKING</SectionHeader>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {RANK_LABELS.map((label, rankIdx) => {
@@ -440,8 +441,9 @@ export default function RightSidebar({
         </div>
       </div>
 
+      <div className={mobileLayout ? "flex flex-col" : "contents"} style={mobileLayout ? { flex: 1, minHeight: 0, gap: GAP } : {}}>
       {/* ■■ COLOR BOARD — flex: 3, chip LEFT, text CENTRED, winning color PULSES ■■ */}
-      <div style={{ ...boardPanelStyle, flex: 3 }}>
+      <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 3, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {colorPositions.map((pos, colorIdx) => {
@@ -511,7 +513,7 @@ export default function RightSidebar({
       </div>
 
       {/* ■■ RIVER — flex: 2, chip LEFT, text CENTRED, winning side PULSES ■■ */}
-      <div style={{ ...boardPanelStyle, flex: 2 }}>
+      <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 2, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
         <SectionHeader capValue={caps.river}>RIVER — LOW / HIGH</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {[
@@ -568,6 +570,8 @@ export default function RightSidebar({
             );
           })}
         </div>
+      </div>
+
       </div>
 
     </div>

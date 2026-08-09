@@ -15,6 +15,8 @@ import SettingsModal from '@/components/game/SettingsModal';
 import HowToPlayModal from '@/components/game/HowToPlayModal';
 import GameRulesModal from '@/components/game/GameRulesModal';
 import OnboardingIndicator from '@/components/game/OnboardingIndicator';
+import { useViewportTier } from '@/hooks/useViewportTier';
+import MobileGameLayout from '@/components/game/MobileGameLayout';
 
 export default function GameTable() {
   const game = useGame();
@@ -212,6 +214,52 @@ export default function GameTable() {
     dealLabel = 'DEAL RIVER';
     subLabel  = 'PLACE RIVER BET OR DEAL NOW';
     canDeal   = true;
+  }
+
+  const viewportTier = useViewportTier();
+
+  // ── Mobile portrait layout swap ────────────────────────────────────────
+  // Desktop/tablet use the existing layout. Mobile portrait swaps to
+  // MobileGameLayout which arranges components vertically for phone screens.
+  // All game state, effects, and callbacks are computed above; both layouts
+  // receive the same data.
+  if (viewportTier === 'mobile') {
+    return (
+      <MobileGameLayout
+        game={game}
+        phase={phase}
+        actions={actions}
+        sounds={sounds}
+        bonusPulse={bonusPulse}
+        setBonusPulse={setBonusPulse}
+        bonusActive={bonusActive}
+        setBonusActive={setBonusActive}
+        awaitingReveal={awaitingReveal}
+        setAwaitingReveal={setAwaitingReveal}
+        showResult={showResult}
+        setShowResult={setShowResult}
+        playerStats={playerStats}
+        setPlayerStats={setPlayerStats}
+        boardTheme={boardTheme}
+        setBoardTheme={setBoardTheme}
+        showSettings={showSettings}
+        setShowSettings={setShowSettings}
+        showHowToPlay={showHowToPlay}
+        setShowHowToPlay={setShowHowToPlay}
+        showGameRules={showGameRules}
+        setShowGameRules={setShowGameRules}
+        dealLabel={dealLabel}
+        subLabel={subLabel}
+        canDeal={canDeal}
+        handlePlaceBet={handlePlaceBet}
+        handleRemoveBet={handleRemoveBet}
+        handleDeal={handleDeal}
+        handleRevealClick={handleRevealClick}
+        handleBonusPulse={handleBonusPulse}
+        handleBonusLand={handleBonusLand}
+        handleBonusComplete={handleBonusComplete}
+      />
+    );
   }
 
   return (
