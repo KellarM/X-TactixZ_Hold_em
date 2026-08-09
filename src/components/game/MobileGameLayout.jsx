@@ -163,7 +163,7 @@ export default function MobileGameLayout({
       <div style={{
         flexShrink: 0, width: '100%',
         aspectRatio: `${BOARD_NATURAL_W} / ${BOARD_NATURAL_H}`,
-        padding: '2px 4px 0 4px',
+        padding: '0 4px 0 4px',
       }}>
         <ScaleToFit naturalWidth={BOARD_NATURAL_W} naturalHeight={BOARD_NATURAL_H}>
           <CardBoard
