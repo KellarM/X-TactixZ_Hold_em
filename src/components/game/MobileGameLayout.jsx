@@ -61,6 +61,45 @@ function ScaleToFit({ naturalWidth, naturalHeight, children }) {
   );
 }
 
+// ── Self-sizing scale wrapper (width-driven) ────────────────────────────────
+// Unlike ScaleToFit above (which centers content inside an INDEPENDENTLY
+// sized box — used where we WANT padding, e.g. the community card row),
+// this variant measures only the available WIDTH, computes the scale, and
+// sets its OWN height to exactly naturalHeight*scale. There is no separate
+// guessed box size to mismatch against, so it is IMPOSSIBLE for this to
+// leave extra empty space — the box is always exactly as tall as its
+// scaled content, nothing more.
+function ScaleToFitWidth({ naturalWidth, naturalHeight, children }) {
+  const outerRef = useRef(null);
+  const [scale, setScale] = useState(0.3);
+
+  useLayoutEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
+    const compute = () => {
+      const w = el.clientWidth;
+      if (w === 0) return;
+      const s = Math.min(w / naturalWidth, 1);
+      if (s > 0 && isFinite(s)) setScale(s);
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [naturalWidth]);
+
+  return (
+    <div ref={outerRef} style={{ width: '100%', height: naturalHeight * scale, overflow: 'hidden' }}>
+      <div style={{
+        width: naturalWidth, height: naturalHeight,
+        transform: `scale(${scale})`, transformOrigin: 'top left',
+      }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function MobileGameLayout({
   game, phase, actions, sounds,
   bonusPulse, setBonusPulse,
@@ -155,17 +194,13 @@ export default function MobileGameLayout({
       {/* Reveal prompt */}
       {awaitingReveal && <RevealPrompt onReveal={handleRevealClick} />}
 
-      {/* ── Card Board — real desktop component, scaled to fit its box ──
-          Fixed aspect-ratio (matching its natural W:H) instead of flex:1 —
-          so its height is exactly what the scaled content needs, with no
-          leftover space for ScaleToFit to center within (that was the
-          "wasted empty space" bug). ── */}
-      <div style={{
-        flexShrink: 0, width: '100%',
-        aspectRatio: `${BOARD_NATURAL_W} / ${BOARD_NATURAL_H}`,
-        padding: '0 4px 0 4px',
-      }}>
-        <ScaleToFit naturalWidth={BOARD_NATURAL_W} naturalHeight={BOARD_NATURAL_H}>
+      {/* ── Card Board — real desktop component, self-sized to its content ──
+          ScaleToFitWidth measures width, computes scale, and sets ITS OWN
+          height to exactly naturalHeight*scale — no guessed aspect-ratio
+          box to mismatch against, so there is no possible leftover gap
+          between this and the dealer area above it. ── */}
+      <div style={{ flexShrink: 0, width: '100%', padding: '0 4px' }}>
+        <ScaleToFitWidth naturalWidth={BOARD_NATURAL_W} naturalHeight={BOARD_NATURAL_H}>
           <CardBoard
             odds={game.flopOdds}
             bets={game.bets}
@@ -179,7 +214,7 @@ export default function MobileGameLayout({
             bonusPulse={bonusPulse}
             compact={true}
           />
-        </ScaleToFit>
+        </ScaleToFitWidth>
       </div>
 
       {/* ── Right Sidebar — Rank + Color + River stacked ──
