@@ -118,7 +118,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove, 
 
   return (
     <div
-      className="rounded-lg flex flex-col mx-auto"
+      className="rounded-lg flex flex-col"
       style={{
         background: 'var(--theme-bg, #051532)',
         border: '1.5px solid #C5A059',
