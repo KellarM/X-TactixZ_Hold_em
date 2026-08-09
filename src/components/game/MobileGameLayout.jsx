@@ -245,7 +245,7 @@ export default function MobileGameLayout({
       {/* ── Footer (Player Area) — increased height for better usability ── */}
       <div style={{
         flexShrink: 0, display: 'flex', alignItems: 'center',
-        gap: 4, padding: '8px 5px',
+        gap: 6, padding: '12px 6px',
         borderTop: '1px solid rgba(202,138,4,0.3)',
         background: 'rgba(0,0,0,0.65)',
       }}>
@@ -268,7 +268,7 @@ export default function MobileGameLayout({
                   opacity: active ? 1 : 0.55, transition: 'all 0.15s',
                 }}
               >
-                <Chip amount={chip.value} scale={0.44} />
+                <Chip amount={chip.value} scale={0.60} />
               </button>
             );
           })}
@@ -280,7 +280,7 @@ export default function MobileGameLayout({
           style={{
             cursor: phase === 'ante' && game.ante > 0 ? 'pointer' : 'default',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, width: 38, height: 38, borderRadius: '50%',
+            flexShrink: 0, width: 46, height: 46, borderRadius: '50%',
             border: game.ante > 0 ? '2px solid #FFD700' : '2px solid #C5A059',
             background: game.ante > 0
               ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
@@ -290,34 +290,34 @@ export default function MobileGameLayout({
           }}
         >
           {game.ante > 0 ? (
-            <Chip amount={game.ante} scale={0.30} />
+            <Chip amount={game.ante} scale={0.40} />
           ) : (
-            <span style={{ color: '#000', fontSize: 7, fontWeight: 900, letterSpacing: '0.3px' }}>ANTE</span>
+            <span style={{ color: '#000', fontSize: 10, fontWeight: 900, letterSpacing: '0.3px' }}>ANTE</span>
           )}
         </div>
 
         {/* Bet sum */}
         <div style={{
-          flexShrink: 0, padding: '1px 4px', borderRadius: 4,
+          flexShrink: 0, padding: '2px 6px', borderRadius: 4,
           border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(0,0,0,0.6)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 38,
         }}>
-          <span style={{ fontSize: '0.4rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.04em' }}>BET</span>
-          <span style={{ fontSize: '0.6rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(game.totalWagered)}</span>
+          <span style={{ fontSize: '0.58rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.04em' }}>BET</span>
+          <span style={{ fontSize: '0.82rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(game.totalWagered)}</span>
         </div>
 
         {/* Clear / New */}
         {(phase === 'postflop' || phase === 'postturn') && game.totalWagered > 0 && (
           <button onClick={actions.clearBets}
-            style={{ flexShrink: 0, padding: '2px 4px', borderRadius: 3,
+            style={{ flexShrink: 0, padding: '3px 7px', borderRadius: 3,
               border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(127,29,29,0.4)',
-              color: '#fca5a5', fontSize: 8, fontWeight: 700, cursor: 'pointer' }}>CLR</button>
+              color: '#fca5a5', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>CLR</button>
         )}
         {phase === 'resolved' && (
           <button onClick={actions.newHand}
-            style={{ flexShrink: 0, padding: '2px 5px', borderRadius: 3,
+            style={{ flexShrink: 0, padding: '3px 8px', borderRadius: 3,
               border: '1px solid rgba(34,197,94,0.5)', background: 'rgba(20,83,45,0.4)',
-              color: '#86efac', fontSize: 8, fontWeight: 700, cursor: 'pointer' }}>NEW</button>
+              color: '#86efac', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>NEW</button>
         )}
 
         <div style={{ flex: 1 }} />
@@ -327,10 +327,10 @@ export default function MobileGameLayout({
           onClick={handleDeal}
           disabled={!canDeal}
           style={{
-            flexShrink: 0, padding: '5px 12px', borderRadius: 5,
+            flexShrink: 0, padding: '8px 16px', borderRadius: 5,
             border: '1.5px solid #4ade80',
             background: canDeal ? '#15803d' : '#0a3a1a',
-            color: '#fff', fontWeight: 900, fontSize: '0.65rem',
+            color: '#fff', fontWeight: 900, fontSize: '0.9rem',
             cursor: canDeal ? 'pointer' : 'default',
             letterSpacing: '0.04em', opacity: canDeal ? 1 : 0.4,
           }}
@@ -340,10 +340,10 @@ export default function MobileGameLayout({
 
         {/* Bank */}
         <div style={{
-          flexShrink: 0, padding: '1px 4px', borderRadius: 4,
+          flexShrink: 0, padding: '2px 6px', borderRadius: 4,
           border: '1.5px solid #eab308', background: '#000',
         }}>
-          <span style={{ fontSize: '0.6rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 4px rgba(251,191,36,0.7)' }}>
+          <span style={{ fontSize: '0.82rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 4px rgba(251,191,36,0.7)' }}>
             {formatMoney(game.bank)}
           </span>
         </div>
@@ -351,13 +351,13 @@ export default function MobileGameLayout({
         {/* Gear */}
         <button onClick={() => setShowSettings(true)}
           style={{
-            flexShrink: 0, width: 28, height: 28, borderRadius: 5,
+            flexShrink: 0, width: 36, height: 36, borderRadius: 6,
             border: '1px solid rgba(234,179,8,0.5)', background: 'rgba(0,0,0,0.5)',
             color: '#fde047', display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
           }}
         >
-          <Settings size={15} />
+          <Settings size={20} />
         </button>
       </div>
 

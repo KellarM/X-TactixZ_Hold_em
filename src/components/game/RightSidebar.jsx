@@ -445,12 +445,12 @@ export default function RightSidebar({
       {/* ■■ COLOR BOARD — flex: 3, chip LEFT, text CENTRED, winning color PULSES ■■ */}
       <div style={{
         ...boardPanelStyle,
-        // Locked to its PRE-footer-expansion absolute height: 3/5 of the column
-        // height as it existed before the Player Area grew by exactly 20px
-        // (padding 3px->8px = +10px, ante circle 28px->38px = +10px). River
-        // (flex:1, below) absorbs 100% of that 20px on its own — Color never
-        // shrinks or grows again regardless of future footer changes here.
-        flex: mobileLayout ? '0 0 calc((100% + 20px) * 0.6)' : 3,
+        // Locked to its ORIGINAL absolute height: 3/5 of the column height as
+        // it existed before the Player Area was expanded, total delta now 36px
+        // (original footer 34px -> target 70px, per Michael's diagram measurement).
+        // River (flex:1, below) absorbs 100% of that 36px on its own — Color
+        // never shrinks or grows regardless of any future footer height change.
+        flex: mobileLayout ? '0 0 calc((100% + 36px) * 0.6)' : 3,
         ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}),
       }}>
         <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
