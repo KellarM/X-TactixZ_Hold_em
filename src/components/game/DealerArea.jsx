@@ -168,15 +168,19 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
         overflow: 'visible',
         position: 'relative',
       }}>
-        {/* ── Left side: Logo badge + ToolBar (hidden by default, summoned via Ctrl+Alt+J+L) ── */}
+        {/* ── Left side: Logo badge mirrors the right BrandLogo's centering exactly
+               (same flex:1/minWidth:0 container, same centered 64px image) so the two
+               badges are always equidistant from their respective borders, regardless
+               of viewport width. ToolBar is anchored via absolute positioning to the
+               badge's own right edge (not a flex sibling) so it rides along with the
+               badge without altering the badge's centered position at all. ── */}
         <div style={{
           flex: 1,
           minWidth: 0,
+          position: 'relative',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-start',
-          gap: 10,
-          paddingLeft: 8,
+          justifyContent: 'center',
           userSelect: 'none',
           minHeight: 0,
           overflow: 'visible',
@@ -187,7 +191,11 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
             style={{ width: 64, height: 'auto', display: 'block', borderRadius: 6, opacity: 0.92, flexShrink: 0 }}
             onError={(e) => { e.target.style.display = 'none'; }}
           />
-          <ToolBar />
+          {/* 42px = 32px (half of the 64px badge) + 10px gap — anchors ToolBar
+              immediately right of the badge's actual edge, wherever it lands. */}
+          <div style={{ position: 'absolute', left: 'calc(50% + 42px)', top: '50%', transform: 'translateY(-50%)' }}>
+            <ToolBar />
+          </div>
         </div>
 
         {/* Card groups — Flop (3) + Turn (1) + River (1) — centred with proportional gaps */}
