@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 import CardBoard from './CardBoard';
 import RightSidebar from './RightSidebar';
 import Chip from './Chip';
@@ -16,6 +16,51 @@ import { Settings } from 'lucide-react';
 
 const LOGO_BADGE_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/7a23486be_xtactixz_template_badge.png';
 
+// ── Scale-to-fit wrapper ─────────────────────────────────────────────────────
+// Renders `children` at their NATURAL (desktop-tested) pixel size inside an
+// off-screen-sized box, then uniformly shrinks the whole box with a CSS
+// transform so it always fits the actual space available — width AND height —
+// without ever needing to touch the internals of the wrapped component.
+function ScaleToFit({ naturalWidth, naturalHeight, children }) {
+  const outerRef = useRef(null);
+  const [scale, setScale] = useState(0.3);
+
+  useLayoutEffect(() => {
+    const el = outerRef.current;
+    if (!el) return;
+    const compute = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (w === 0 || h === 0) return;
+      const s = Math.min(w / naturalWidth, h / naturalHeight, 1);
+      if (s > 0 && isFinite(s)) setScale(s);
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [naturalWidth, naturalHeight]);
+
+  return (
+    <div
+      ref={outerRef}
+      style={{
+        width: '100%', height: '100%',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden',
+      }}
+    >
+      <div style={{
+        width: naturalWidth, height: naturalHeight,
+        transform: `scale(${scale})`, transformOrigin: 'center center',
+        flexShrink: 0,
+      }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function MobileGameLayout({
   game, phase, actions, sounds,
   bonusPulse, setBonusPulse,
@@ -31,6 +76,15 @@ export default function MobileGameLayout({
   handlePlaceBet, handleRemoveBet, handleDeal, handleRevealClick,
   handleBonusPulse, handleBonusLand, handleBonusComplete,
 }) {
+  // Natural size of 5 community cards (70x100 each, fixed) + gaps
+  const COMM_NATURAL_W = 70 * 5 + 4 * 4; // 366
+  const COMM_NATURAL_H = 100;
+
+  // Natural size of the compact CardBoard: 5 cols x 2 rows of 'sm' cards
+  // (62x88 each, 2 per slot) + odds/rank label rows + gaps/padding/border.
+  const BOARD_NATURAL_W = 700;
+  const BOARD_NATURAL_H = 270;
+
   return (
     <div
       className={'velvet-board theme-' + boardTheme}
@@ -43,55 +97,51 @@ export default function MobileGameLayout({
         overflow: 'hidden',
       }}
     >
-      {/* ── Community cards bar — compact ── */}
+      {/* ── Dealer status message bar ── */}
       <div style={{
-        flexShrink: 0, height: 44, maxHeight: 44, overflow: 'hidden',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-        background: 'rgba(0,0,0,0.5)',
-        borderBottom: '1px solid rgba(202,138,4,0.4)',
-        padding: '0 4px',
+        flexShrink: 0, height: 16, display: 'flex', alignItems: 'center',
+        padding: '0 6px', overflow: 'hidden', whiteSpace: 'nowrap',
+        background: 'rgba(0,0,0,0.4)',
+        borderBottom: '1px solid rgba(202,138,4,0.3)',
       }}>
-        <img src={LOGO_BADGE_URL} alt=""
-          style={{ width: 16, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
-          onError={(e) => { e.target.style.display = 'none'; }}
-        />
         <span style={{
-          fontFamily: 'Oswald, sans-serif', fontSize: '0.55rem', fontWeight: 700,
+          fontFamily: 'Oswald, sans-serif', fontSize: '0.5rem', fontWeight: 700,
           fontStyle: 'italic', color: '#f6d860',
           textShadow: '0 1px 2px rgba(0,0,0,0.8)',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-          maxWidth: 120, flexShrink: 1,
         }}>
           {game.statusMessage || ''}
         </span>
-        {/* Flop */}
-        {[0, 1, 2].map(i => (
-          <div key={i} style={{ width: 28, height: 38, flexShrink: 0 }}>
-            {game.community[i] ? (
-              <PlayingCard card={game.community[i]} size="community" useImage={false} />
-            ) : (
-              <PlayingCard faceDown size="community" />
-            )}
-          </div>
-        ))}
-        {/* Turn */}
-        <div style={{ width: 28, height: 38, flexShrink: 0 }}>
-          {game.community[3] ? (
-            <PlayingCard card={game.community[3]} size="community" useImage={false} />
-          ) : (
-            <PlayingCard faceDown size="community" />
-          )}
-        </div>
-        {/* River */}
-        <div style={{ width: 28, height: 38, flexShrink: 0 }}>
-          {game.community[4] ? (
-            <PlayingCard card={game.community[4]} size="community" useImage={false} />
-          ) : (
-            <PlayingCard faceDown size="community" />
-          )}
+      </div>
+
+      {/* ── Community cards row — scaled to fit ── */}
+      <div style={{
+        flexShrink: 0, height: 58, display: 'flex', alignItems: 'center',
+        gap: 4, padding: '0 4px',
+        background: 'rgba(0,0,0,0.5)',
+        borderBottom: '1px solid rgba(202,138,4,0.4)',
+      }}>
+        <img src={LOGO_BADGE_URL} alt=""
+          style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
+          onError={(e) => { e.target.style.display = 'none'; }}
+        />
+        <div style={{ flex: 1, height: '100%', minWidth: 0 }}>
+          <ScaleToFit naturalWidth={COMM_NATURAL_W} naturalHeight={COMM_NATURAL_H}>
+            <div style={{ display: 'flex', gap: 4 }}>
+              {[0, 1, 2, 3, 4].map(i => (
+                <React.Fragment key={i}>
+                  {game.community[i] ? (
+                    <PlayingCard card={game.community[i]} size="community" useImage={false} />
+                  ) : (
+                    <PlayingCard faceDown size="community" />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </ScaleToFit>
         </div>
         <img src={LOGO_BADGE_URL} alt=""
-          style={{ width: 16, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
+          style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
           onError={(e) => { e.target.style.display = 'none'; }}
         />
       </div>
@@ -99,21 +149,23 @@ export default function MobileGameLayout({
       {/* Reveal prompt */}
       {awaitingReveal && <RevealPrompt onReveal={handleRevealClick} />}
 
-      {/* ── Card Board — compact mode ── */}
-      <div style={{ flex: '1 1 0', minHeight: 0, padding: '3px 4px 0 4px' }}>
-        <CardBoard
-          odds={game.flopOdds}
-          bets={game.bets}
-          caps={game.caps}
-          phase={phase}
-          onPlace={handlePlaceBet}
-          onRemove={handleRemoveBet}
-          handEvals={game.handEvals}
-          leadingHandIds={game.leadingHandIds}
-          winnerHandIds={game.winnerHandIds}
-          bonusPulse={bonusPulse}
-          compact={true}
-        />
+      {/* ── Card Board — real desktop component, scaled to fit its box ── */}
+      <div style={{ flex: '1 1 0', minHeight: 0, padding: '2px 4px 0 4px' }}>
+        <ScaleToFit naturalWidth={BOARD_NATURAL_W} naturalHeight={BOARD_NATURAL_H}>
+          <CardBoard
+            odds={game.flopOdds}
+            bets={game.bets}
+            caps={game.caps}
+            phase={phase}
+            onPlace={handlePlaceBet}
+            onRemove={handleRemoveBet}
+            handEvals={game.handEvals}
+            leadingHandIds={game.leadingHandIds}
+            winnerHandIds={game.winnerHandIds}
+            bonusPulse={bonusPulse}
+            compact={true}
+          />
+        </ScaleToFit>
       </div>
 
       {/* ── Right Sidebar — Rank + Color + River stacked ── */}
