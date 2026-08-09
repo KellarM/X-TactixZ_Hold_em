@@ -114,9 +114,15 @@ export default function MobileGameLayout({
         </span>
       </div>
 
-      {/* ── Community cards row — scaled to fit ── */}
+      {/* ── Community cards row — expanded box, cards stay their original size ──
+          Outer box is now taller (per Michael's yellow-box spec). The card
+          SCALING box below is still fixed at the ORIGINAL 58px height, so
+          ScaleToFit computes the exact same scale as before — cards render
+          at their previous size, not bigger. Centering that fixed-size box
+          inside the taller outer row (alignItems:center) is what produces
+          the even top/bottom padding around the cards. ── */}
       <div style={{
-        flexShrink: 0, height: 58, display: 'flex', alignItems: 'center',
+        flexShrink: 0, height: 100, display: 'flex', alignItems: 'center',
         gap: 4, padding: '0 4px',
         background: 'rgba(0,0,0,0.5)',
         borderBottom: '1px solid rgba(202,138,4,0.4)',
@@ -125,7 +131,7 @@ export default function MobileGameLayout({
           style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
           onError={(e) => { e.target.style.display = 'none'; }}
         />
-        <div style={{ flex: 1, height: '100%', minWidth: 0 }}>
+        <div style={{ flex: 1, height: 58, minWidth: 0 }}>
           <ScaleToFit naturalWidth={COMM_NATURAL_W} naturalHeight={COMM_NATURAL_H}>
             <div style={{ display: 'flex', gap: 4 }}>
               {[0, 1, 2, 3, 4].map(i => (
