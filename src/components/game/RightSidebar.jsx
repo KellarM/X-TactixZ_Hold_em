@@ -272,8 +272,7 @@ export default function RightSidebar({
           width: '100%', height: '100%',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center',
-          gap: '4px',
+          justifyContent: 'space-evenly',
           pointerEvents: 'none', zIndex: 30,
           opacity: fading ? 0 : 1,
           transition: 'opacity 1s ease-out',
@@ -285,11 +284,10 @@ export default function RightSidebar({
             src={RANK_MARKER_URL}
             alt="Bonus Marker"
             style={{
-              height: '85%',
+              height: '95%',
               width: 'auto',
               objectFit: 'contain',
-              flexShrink: 1,
-              maxWidth: '18%',
+              flex: '0 1 auto',
             }}
           />
         ))}
