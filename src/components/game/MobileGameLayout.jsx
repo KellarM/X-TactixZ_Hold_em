@@ -1,6 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import PlayingCard from './PlayingCard';
-import CardBoard from './CardBoard';
+import React, { useState, useEffect } from 'react';
+import PlayingCard, { CARD_IMAGES } from './PlayingCard';
 import RightSidebar from './RightSidebar';
 import Chip from './Chip';
 import ResultOverlay from './ResultOverlay';
@@ -11,333 +10,201 @@ import HowToPlayModal from './HowToPlayModal';
 import GameRulesModal from './GameRulesModal';
 import OnboardingIndicator from './OnboardingIndicator';
 import PreviousHands from './PreviousHands';
-import { formatMoney } from '@/lib/game/cards';
+import { FIXED_HANDS, formatPayout, SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
 import { CHIPS } from '@/lib/game/useGame';
-import { Settings, RotateCcw } from 'lucide-react';
+import { formatMoney } from '@/lib/game/cards';
+import { Settings } from 'lucide-react';
 
 const LOGO_BADGE_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/7a23486be_xtactixz_template_badge.png';
+const BONUS_MARKER_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png';
+const GOLD_LOCK_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png';
 
-// Community card constants (scaled down from desktop 70×100)
-const CARD_W = 48;
-const CARD_H = 68;
-const GAP = 6;
-const GROUP_GAP = 12;
-const LABEL_H = 14;
+// ── Compact card render for mobile hand positions ──────────────────────────
+const CARD_W = 29;
+const CARD_H = 40;
 
-function MiniCardSlot({ card, faceDown }) {
-  if (!card || faceDown) {
+function MiniCard({ card }) {
+  const key = card.rank + '_' + card.suit;
+  const imgUrl = CARD_IMAGES[key];
+
+  if (imgUrl) {
     return (
-      <div style={{ width: CARD_W, height: CARD_H, flexShrink: 0 }}>
-        <PlayingCard faceDown size="community" />
-      </div>
+      <img
+        src={imgUrl}
+        alt={card.rank}
+        className="rounded shadow-md"
+        style={{ width: CARD_W, height: CARD_H, objectFit: 'cover', display: 'block' }}
+      />
     );
   }
+  const color = SUIT_COLOR[card.suit] || '#000';
   return (
-    <div style={{ width: CARD_W, height: CARD_H, flexShrink: 0 }}>
-      <PlayingCard card={card} size="community" useImage={false} />
+    <div
+      className="bg-white rounded flex flex-col items-center justify-center font-bold"
+      style={{ width: CARD_W, height: CARD_H, fontSize: '0.5rem', color: color, lineHeight: 1.1, textAlign: 'center' }}
+    >
+      <span>{card.rank}</span>
+      <span style={{ fontSize: '0.6rem' }}>{SUIT_SYMBOL[card.suit]}</span>
     </div>
   );
 }
 
-function MiniCardGroup({ cards, indices, label }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-      <div style={{ display: 'flex', gap: GAP }}>
-        {indices.map((i) => (
-          <MiniCardSlot key={i} card={cards[i]} faceDown={!cards[i]} />
-        ))}
-      </div>
-      <div style={{
-        height: LABEL_H,
-        marginTop: 2,
-        fontSize: '0.5rem',
-        fontWeight: 700,
-        fontFamily: 'Oswald, sans-serif',
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase',
-        color: '#e8b84b',
-        textShadow: '0 0 2px #000, 1px 1px 2px #000',
-        userSelect: 'none',
-      }}>
-        {label}
-      </div>
-    </div>
-  );
-}
-
-// ── Mobile-optimized community cards row ───────────────────────────────────
-function MobileCommunityCards({ community, statusMessage }) {
-  const cards = community;
-  return (
-    <>
-      {/* Dealer message bar — 24px fixed */}
-      <div style={{
-        height: 24, minHeight: 24, maxHeight: 24,
-        flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        borderRadius: '0.4rem',
-        border: '1px solid rgba(202,138,4,0.4)',
-        background: 'linear-gradient(90deg, rgba(78,47,0,0.5) 0%, rgba(83,37,0,0.5) 100%)',
-        overflow: 'hidden', whiteSpace: 'nowrap',
-        margin: '4px 4px 0 4px',
-        padding: '0 6px',
-      }}>
-        <span style={{
-          fontFamily: 'Oswald, sans-serif',
-          fontSize: '0.7rem',
-          fontWeight: 700,
-          fontStyle: 'italic',
-          color: '#f6d860',
-          textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-        }}>
-          {statusMessage || ''}
-        </span>
-      </div>
-
-      {/* Community cards — 90px fixed, badges flanking at 28px */}
-      <div style={{
-        height: 90, minHeight: 90, maxHeight: 90,
-        flexShrink: 0,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        gap: '0.5rem',
-        borderRadius: '0.6rem',
-        border: '1.5px solid #C5A059',
-        background: 'rgba(0,0,0,0.35)',
-        margin: '4px 4px 0 4px',
-        padding: '2px 4px',
-        boxSizing: 'border-box',
-        overflow: 'visible',
-      }}>
-        {/* Left badge — mirrors right badge centering */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img
-            src={LOGO_BADGE_URL}
-            alt="X-TactixZ Hold'em"
-            style={{ width: 28, height: 'auto', display: 'block', borderRadius: 4, opacity: 0.92, flexShrink: 0 }}
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: GROUP_GAP, flexShrink: 0 }}>
-          <MiniCardGroup cards={cards} indices={[0, 1, 2]} label="Flop" />
-          <MiniCardGroup cards={cards} indices={[3]} label="Turn" />
-          <MiniCardGroup cards={cards} indices={[4]} label="River" />
-        </div>
-
-        {/* Right badge */}
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img
-            src={LOGO_BADGE_URL}
-            alt="X-TactixZ Hold'em"
-            style={{ width: 28, height: 'auto', display: 'block', borderRadius: 4, opacity: 0.92, flexShrink: 0 }}
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-        </div>
-      </div>
-    </>
-  );
-}
-
-// ── Mobile footer — compact chip rail, ante, deal, bank, gear ───────────────
-function MobileFooter({
-  bank, ante, totalWagered, selectedChip,
-  phase, canDeal, dealLabel, subLabel,
-  onChipSelect, onClearAnte, onClearBets, onDeal, onNewHand,
-  onSettings, anteStructureId,
+// ── Compact betting slot for mobile ─────────────────────────────────────────
+function MobileBettingSlot({
+  oddsLabel, locked, bet, rankLabel,
+  isLeading, isWinner, isResolved,
+  bonusPulse, bonusIndex,
+  hand, onPlace, onRemove,
 }) {
-  const showActions = phase === 'postflop' || phase === 'postturn';
-  const showClearBets = showActions && totalWagered > 0;
-  const showNewHand = phase === 'resolved';
+  const goldHighlighted = isWinner || (isLeading && !isResolved);
+  const isBonusActive = bonusPulse && bonusPulse.card === bonusIndex;
+  const isBonusPulsing = isBonusActive && !bonusPulse.landed;
+  const isBonusLanded = isBonusActive && bonusPulse.landed;
+  const markerFading = isBonusLanded && bonusPulse.markerFading;
+
+  let borderColor = '#C5A059';
+  let borderWidth = '2px';
+  if (isBonusLanded && !markerFading) { borderColor = '#FFD700'; borderWidth = '2px'; }
+  else if (isBonusPulsing) { borderColor = '#C5A059'; borderWidth = '2px'; }
+  else if (isWinner) { borderColor = '#FFD700'; borderWidth = '3px'; }
+  else if (isLeading && !isResolved) { borderColor = '#e5c158'; borderWidth = '2.5px'; }
+  else if (locked) { borderColor = '#6b6146'; borderWidth = '2px'; }
+
+  let background = 'var(--theme-bg, #04122b)';
+  let animation = 'none';
+  if (isBonusLanded && !markerFading) { background = '#2a2000'; }
+  else if (isBonusPulsing) { background = '#2a2000'; }
+  else if (isWinner) {
+    animation = 'rf-winner-settle 0.6s ease-out forwards';
+    background = 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)';
+  } else if (isLeading && !isResolved) {
+    animation = 'rf-leader-pulse 2.0s ease-in-out infinite';
+    background = 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)';
+  }
+
+  const rankColor = goldHighlighted ? '#000' : locked ? '#5a5240' : '#8a9ab0';
+  const bottomLabel = locked ? (rankLabel || 'Dead') : rankLabel;
 
   return (
-    <div style={{
-      flexShrink: 0,
-      width: '100%',
-      background: 'var(--theme-bg, #050d21)',
-      borderTop: '2px solid #C5A059',
-      padding: '4px 6px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 2,
-      boxSizing: 'border-box',
-      overflow: 'visible',
-    }}>
-      {/* Sub-label */}
-      {subLabel && (
+    <div
+      className="relative rounded-md"
+      style={{
+        background: background,
+        border: borderWidth + ' solid ' + borderColor,
+        animation: animation,
+        opacity: locked ? 0.90 : 1,
+        height: '100%',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        cursor: locked ? 'not-allowed' : 'pointer',
+        transition: 'border-color 0.2s, border-width 0.2s',
+        overflow: 'visible',
+        userSelect: 'none',
+        padding: '2px 1px',
+      }}
+      onClick={() => { if (!locked) onPlace(); }}
+      onContextMenu={(e) => { e.preventDefault(); if (!locked && bet > 0) onRemove(); }}
+    >
+      {/* Bonus marker overlay */}
+      {isBonusActive && (
+        <img
+          src={BONUS_MARKER_URL}
+          alt="Bonus"
+          style={{
+            position: 'absolute', top: 0, left: 0,
+            width: '100%', height: '100%',
+            objectFit: 'contain', pointerEvents: 'none',
+            zIndex: 30, opacity: markerFading ? 0 : 1,
+            transition: 'opacity 1s ease-out',
+          }}
+        />
+      )}
+
+      {/* Bonus badge */}
+      {isBonusLanded && bonusPulse && bonusPulse.markerFading && (
         <div style={{
-          textAlign: 'center',
-          fontSize: '0.5rem',
-          fontWeight: 700,
-          color: '#e8b84b',
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          flexShrink: 0,
+          position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)',
+          background: bonusPulse.cardWon
+            ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
+            : 'linear-gradient(135deg, #888 0%, #555 50%, #888 100%)',
+          color: '#000', fontSize: 7, fontWeight: 900, padding: '1px 4px', borderRadius: 3,
+          zIndex: 41, letterSpacing: '0.3px', whiteSpace: 'nowrap',
+          border: '1px solid ' + (bonusPulse.cardWon ? '#FFE566' : '#aaa'),
+          opacity: 0, animation: 'rf-badge-appear 0.4s ease-out 0.3s forwards',
+          pointerEvents: 'none',
         }}>
-          {subLabel}
+          {bonusPulse.cardWon ? '\u00D7' + bonusPulse.cardMult : 'PICK'}
         </div>
       )}
 
-      {/* Action row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-
-        {/* Chips — compact scale */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 1, flexShrink: 0 }}>
-          {CHIPS.map((chip, idx) => {
-            const active = selectedChip === chip.value;
-            return (
-              <button
-                key={chip.value}
-                onClick={() => onChipSelect(chip.value)}
-                title={chip.label}
-                style={{
-                  background: 'none', border: 'none', padding: 0,
-                  cursor: 'pointer', flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transform: active ? 'scale(1.1) translateY(-2px)' : 'scale(1)',
-                  filter: active
-                    ? 'drop-shadow(0 0 4px rgba(255,215,0,0.9))'
-                    : 'drop-shadow(0 1px 2px rgba(0,0,0,0.7))',
-                  opacity: active ? 1 : 0.65,
-                  transition: 'transform 0.12s ease, filter 0.12s ease',
-                }}
-              >
-                <Chip amount={chip.value} scale={0.42} />
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Ante circle — 36px */}
-        <div
-          onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined}
-          style={{
-            cursor: phase === 'ante' && ante > 0 ? 'pointer' : 'default',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-            width: 36, height: 36, borderRadius: '50%',
-            border: ante > 0 ? '2px solid #FFD700' : '2px solid #C5A059',
-            background: ante > 0
-              ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
-              : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%, #e8c22a 100%)',
-            boxShadow: ante > 0
-              ? '0 0 8px 3px rgba(255,215,0,0.7)'
-              : 'none',
-            animation: ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
-          }}
-        >
-          {ante > 0 ? (
-            <Chip amount={ante} scale={0.32} />
-          ) : (
-            <span style={{
-              color: '#000', fontSize: 7, fontWeight: 900,
-              letterSpacing: '0.5px', textAlign: 'center', lineHeight: 1,
-            }}>ANTE</span>
-          )}
-        </div>
-
-        {/* Bet Sum — compact */}
+      {/* WIN badge */}
+      {isWinner && isResolved && (
         <div style={{
-          flexShrink: 0,
-          padding: '2px 6px',
-          borderRadius: 5,
-          border: '1px solid rgba(234,179,8,0.4)',
-          background: 'rgba(0,0,0,0.6)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-          minWidth: 52,
-        }}>
-          <span style={{ fontSize: '0.4rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.05em' }}>BET SUM</span>
-          <span style={{ fontSize: '0.7rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(totalWagered)}</span>
-        </div>
+          position: 'absolute', top: 1, right: 2,
+          background: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+          color: '#000', fontSize: 6, fontWeight: 900, padding: '0px 3px', borderRadius: 2,
+          zIndex: 20, letterSpacing: '0.3px', pointerEvents: 'none',
+        }}>WIN</div>
+      )}
 
-        {/* Clear / New Hand button */}
-        {showClearBets && (
-          <button
-            onClick={onClearBets}
-            style={{
-              flexShrink: 0, padding: '3px 6px', borderRadius: 4,
-              border: '1px solid rgba(239,68,68,0.5)',
-              background: 'rgba(127,29,29,0.4)',
-              color: '#fca5a5', fontSize: '0.5rem', fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            CLEAR
-          </button>
-        )}
-        {showNewHand && (
-          <button
-            onClick={onNewHand}
-            style={{
-              flexShrink: 0, padding: '3px 8px', borderRadius: 4,
-              border: '1px solid rgba(34,197,94,0.5)',
-              background: 'rgba(20,83,45,0.4)',
-              color: '#86efac', fontSize: '0.5rem', fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            NEW HAND
-          </button>
-        )}
-
-        <div style={{ flex: 1 }} />
-
-        {/* Deal button — compact */}
-        <button
-          onClick={onDeal}
-          disabled={!canDeal}
-          style={{
-            flexShrink: 0,
-            padding: '4px 14px',
-            borderRadius: 6,
-            border: '2px solid #4ade80',
-            background: canDeal ? '#15803d' : '#0a3a1a',
-            color: '#fff',
-            fontWeight: 900,
-            fontSize: '0.6rem',
-            cursor: canDeal ? 'pointer' : 'default',
-            letterSpacing: '0.04em',
-            opacity: canDeal ? 1 : 0.4,
-          }}
-        >
-          {dealLabel}
-        </button>
-
-        {/* Bank — compact */}
-        <div style={{
-          flexShrink: 0,
-          padding: '2px 6px',
-          borderRadius: 5,
-          border: '2px solid #eab308',
-          background: '#000',
-        }}>
-          <span style={{ fontSize: '0.65rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 5px rgba(251,191,36,0.7)' }}>
-            {formatMoney(bank)}
-          </span>
-        </div>
-
-        {/* Gear button */}
-        <button
-          onClick={onSettings}
-          title="Settings"
-          style={{
-            flexShrink: 0,
-            width: 28, height: 28, borderRadius: '50%',
-            border: '1px solid rgba(234,179,8,0.5)',
-            background: 'rgba(0,0,0,0.5)',
-            color: '#fde047',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
-          }}
-        >
-          <Settings size={15} />
-        </button>
+      {/* Odds label */}
+      <div style={{
+        color: goldHighlighted ? '#000' : (locked ? '#9a8f6e' : '#FFD700'),
+        fontSize: '0.5rem', fontWeight: 700, lineHeight: 1, textAlign: 'center',
+        width: '100%', flexShrink: 0, padding: '1px 2px 0px',
+      }}>
+        {oddsLabel}
       </div>
+
+      {/* Cards */}
+      <div style={{
+        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: 2, padding: '0 2px', position: 'relative',
+        filter: locked ? 'grayscale(1) brightness(0.6)' : 'none',
+      }}>
+        {hand.cards.map((c, i) => (
+          <MiniCard key={i} card={c} />
+        ))}
+      </div>
+
+      {/* Lock overlay */}
+      {locked && (
+        <div style={{
+          position: 'absolute', inset: '14px 0 10px 0',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 5, pointerEvents: 'none',
+        }}>
+          <img src={GOLD_LOCK_URL} alt="Locked"
+            style={{ width: 16, height: 'auto', opacity: 0.85 }} />
+        </div>
+      )}
+
+      {/* Rank label */}
+      {bottomLabel && (
+        <div style={{
+          fontSize: '0.36rem', fontWeight: 700, letterSpacing: '0.3px',
+          textAlign: 'center', padding: '0px 2px 1px', width: '100%',
+          flexShrink: 0, lineHeight: 1, color: rankColor, textTransform: 'uppercase',
+        }}>
+          {bottomLabel}
+        </div>
+      )}
+
+      {/* Chip overlay */}
+      {bet > 0 && !locked && (
+        <span
+          onClick={(e) => { e.stopPropagation(); onRemove(); }}
+          style={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)', zIndex: 20, cursor: 'pointer',
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.95))', pointerEvents: 'auto',
+          }}
+        >
+          <Chip amount={bet} scale={0.36} />
+        </span>
+      )}
     </div>
   );
 }
@@ -360,54 +227,254 @@ export default function MobileGameLayout({
 }) {
   const [showHistory, setShowHistory] = useState(false);
 
+  const odds = game.flopOdds;
+  const isResolved = phase === 'resolved';
+
+  const locked = (id) => {
+    if (!odds) return true;
+    const o = odds.cardOdds.find(x => x.handId === id);
+    return !o || o.locked;
+  };
+  const payout = (id) => {
+    if (!odds) return null;
+    const o = odds.cardOdds.find(x => x.handId === id);
+    return o ? o.payout : null;
+  };
+
+  const COMM_CARD_W = 28;
+  const COMM_CARD_H = 40;
+  const COMM_GAP = 3;
+
   return (
     <div
-      className={`velvet-board theme-${boardTheme}`}
+      className={'velvet-board theme-' + boardTheme}
       style={{
         color: '#FFFFFF',
+        width: '100dvw',
         height: '100dvh',
         display: 'flex',
-        flexDirection: 'column',
         overflow: 'hidden',
       }}
     >
-      {/* ── Community cards + dealer bar ── */}
-      <MobileCommunityCards
-        community={game.community}
-        statusMessage={game.statusMessage}
-      />
-
-      {/* ── Reveal prompt ── */}
-      {awaitingReveal && <RevealPrompt onReveal={handleRevealClick} />}
-
-      {/* ── Card Board — frozen height, 2-row grid (already built into CardBoard) ── */}
+      {/* LEFT COLUMN -- 60% */}
       <div style={{
-        flex: '0 0 auto',
-        minHeight: 0,
-        padding: '4px 4px 0 4px',
+        width: '60%', display: 'flex', flexDirection: 'column',
+        borderRight: '1.5px solid rgba(202,138,4,0.4)', overflow: 'hidden',
       }}>
-        <CardBoard
-          odds={game.flopOdds}
-          bets={game.bets}
-          caps={game.caps}
-          phase={phase}
-          onPlace={handlePlaceBet}
-          onRemove={handleRemoveBet}
-          handEvals={game.handEvals}
-          leadingHandIds={game.leadingHandIds}
-          winnerHandIds={game.winnerHandIds}
-          bonusPulse={bonusPulse}
-        />
+        {/* Dealer message bar -- 18px */}
+        <div style={{
+          flexShrink: 0, height: 18, display: 'flex', alignItems: 'center',
+          padding: '0 6px', overflow: 'hidden', whiteSpace: 'nowrap',
+          background: 'linear-gradient(90deg, rgba(55,22,0,0.95), rgba(70,28,0,0.95))',
+          borderBottom: '1px solid rgba(202,138,4,0.4)',
+        }}>
+          <span style={{
+            fontFamily: 'Oswald, sans-serif', fontSize: '0.6rem', fontWeight: 700,
+            fontStyle: 'italic', color: '#f6d860',
+            textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>
+            {game.statusMessage || ''}
+          </span>
+        </div>
+
+        {/* Community cards -- 52px height */}
+        <div style={{
+          flexShrink: 0, height: 52, maxHeight: 52, overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          gap: '0.3rem',
+          background: 'rgba(0,0,0,0.5)',
+          borderBottom: '1px solid rgba(202,138,4,0.4)',
+          padding: '0 4px',
+        }}>
+          <img src={LOGO_BADGE_URL} alt="XT"
+            style={{ width: 18, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: COMM_GAP }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ width: COMM_CARD_W, height: COMM_CARD_H, flexShrink: 0 }}>
+                {game.community[i] ? (
+                  <PlayingCard card={game.community[i]} size="community" useImage={false} />
+                ) : (
+                  <PlayingCard faceDown size="community" />
+                )}
+              </div>
+            ))}
+            <div style={{ width: COMM_CARD_W, height: COMM_CARD_H, flexShrink: 0 }}>
+              {game.community[3] ? (
+                <PlayingCard card={game.community[3]} size="community" useImage={false} />
+              ) : (
+                <PlayingCard faceDown size="community" />
+              )}
+            </div>
+            <div style={{ width: COMM_CARD_W, height: COMM_CARD_H, flexShrink: 0 }}>
+              {game.community[4] ? (
+                <PlayingCard card={game.community[4]} size="community" useImage={false} />
+              ) : (
+                <PlayingCard faceDown size="community" />
+              )}
+            </div>
+          </div>
+          <img src={LOGO_BADGE_URL} alt="XT"
+            style={{ width: 18, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        </div>
+
+        {/* Reveal prompt */}
+        {awaitingReveal && <RevealPrompt onReveal={handleRevealClick} />}
+
+        {/* 5x2 Hand grid -- compact */}
+        <div style={{
+          flex: 1, minHeight: 0, display: 'grid',
+          gridTemplateColumns: 'repeat(5, 1fr)', gridTemplateRows: 'repeat(2, 1fr)',
+          gap: 2, padding: 2,
+        }}>
+          {FIXED_HANDS.map((hand, handArrayIdx) => (
+            <MobileBettingSlot
+              key={hand.id}
+              hand={hand}
+              oddsLabel={formatPayout(payout(hand.id))}
+              locked={locked(hand.id)}
+              bet={game.bets.card[hand.id] || 0}
+              rankLabel={game.handEvals[hand.id] || null}
+              isLeading={game.leadingHandIds.includes(hand.id)}
+              isWinner={game.winnerHandIds.includes(hand.id)}
+              isResolved={isResolved}
+              bonusPulse={bonusPulse}
+              bonusIndex={handArrayIdx}
+              onPlace={() => handlePlaceBet('card', hand.id)}
+              onRemove={() => handleRemoveBet('card', hand.id)}
+            />
+          ))}
+        </div>
+
+        {/* Action bar -- chips, ante, deal, bank, gear */}
+        <div style={{
+          flexShrink: 0, display: 'flex', alignItems: 'center',
+          gap: 3, padding: '3px 5px',
+          borderTop: '1px solid rgba(202,138,4,0.3)',
+          background: 'rgba(0,0,0,0.65)',
+        }}>
+          {/* Chips */}
+          <div style={{ display: 'flex', gap: 1, alignItems: 'center', flexShrink: 0 }}>
+            {CHIPS.map(chip => {
+              const active = game.selectedChip === chip.value;
+              return (
+                <button
+                  key={chip.value}
+                  onClick={() => {
+                    if (phase === 'ante') { sounds.playChipPlace(); actions.addToAnte(chip.value); }
+                    else { actions.setSelectedChip(chip.value); }
+                  }}
+                  style={{
+                    lineHeight: 0, border: 'none', background: 'transparent', padding: 0,
+                    cursor: 'pointer', flexShrink: 0,
+                    transform: active ? 'scale(1.15) translateY(-1px)' : 'scale(1)',
+                    filter: active ? 'drop-shadow(0 0 3px rgba(251,191,36,0.9))' : 'none',
+                    opacity: active ? 1 : 0.55, transition: 'all 0.15s',
+                  }}
+                >
+                  <Chip amount={chip.value} scale={0.34} />
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Ante circle -- 28px */}
+          <div
+            onClick={phase === 'ante' && game.ante > 0 ? actions.clearAnte : undefined}
+            style={{
+              cursor: phase === 'ante' && game.ante > 0 ? 'pointer' : 'default',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0, width: 28, height: 28, borderRadius: '50%',
+              border: game.ante > 0 ? '2px solid #FFD700' : '2px solid #C5A059',
+              background: game.ante > 0
+                ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
+                : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%)',
+              boxShadow: game.ante > 0 ? '0 0 6px 2px rgba(255,215,0,0.7)' : 'none',
+              animation: game.ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
+            }}
+          >
+            {game.ante > 0 ? (
+              <Chip amount={game.ante} scale={0.24} />
+            ) : (
+              <span style={{ color: '#000', fontSize: 6, fontWeight: 900, letterSpacing: '0.3px' }}>ANTE</span>
+            )}
+          </div>
+
+          {/* Bet sum */}
+          <div style={{
+            flexShrink: 0, padding: '1px 4px', borderRadius: 4,
+            border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(0,0,0,0.6)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 42,
+          }}>
+            <span style={{ fontSize: '0.35rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.04em' }}>BET</span>
+            <span style={{ fontSize: '0.55rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(game.totalWagered)}</span>
+          </div>
+
+          {/* Clear bets */}
+          {(phase === 'postflop' || phase === 'postturn') && game.totalWagered > 0 && (
+            <button onClick={actions.clearBets}
+              style={{ flexShrink: 0, padding: '2px 4px', borderRadius: 3,
+                border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(127,29,29,0.4)',
+                color: '#fca5a5', fontSize: 7, fontWeight: 700, cursor: 'pointer' }}>CLR</button>
+          )}
+
+          {/* New hand */}
+          {phase === 'resolved' && (
+            <button onClick={actions.newHand}
+              style={{ flexShrink: 0, padding: '2px 5px', borderRadius: 3,
+                border: '1px solid rgba(34,197,94,0.5)', background: 'rgba(20,83,45,0.4)',
+                color: '#86efac', fontSize: 7, fontWeight: 700, cursor: 'pointer' }}>NEW</button>
+          )}
+
+          <div style={{ flex: 1 }} />
+
+          {/* Deal button */}
+          <button
+            onClick={handleDeal}
+            disabled={!canDeal}
+            style={{
+              flexShrink: 0, padding: '3px 10px', borderRadius: 5,
+              border: '1.5px solid #4ade80',
+              background: canDeal ? '#15803d' : '#0a3a1a',
+              color: '#fff', fontWeight: 900, fontSize: '0.55rem',
+              cursor: canDeal ? 'pointer' : 'default',
+              letterSpacing: '0.04em', opacity: canDeal ? 1 : 0.4,
+            }}
+          >
+            {dealLabel}
+          </button>
+
+          {/* Bank */}
+          <div style={{
+            flexShrink: 0, padding: '1px 4px', borderRadius: 4,
+            border: '1.5px solid #eab308', background: '#000',
+          }}>
+            <span style={{ fontSize: '0.55rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 4px rgba(251,191,36,0.7)' }}>
+              {formatMoney(game.bank)}
+            </span>
+          </div>
+
+          {/* Gear */}
+          <button onClick={() => setShowSettings(true)}
+            title="Settings"
+            style={{
+              flexShrink: 0, width: 22, height: 22, borderRadius: 5,
+              border: '1px solid rgba(234,179,8,0.5)', background: 'rgba(0,0,0,0.5)',
+              color: '#fde047', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <Settings size={12} />
+          </button>
+        </div>
       </div>
 
-      {/* ── Side boards — Rank (left) + Color/River (right), giving up height equally ── */}
-      <div style={{
-        flex: '1 1 0',
-        minHeight: 0,
-        display: 'flex',
-        gap: 4,
-        padding: '4px 4px 0 4px',
-      }}>
+      {/* RIGHT COLUMN -- 40% */}
+      <div style={{ width: '40%', flexShrink: 0, display: 'flex', flexDirection: 'column' }}>
         <RightSidebar
           phase={phase}
           flopOdds={game.flopOdds}
@@ -429,53 +496,7 @@ export default function MobileGameLayout({
         />
       </div>
 
-      {/* ── Footer ── */}
-      <MobileFooter
-        bank={game.bank}
-        ante={game.ante}
-        totalWagered={game.totalWagered}
-        selectedChip={game.selectedChip}
-        phase={phase}
-        canDeal={canDeal}
-        dealLabel={dealLabel}
-        subLabel={subLabel}
-        anteStructureId={game.anteStructure}
-        onChipSelect={(v) => {
-          if (phase === 'ante') {
-            sounds.playChipPlace();
-            actions.addToAnte(v);
-          } else {
-            actions.setSelectedChip(v);
-          }
-        }}
-        onClearAnte={actions.clearAnte}
-        onClearBets={actions.clearBets}
-        onDeal={handleDeal}
-        onNewHand={actions.newHand}
-        onSettings={() => setShowSettings(true)}
-      />
-
-      {/* ── History full-screen modal ── */}
-      {showHistory && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 600, background: 'rgba(0,0,0,0.96)', display: 'flex', flexDirection: 'column' }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            padding: '8px 12px', borderBottom: '1px solid rgba(234,179,8,0.3)',
-            background: 'rgba(20,8,0,0.98)', flexShrink: 0,
-          }}>
-            <span style={{ color: '#fde047', fontWeight: 800, fontSize: 12, letterSpacing: '0.08em', textTransform: 'uppercase' }}>📜 Hand History</span>
-            <button onClick={() => setShowHistory(false)}
-              style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid rgba(234,179,8,0.5)',
-                background: 'rgba(234,179,8,0.15)', color: '#fde047', fontSize: 14, fontWeight: 900,
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
-          </div>
-          <div style={{ flex: 1, minHeight: 0, padding: '8px', overflowY: 'auto' }}>
-            <PreviousHands history={game.history} />
-          </div>
-        </div>
-      )}
-
-      {/* ── RNG Bonus sequence ── */}
+      {/* Overlays & Modals */}
       {bonusActive && game.bonus && (
         <BonusSequence
           cardIdx={game.bonus.cardIdx}

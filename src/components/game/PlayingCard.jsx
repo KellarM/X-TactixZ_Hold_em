@@ -5,7 +5,7 @@ import { SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
 const CARD_BACK_LOGO = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png';
 
 // Real card image URLs — all fixed hand cards
-const CARD_IMAGES = {
+export const CARD_IMAGES = {
   'A_diamonds':  'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/906a8f36c_image.png',
   '10_hearts':   'https://media.base44.com/images/public/6a24d1b67868eaf6bfafdb67/05d9e3ffe_image.png',
   // ── Spades suit — Michael's real card images (July 28, 2026) ──

@@ -220,7 +220,7 @@ export default function GameTable() {
 
   // ── Mobile portrait layout swap ────────────────────────────────────────
   // Desktop/tablet use the existing layout. Mobile portrait swaps to
-  // MobileGameLayout which arranges components vertically for phone screens.
+  // MobileGameLayout uses a 60/40 left-right split: card board left, side boards right.
   // All game state, effects, and callbacks are computed above; both layouts
   // receive the same data.
   if (viewportTier === 'mobile') {
