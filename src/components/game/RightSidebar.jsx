@@ -261,7 +261,7 @@ export default function RightSidebar({
   const bonusRankStyle = (rankIdx) => ({});
   const bonusColorRiverStyle = (crIdx) => ({});
 
-  const RANK_SHIELD_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/1a89182f8_shield_only.png';
+  const RANK_SHIELD_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/fff65b884_shield_gold_transparent.png';
   const bonusRankMarker = (rankIdx) => {
     if (!isRankActive(rankIdx)) return null;
     const fading = isRankLanded(rankIdx) && bonusPulse?.markerFading;
