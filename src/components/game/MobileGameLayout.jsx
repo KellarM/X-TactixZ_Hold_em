@@ -149,8 +149,16 @@ export default function MobileGameLayout({
       {/* Reveal prompt */}
       {awaitingReveal && <RevealPrompt onReveal={handleRevealClick} />}
 
-      {/* ── Card Board — real desktop component, scaled to fit its box ── */}
-      <div style={{ flex: '1 1 0', minHeight: 0, padding: '2px 4px 0 4px' }}>
+      {/* ── Card Board — real desktop component, scaled to fit its box ──
+          Fixed aspect-ratio (matching its natural W:H) instead of flex:1 —
+          so its height is exactly what the scaled content needs, with no
+          leftover space for ScaleToFit to center within (that was the
+          "wasted empty space" bug). ── */}
+      <div style={{
+        flexShrink: 0, width: '100%',
+        aspectRatio: `${BOARD_NATURAL_W} / ${BOARD_NATURAL_H}`,
+        padding: '2px 4px 0 4px',
+      }}>
         <ScaleToFit naturalWidth={BOARD_NATURAL_W} naturalHeight={BOARD_NATURAL_H}>
           <CardBoard
             odds={game.flopOdds}
@@ -168,8 +176,10 @@ export default function MobileGameLayout({
         </ScaleToFit>
       </div>
 
-      {/* ── Right Sidebar — Rank + Color + River stacked ── */}
-      <div style={{ flex: '0 0 auto', maxHeight: '38%', padding: '0 4px', overflow: 'hidden' }}>
+      {/* ── Right Sidebar — Rank + Color + River stacked ──
+          Now the flexible element: CardBoard above is a fixed aspect-ratio
+          box, so RightSidebar naturally absorbs whatever height is left. ── */}
+      <div style={{ flex: '1 1 0', minHeight: 0, padding: '4px 4px 0 4px', overflow: 'hidden' }}>
         <RightSidebar
           phase={phase}
           flopOdds={game.flopOdds}
