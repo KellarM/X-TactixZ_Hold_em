@@ -403,8 +403,14 @@ export function BettingSlot({
         </div>
       }
 
-      {/* Bottom label — rank evaluation (or "Dead"), shown even when locked */}
-      {bottomLabel &&
+      {/* Bottom label zone — ALWAYS rendered (even with no text) so the box's
+          geometry never changes based on ante vs. dealt state. This div's
+          minHeight: 48 is load-bearing: the cards zone above is flex: 1 and
+          centers within whatever space is left, so if this div disappeared
+          entirely (as it did briefly), the cards zone would expand into the
+          freed 48px and its centered content would visibly drop — which is
+          exactly what happened. Keeping the div (blank text, same height)
+          keeps the lock icon centered on the cards at all times. */}
       <div style={{
         fontSize: 21,
         fontWeight: 700,
@@ -421,7 +427,6 @@ export function BettingSlot({
       }}>
           {bottomLabel}
         </div>
-      }
 
       {/* Chip — centered on top of the cards */}
       {bet > 0 && !locked &&
