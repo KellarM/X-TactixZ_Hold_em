@@ -358,7 +358,7 @@ export default function MobileGameLayout({
           onClick={handleDeal}
           disabled={!canDeal}
           style={{
-            flexShrink: 0, padding: '4.1px 13.75px', borderRadius: 6,
+            flexShrink: 0, padding: '13.75px 13.75px', borderRadius: 6,
             border: '2.0625px solid #4ade80',
             background: canDeal ? '#15803d' : '#0a3a1a',
             color: '#fff', fontWeight: 900, fontSize: '0.76rem',
