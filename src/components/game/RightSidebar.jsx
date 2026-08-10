@@ -430,7 +430,7 @@ export default function RightSidebar({
                       // text on the left instead of sitting on top of it.
                       top: '50%', left: '64%',
                       transform: 'translate(-50%, -50%)',
-                      width: 20, height: 'auto',
+                      width: 34, height: 'auto',
                       opacity: 0.95,
                       filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))',
                       pointerEvents: 'none',
@@ -514,7 +514,7 @@ export default function RightSidebar({
                   <img
                     src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
                     alt="Locked"
-                    style={{ width: 20, height: 'auto', opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
+                    style={{ width: 34, height: 'auto', opacity: 0.95, filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))' }}
                   />
                 ) : (
                   <span style={{ ...colorTextStyle, fontSize: 11, fontWeight: 800, lineHeight: 1.4 }}>
@@ -591,7 +591,7 @@ export default function RightSidebar({
                       position: 'absolute',
                       top: '68%', left: '50%',
                       transform: 'translate(-50%, -50%)',
-                      width: 22, height: 'auto',
+                      width: 34, height: 'auto',
                       opacity: 0.95,
                       filter: 'brightness(1.15) saturate(1.35) drop-shadow(0 2px 5px rgba(0,0,0,0.7))',
                       pointerEvents: 'none',
