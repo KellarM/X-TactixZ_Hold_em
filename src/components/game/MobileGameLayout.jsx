@@ -323,26 +323,40 @@ export default function MobileGameLayout({
         </div>
 
         {/* Ante circle */}
-        <div
-          onClick={phase === 'ante' && game.ante > 0 ? actions.clearAnte : undefined}
-          style={{
-            cursor: phase === 'ante' && game.ante > 0 ? 'pointer' : 'default',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, width: 38.5, height: 38.5, borderRadius: '50%',
-            border: game.ante > 0 ? '2.75px solid #FFD700' : '2.75px solid #C5A059',
-            background: game.ante > 0
-              ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
-              : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%)',
-            boxShadow: game.ante > 0 ? '0 0 6px 2px rgba(255,215,0,0.7)' : 'none',
-            animation: game.ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
-          }}
-        >
-          {game.ante > 0 ? (
-            <Chip amount={game.ante} scale={0.33} />
-          ) : (
-            <span style={{ color: '#000', fontSize: 7.5, fontWeight: 900, letterSpacing: '0.3px' }}>ANTE</span>
-          )}
-        </div>
+        {(() => {
+          // Single source of truth for the circle's diameter — the chip's
+          // scale is DERIVED from this, not guessed, so the chip always
+          // fills the button exactly (54px is Chip's own base diameter
+          // at scale=1, defined in Chip.jsx).
+          const ANTE_CIRCLE_D = 38.5;
+          const anteChipScale = ANTE_CIRCLE_D / 54;
+          return (
+            <div
+              onClick={phase === 'ante' && game.ante > 0 ? actions.clearAnte : undefined}
+              style={{
+                cursor: phase === 'ante' && game.ante > 0 ? 'pointer' : 'default',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, width: ANTE_CIRCLE_D, height: ANTE_CIRCLE_D, borderRadius: '50%',
+                border: game.ante > 0 ? '2.75px solid #FFD700' : '2.75px solid #C5A059',
+                background: game.ante > 0
+                  ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
+                  : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%)',
+                boxShadow: game.ante > 0 ? '0 0 6px 2px rgba(255,215,0,0.7)' : 'none',
+                animation: game.ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
+              }}
+            >
+              {game.ante > 0 ? (
+                <Chip
+                  amount={game.ante}
+                  scale={anteChipScale}
+                  style={{ filter: 'drop-shadow(0 0 5px rgba(255,215,0,0.85)) drop-shadow(0 0 2px rgba(255,215,0,0.9))' }}
+                />
+              ) : (
+                <span style={{ color: '#000', fontSize: 7.5, fontWeight: 900, letterSpacing: '0.3px' }}>ANTE</span>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Bet column — Clear button on top (when active), Bet display below */}
         <div style={{

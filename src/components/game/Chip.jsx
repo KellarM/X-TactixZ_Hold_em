@@ -141,8 +141,10 @@ export default function Chip({ amount, scale = 1, style, className = '' }) {
         );
       })}
 
-      {/* Center circle */}
-      {!def.isBlack500 && (
+      {/* Center circle — always rendered now (was skipped for isBlack500 chips,
+          which left the $5 chip's label sitting directly on a near-black face
+          with no light backdrop — that's what made it read as smaller/dimmer). */}
+      {(
         <span aria-hidden style={{
           position: 'absolute',
           top: (d - centerD) / 2, left: (d - centerD) / 2,
@@ -174,7 +176,7 @@ export default function Chip({ amount, scale = 1, style, className = '' }) {
         <span style={{
           position: 'absolute', top: 0, left: 0, width: d, height: d,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: def.isBlack500 ? '#DAA520' : def.isLava ? '#FFFFFF' : '#000000',
+          color: '#000000', // unified — every chip's label is black, no exceptions
           fontSize, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.04em',
           pointerEvents: 'none', userSelect: 'none', zIndex: 2,
         }}>
