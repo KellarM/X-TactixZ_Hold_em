@@ -125,36 +125,52 @@ export default function BottomFooter({
       </div>
 
       {/* ── 3. ANTE — bold gold circular display ── */}
-      <div
-        onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined}
-        title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}
-        style={{
-          cursor: phase === 'ante' && ante > 0 ? 'pointer' : 'default',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-          width: 56, height: 56, borderRadius: '50%',
-          border: ante > 0 ? '3px solid #FFD700' : '3px solid #C5A059',
-          background: ante > 0
-            ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
-            : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%, #e8c22a 100%)',
-          boxShadow: ante > 0
-            ? '0 0 12px 4px rgba(255,215,0,0.7), inset 0 0 10px rgba(255,215,0,0.2), 0 2px 6px rgba(0,0,0,0.6)'
-            : 'inset 0 1px 2px rgba(255,255,200,0.6), inset 0 -1px 2px rgba(100,60,0,0.5), 0 2px 4px rgba(0,0,0,0.5)',
-          animation: ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
-          transition: 'all 0.2s ease',
-        }}
-      >
-        {ante > 0 ? (
-          <Chip amount={ante} scale={0.58} />
-        ) : (
-          <span style={{
-            color: '#000', fontSize: 11, fontWeight: 900,
-            letterSpacing: '1px', textAlign: 'center', lineHeight: 1,
-          }}>
-            ANTE
-          </span>
-        )}
-      </div>
+      {(() => {
+        // Single source of truth for the circle's diameter — the chip's
+        // scale is DERIVED from this, not guessed, so the chip always
+        // fills the button exactly (54px is Chip's own base diameter at
+        // scale=1, defined in Chip.jsx). Previously scale=0.58 was a
+        // hardcoded guess, rendering the chip at ~31px — too small for
+        // its own label ("$3.90") to fit without overlapping/garbling.
+        const ANTE_CIRCLE_D = 56;
+        const anteChipScale = ANTE_CIRCLE_D / 54;
+        return (
+          <div
+            onClick={phase === 'ante' && ante > 0 ? onClearAnte : undefined}
+            title={phase === 'ante' && ante > 0 ? 'Click to clear ante' : ''}
+            style={{
+              cursor: phase === 'ante' && ante > 0 ? 'pointer' : 'default',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+              width: ANTE_CIRCLE_D, height: ANTE_CIRCLE_D, borderRadius: '50%',
+              border: ante > 0 ? '3px solid #FFD700' : '3px solid #C5A059',
+              background: ante > 0
+                ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
+                : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%, #e8c22a 100%)',
+              boxShadow: ante > 0
+                ? '0 0 12px 4px rgba(255,215,0,0.7), inset 0 0 10px rgba(255,215,0,0.2), 0 2px 6px rgba(0,0,0,0.6)'
+                : 'inset 0 1px 2px rgba(255,255,200,0.6), inset 0 -1px 2px rgba(100,60,0,0.5), 0 2px 4px rgba(0,0,0,0.5)',
+              animation: ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {ante > 0 ? (
+              <Chip
+                amount={ante}
+                scale={anteChipScale}
+                style={{ filter: 'drop-shadow(0 0 6px rgba(255,215,0,0.85)) drop-shadow(0 0 3px rgba(255,215,0,0.9))' }}
+              />
+            ) : (
+              <span style={{
+                color: '#000', fontSize: 11, fontWeight: 900,
+                letterSpacing: '1px', textAlign: 'center', lineHeight: 1,
+              }}>
+                ANTE
+              </span>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ── 3a. ANTE STRUCTURE INFO BUTTON + BUBBLE ──
              Bubble is rendered via a portal to document.body with
