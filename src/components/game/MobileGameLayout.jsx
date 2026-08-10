@@ -140,7 +140,7 @@ export default function MobileGameLayout({
       <div style={{
         flexShrink: 0, height: 16, display: 'flex', alignItems: 'center',
         padding: '0 6px', overflow: 'hidden', whiteSpace: 'nowrap',
-        background: 'rgba(0,0,0,0.4)',
+        background: 'var(--theme-bg, #051532)',
         borderBottom: '1px solid rgba(202,138,4,0.3)',
       }}>
         <span style={{
@@ -163,7 +163,7 @@ export default function MobileGameLayout({
       <div style={{
         flexShrink: 0, height: 85, display: 'flex', alignItems: 'center',
         gap: 4, padding: '0 4px',
-        background: 'rgba(0,0,0,0.5)',
+        background: 'var(--theme-bg, #051532)',
         borderBottom: '1px solid rgba(202,138,4,0.4)',
       }}>
         <img src={LOGO_BADGE_URL} alt=""
