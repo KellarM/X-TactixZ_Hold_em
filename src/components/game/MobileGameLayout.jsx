@@ -258,7 +258,7 @@ export default function MobileGameLayout({
         gridTemplateColumns: 'auto auto auto 1fr auto 1fr auto auto',
         gridTemplateRows: 'auto auto',
         columnGap: 3,
-        rowGap: 2,
+        rowGap: 0,
         padding: '3px 5px',
         borderTop: '1px solid rgba(202,138,4,0.3)',
         background: 'rgba(0,0,0,0.65)',
@@ -339,7 +339,7 @@ export default function MobileGameLayout({
         </div>
 
         {/* CLR button — Row 1, column 3 (Bet sits below it in Row 2) */}
-        <div style={{ gridRow: 1, gridColumn: 3, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 16 }}>
+        <div style={{ gridRow: 1, gridColumn: 3, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', height: 16, paddingBottom: 2 }}>
           {(phase === 'postflop' || phase === 'postturn') && game.totalWagered > 0 && (
             <button onClick={onClearBets}
               style={{ padding: '2px 6px', borderRadius: 3,
@@ -376,7 +376,7 @@ export default function MobileGameLayout({
         </button>
 
         {/* FOLD button — Row 1, column 7 (Bank sits below it in Row 2) */}
-        <div style={{ gridRow: 1, gridColumn: 7, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 16 }}>
+        <div style={{ gridRow: 1, gridColumn: 7, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', height: 16, paddingBottom: 2 }}>
           {(phase === 'postflop' || phase === 'postturn') && (
             <button onClick={onFold}
               style={{ padding: '2px 6px', borderRadius: 3,
