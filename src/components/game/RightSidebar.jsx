@@ -585,19 +585,27 @@ export default function RightSidebar({
               >
                 {bonusColorRiverMarker(6 + riverIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png')}
                 {bonusBadge(6 + riverIdx, 'colorRiver')}
-                <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
-                <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
+                {/* Label + range combined onto ONE line — on a real mobile
+                    device this button is only 2 text-rows tall. Two separate
+                    lines (label, then range) left no room for the odds row
+                    below, so real phones were clipping/overflowing even
+                    though it looked fine in the Base44 in-browser preview.
+                    Font size dropped to fit "LOW 2–7" / "HIGH 8–A" on one line. */}
+                <span style={{ color: '#000', fontWeight: 900, fontSize: 12.5, lineHeight: 1.15, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+                  {b.label} {b.range}
+                </span>
                 {locked && (
                   <img
                     src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
                     alt="Locked"
                     style={{
-                      // Overlaid directly on top of the range number instead of
-                      // stacking below it — the lock disappears once the board
-                      // opens, so covering the number here costs nothing and
-                      // lets the cell's content height stay just label+range.
+                      // Overlaid directly on top of the combined label+range
+                      // line instead of stacking below it — the lock
+                      // disappears once the board opens, so covering the
+                      // text here costs nothing and lets the cell's content
+                      // height stay just that one line.
                       position: 'absolute',
-                      top: '68%', left: '50%',
+                      top: '50%', left: '50%',
                       transform: 'translate(-50%, -50%)',
                       width: riverLockSize, height: 'auto',
                       opacity: 0.95,
