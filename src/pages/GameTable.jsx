@@ -258,6 +258,9 @@ export default function GameTable() {
         handleBonusPulse={handleBonusPulse}
         handleBonusLand={handleBonusLand}
         handleBonusComplete={handleBonusComplete}
+        onFold={actions.fold}
+        onClearBets={actions.clearBets}
+        onNewHand={actions.newHand}
       />
     );
   }

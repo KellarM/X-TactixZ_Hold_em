@@ -114,6 +114,7 @@ export default function MobileGameLayout({
   dealLabel, subLabel, canDeal,
   handlePlaceBet, handleRemoveBet, handleDeal, handleRevealClick,
   handleBonusPulse, handleBonusLand, handleBonusComplete,
+  onFold, onClearBets, onNewHand,
 }) {
   // Natural size of 5 community cards (70x100 each, fixed) + gaps
   const COMM_NATURAL_W = 70 * 5 + 4 * 4; // 366
@@ -327,29 +328,31 @@ export default function MobileGameLayout({
           )}
         </div>
 
-        {/* Bet sum */}
+        {/* Bet column — Clear button on top (when active), Bet display below */}
         <div style={{
-          flexShrink: 0, padding: '1.25px 5px', borderRadius: 5,
-          border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(0,0,0,0.6)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 52.25,
+          flexShrink: 0, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', gap: 2, minWidth: 52.25,
         }}>
-          <span style={{ fontSize: '0.48rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.04em' }}>BET</span>
-          <span style={{ fontSize: '0.69rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(game.totalWagered)}</span>
+          {/* Top slot: Clear button — fixed height reserved even when empty */}
+          <div style={{ height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {(phase === 'postflop' || phase === 'postturn') && game.totalWagered > 0 && (
+              <button onClick={onClearBets}
+                style={{ padding: '2px 6px', borderRadius: 3,
+                  border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(127,29,29,0.4)',
+                  color: '#fca5a5', fontSize: 7, fontWeight: 700, cursor: 'pointer',
+                  whiteSpace: 'nowrap' }}>CLR</button>
+            )}
+          </div>
+          {/* Bottom: Bet display — always visible */}
+          <div style={{
+            padding: '1.25px 5px', borderRadius: 5,
+            border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(0,0,0,0.6)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+          }}>
+            <span style={{ fontSize: '0.48rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.04em' }}>BET</span>
+            <span style={{ fontSize: '0.69rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(game.totalWagered)}</span>
+          </div>
         </div>
-
-        {/* Clear / New */}
-        {(phase === 'postflop' || phase === 'postturn') && game.totalWagered > 0 && (
-          <button onClick={actions.clearBets}
-            style={{ flexShrink: 0, padding: '2px 4px', borderRadius: 3,
-              border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(127,29,29,0.4)',
-              color: '#fca5a5', fontSize: 7, fontWeight: 700, cursor: 'pointer' }}>CLR</button>
-        )}
-        {phase === 'resolved' && (
-          <button onClick={actions.newHand}
-            style={{ flexShrink: 0, padding: '2px 5px', borderRadius: 3,
-              border: '1px solid rgba(34,197,94,0.5)', background: 'rgba(20,83,45,0.4)',
-              color: '#86efac', fontSize: 7, fontWeight: 700, cursor: 'pointer' }}>NEW</button>
-        )}
 
         <div style={{ flex: 1 }} />
 
@@ -381,14 +384,30 @@ export default function MobileGameLayout({
 
         <div style={{ flex: 1 }} />
 
-        {/* Bank */}
+        {/* Bank column — Fold button on top (when active), Bank display below */}
         <div style={{
-          flexShrink: 0, padding: '1.375px 5.5px', borderRadius: 5,
-          border: '2.0625px solid #eab308', background: '#000',
+          flexShrink: 0, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', gap: 2,
         }}>
-          <span style={{ fontSize: '0.69rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 4px rgba(251,191,36,0.7)' }}>
-            {formatMoney(game.bank)}
-          </span>
+          {/* Top slot: Fold button — fixed height reserved even when empty */}
+          <div style={{ height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {(phase === 'postflop' || phase === 'postturn') && (
+              <button onClick={onFold}
+                style={{ padding: '2px 6px', borderRadius: 3,
+                  border: '1px solid #C5A059', background: 'rgba(127,29,29,0.4)',
+                  color: '#FF6B6B', fontSize: 7, fontWeight: 700, cursor: 'pointer',
+                  whiteSpace: 'nowrap' }}>FOLD</button>
+            )}
+          </div>
+          {/* Bottom: Bank display — always visible */}
+          <div style={{
+            padding: '1.375px 5.5px', borderRadius: 5,
+            border: '2.0625px solid #eab308', background: '#000',
+          }}>
+            <span style={{ fontSize: '0.69rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 4px rgba(251,191,36,0.7)' }}>
+              {formatMoney(game.bank)}
+            </span>
+          </div>
         </div>
 
         {/* Gear */}
