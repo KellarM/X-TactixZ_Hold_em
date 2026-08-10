@@ -247,26 +247,16 @@ export default function MobileGameLayout({
         />
       </div>
 
-      {/* ── Footer (Player Area) — 2-row grid ──
-          Row 1: Chips | Ante | CLR | spacer | Deal | spacer | FOLD | Gear
-          Row 2:  —    |  —  | Bet |  —    |  —   |  —    | Bank |  —
-          Bet sits directly under CLR, Bank sits directly under FOLD.
-          Grid columns: auto auto auto 1fr auto 1fr auto auto */}
+      {/* ── Footer (Player Area) — 2 rows of 3 chips + ante ── */}
       <div style={{
-        flexShrink: 0,
-        display: 'grid',
-        gridTemplateColumns: 'auto auto auto 1fr auto 1fr auto auto',
-        gridTemplateRows: 'auto auto',
-        columnGap: 3,
-        rowGap: 0,
-        padding: '3px 5px',
+        flexShrink: 0, display: 'flex', alignItems: 'center',
+        gap: 3, padding: '3px 5px', height: 80,
         borderTop: '1px solid rgba(202,138,4,0.3)',
         background: 'rgba(0,0,0,0.65)',
       }}>
-        {/* ═══ ROW 1 ═══ */}
-
         {/* Chips — 2 rows of 3: top = .50/$1/$5, bottom = .01/.10/.25 */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center', gridRow: 1, gridColumn: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center', flexShrink: 0 }}>
+          {/* Top row: .50, 1, 5 */}
           <div style={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             {MOBILE_CHIPS.slice(3).map(chip => {
               const active = game.selectedChip === chip.value;
@@ -290,6 +280,7 @@ export default function MobileGameLayout({
               );
             })}
           </div>
+          {/* Bottom row: .01, .10, .25 */}
           <div style={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             {MOBILE_CHIPS.slice(0, 3).map(chip => {
               const active = game.selectedChip === chip.value;
@@ -328,7 +319,6 @@ export default function MobileGameLayout({
               : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%)',
             boxShadow: game.ante > 0 ? '0 0 6px 2px rgba(255,215,0,0.7)' : 'none',
             animation: game.ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
-            gridRow: 1, gridColumn: 2, alignSelf: 'center',
           }}
         >
           {game.ante > 0 ? (
@@ -338,22 +328,40 @@ export default function MobileGameLayout({
           )}
         </div>
 
-        {/* CLR button — Row 1, column 3 (Bet sits below it in Row 2) */}
-        <div style={{ gridRow: 1, gridColumn: 3, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', height: 16, paddingBottom: 2 }}>
-          {(phase === 'postflop' || phase === 'postturn') && game.totalWagered > 0 && (
-            <button onClick={onClearBets}
-              style={{ padding: '2px 6px', borderRadius: 3,
-                border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(127,29,29,0.4)',
-                color: '#fca5a5', fontSize: 7, fontWeight: 700, cursor: 'pointer',
-                whiteSpace: 'nowrap' }}>CLR</button>
-          )}
+        {/* Bet column — Clear button on top (when active), Bet display below */}
+        <div style={{
+          flexShrink: 0, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', gap: 2, minWidth: 52.25,
+        }}>
+          {/* Top slot: Clear button — fixed height reserved even when empty */}
+          <div style={{ height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {(phase === 'postflop' || phase === 'postturn') && game.totalWagered > 0 && (
+              <button onClick={onClearBets}
+                style={{ padding: '2px 6px', borderRadius: 3,
+                  border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(127,29,29,0.4)',
+                  color: '#fca5a5', fontSize: 7, fontWeight: 700, cursor: 'pointer',
+                  whiteSpace: 'nowrap' }}>CLR</button>
+            )}
+          </div>
+          {/* Bottom: Bet display — always visible */}
+          <div style={{
+            padding: '1.25px 5px', borderRadius: 5,
+            border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(0,0,0,0.6)',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+          }}>
+            <span style={{ fontSize: '0.48rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.04em' }}>BET</span>
+            <span style={{ fontSize: '0.69rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(game.totalWagered)}</span>
+          </div>
         </div>
 
-        {/* Deal button — Row 1, column 5 (spans both spacers) */}
+        <div style={{ flex: 1 }} />
+
+        {/* Deal button */}
         <button
           onClick={handleDeal}
           disabled={!canDeal}
           style={{
+            flexShrink: 0,
             width: 70, height: 46,
             padding: 0,
             borderRadius: 6,
@@ -369,59 +377,50 @@ export default function MobileGameLayout({
             justifyContent: 'center',
             lineHeight: 1.1,
             textAlign: 'center',
-            gridRow: 1, gridColumn: 5, alignSelf: 'center',
           }}
         >
           <span style={{ width: '100%', whiteSpace: 'normal', textAlign: 'center' }}>{dealLabel}</span>
         </button>
 
-        {/* FOLD button — Row 1, column 7 (Bank sits below it in Row 2) */}
-        <div style={{ gridRow: 1, gridColumn: 7, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', height: 16, paddingBottom: 2 }}>
-          {(phase === 'postflop' || phase === 'postturn') && (
-            <button onClick={onFold}
-              style={{ padding: '2px 6px', borderRadius: 3,
-                border: '1px solid #C5A059', background: 'rgba(127,29,29,0.4)',
-                color: '#FF6B6B', fontSize: 7, fontWeight: 700, cursor: 'pointer',
-                whiteSpace: 'nowrap' }}>FOLD</button>
-          )}
+        <div style={{ flex: 1 }} />
+
+        {/* Bank column — Fold button on top (when active), Bank display below */}
+        <div style={{
+          flexShrink: 0, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', gap: 2,
+        }}>
+          {/* Top slot: Fold button — fixed height reserved even when empty */}
+          <div style={{ height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {(phase === 'postflop' || phase === 'postturn') && (
+              <button onClick={onFold}
+                style={{ padding: '2px 6px', borderRadius: 3,
+                  border: '1px solid #C5A059', background: 'rgba(127,29,29,0.4)',
+                  color: '#FF6B6B', fontSize: 7, fontWeight: 700, cursor: 'pointer',
+                  whiteSpace: 'nowrap' }}>FOLD</button>
+            )}
+          </div>
+          {/* Bottom: Bank display — always visible */}
+          <div style={{
+            padding: '1.375px 5.5px', borderRadius: 5,
+            border: '2.0625px solid #eab308', background: '#000',
+          }}>
+            <span style={{ fontSize: '0.69rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 4px rgba(251,191,36,0.7)' }}>
+              {formatMoney(game.bank)}
+            </span>
+          </div>
         </div>
 
         {/* Gear */}
         <button onClick={() => setShowSettings(true)}
           style={{
-            width: 30.25, height: 30.25, borderRadius: 6,
+            flexShrink: 0, width: 30.25, height: 30.25, borderRadius: 6,
             border: '1px solid rgba(234,179,8,0.5)', background: 'rgba(0,0,0,0.5)',
             color: '#fde047', display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
-            gridRow: 1, gridColumn: 8, alignSelf: 'center',
           }}
         >
           <Settings size={16.5} />
         </button>
-
-        {/* ═══ ROW 2 — Bet & Bank displays only ═══ */}
-
-        {/* Bet display — Row 2, column 3 (directly under CLR) */}
-        <div style={{
-          gridRow: 2, gridColumn: 3, justifySelf: 'center',
-          padding: '1.25px 5px', borderRadius: 5,
-          border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(0,0,0,0.6)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center',
-        }}>
-          <span style={{ fontSize: '0.48rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.04em' }}>BET</span>
-          <span style={{ fontSize: '0.69rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(game.totalWagered)}</span>
-        </div>
-
-        {/* Bank display — Row 2, column 7 (directly under FOLD) */}
-        <div style={{
-          gridRow: 2, gridColumn: 7, justifySelf: 'center',
-          padding: '1.375px 5.5px', borderRadius: 5,
-          border: '2.0625px solid #eab308', background: '#000',
-        }}>
-          <span style={{ fontSize: '0.69rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 4px rgba(251,191,36,0.7)' }}>
-            {formatMoney(game.bank)}
-          </span>
-        </div>
       </div>
 
       {/* ── Overlays & Modals ── */}
