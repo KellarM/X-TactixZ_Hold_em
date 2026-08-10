@@ -249,10 +249,11 @@ export function BettingSlot({
     background = 'linear-gradient(135deg, #b8860b 0%, #d4a017 30%, #c9900e 60%, #8B6914 100%)';
   }
 
-  // ── Rank label colour ──────────────────────────────────────────────────────
+  // ── Rank label colour — matches the odds label's palette exactly (bold gold
+  // when active, dimmed gold-brown when locked, black when gold-highlighted). ──
   const rankColor = goldHighlighted ? '#000' :
-  locked ? '#5a5240' :
-  '#8a9ab0';
+  locked ? '#9a8f6e' :
+  '#FFD700';
 
   // Bottom label: blank during ante (nothing dealt yet), rank if available,
   // "Dead Hand" only after the flop has actually been dealt and the hand
