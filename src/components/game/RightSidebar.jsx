@@ -397,7 +397,14 @@ export default function RightSidebar({
       {/* ■■ HAND RANKING BOARD — flex: 5, chip CENTRED, winning rank PULSES ■■ */}
       <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 5, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
         <SectionHeader capValue={caps.rank}>{mobileLayout ? "HAND" : "HAND RANKING"}</SectionHeader>
-        <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
+        <div className="flex flex-col" style={{
+          flex: 1, minHeight: 0, gap: GAP,
+          // Mobile only: reversed visual order (1 Pair at top, 4 Of A Kind at
+          // bottom) via column-reverse. The underlying RANK_LABELS array and
+          // its bonus-index mapping are untouched — desktop and bonus routing
+          // are completely unaffected.
+          ...(mobileLayout ? { flexDirection: 'column-reverse' } : {}),
+        }}>
           {RANK_LABELS.map((label, rankIdx) => {
             const locked = rankLocked(label);
             const p = rankPayout(label);
@@ -585,27 +592,28 @@ export default function RightSidebar({
               >
                 {bonusColorRiverMarker(6 + riverIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png')}
                 {bonusBadge(6 + riverIdx, 'colorRiver')}
-                {/* Label + range combined onto ONE line — on a real mobile
-                    device this button is only 2 text-rows tall. Two separate
-                    lines (label, then range) left no room for the odds row
-                    below, so real phones were clipping/overflowing even
-                    though it looked fine in the Base44 in-browser preview.
-                    Font size dropped to fit "LOW 2–7" / "HIGH 8–A" on one line. */}
-                <span style={{ color: '#000', fontWeight: 900, fontSize: 12.5, lineHeight: 1.15, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
-                  {b.label} {b.range}
-                </span>
+                {/* Mobile: combined onto ONE line (device is only 2 text-rows tall).
+                    Desktop: original two-line layout (label, then range) — unchanged. */}
+                {mobileLayout ? (
+                  <span style={{ color: '#000', fontWeight: 900, fontSize: 12.5, lineHeight: 1.15, letterSpacing: '-0.01em', whiteSpace: 'nowrap' }}>
+                    {b.label} {b.range}
+                  </span>
+                ) : (
+                  <>
+                    <span style={{ color: '#000', fontWeight: 900, fontSize: 15, lineHeight: 1 }}>{b.label}</span>
+                    <span style={{ color: '#1a1a1a', fontWeight: 900, fontSize: 17, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{b.range}</span>
+                  </>
+                )}
                 {locked && (
                   <img
                     src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/06edfeada_gold_lock_cropped.png"
                     alt="Locked"
                     style={{
-                      // Overlaid directly on top of the combined label+range
-                      // line instead of stacking below it — the lock
-                      // disappears once the board opens, so covering the
-                      // text here costs nothing and lets the cell's content
-                      // height stay just that one line.
                       position: 'absolute',
-                      top: '50%', left: '50%',
+                      // Mobile: centered on the combined single line.
+                      // Desktop: centered on the range (second line) as before.
+                      top: mobileLayout ? '50%' : '68%',
+                      left: '50%',
                       transform: 'translate(-50%, -50%)',
                       width: riverLockSize, height: 'auto',
                       opacity: 0.95,
