@@ -369,6 +369,8 @@ export default function MobileGameLayout({
           {dealLabel}
         </button>
 
+        <div style={{ flex: 1 }} />
+
         {/* Bank */}
         <div style={{
           flexShrink: 0, padding: '1.375px 5.5px', borderRadius: 5,
