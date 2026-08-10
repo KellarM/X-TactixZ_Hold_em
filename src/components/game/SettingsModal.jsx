@@ -22,7 +22,8 @@ const PANEL = {
   width: 380,
   maxWidth: '95vw',
   padding: '24px 24px 20px',
-  minHeight: 560,
+  maxHeight: '90vh',
+  overflowY: 'auto',
   boxShadow: '0 8px 32px rgba(0,0,0,0.8)',
   display: 'flex',
   flexDirection: 'column',
@@ -45,16 +46,12 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
   const sounds = useGameSounds();
   const [crowdOn, setCrowdOn] = useState(true);
   const [crowdVolume, setCrowdVolume] = useState(40);
-  const [sfxOn, setSfxOn] = useState(true);
-  const [sfxVolume, setSfxVolumeState] = useState(100);
   const [tab, setTab] = useState('sound');
 
   useEffect(() => {
     if (isOpen) {
       setCrowdVolume(Math.round(sounds.getCrowdVolume() * 100));
       setCrowdOn(sounds.isCrowdEnabled());
-      setSfxOn(sounds.isSfxEnabled());
-      setSfxVolumeState(Math.round(sounds.getSfxVolume() * 100));
     }
   }, [isOpen]);
 
@@ -70,18 +67,6 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
     const v = Number(e.target.value);
     setCrowdVolume(v);
     sounds.setCrowdVolume(v / 100);
-  };
-
-  const handleSfxToggle = () => {
-    const next = !sfxOn;
-    setSfxOn(next);
-    sounds.setSfxEnabled(next);
-  };
-
-  const handleSfxVolume = (e) => {
-    const v = Number(e.target.value);
-    setSfxVolumeState(v);
-    sounds.setSfxVolume(v / 100);
   };
 
   const stats = playerStats || {};
@@ -194,38 +179,6 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
                   onChange={handleCrowdVolume}
                   disabled={!crowdOn}
                   style={{ width: '100%', height: 6, accentColor: GOLD, opacity: crowdOn ? 1 : 0.4, cursor: crowdOn ? 'pointer' : 'not-allowed' }}
-                />
-              </div>
-            </div>
-
-            {/* ── GAME SFX — independent channel ── */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {sfxOn ? <Volume2 size={20} color={GOLD} /> : <VolumeX size={20} color="#6a7a8a" />}
-                  <div>
-                    <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>Game Sounds</div>
-                    <div style={{ color: '#8a9ab0', fontSize: 11 }}>Chips, cards &amp; bonus round</div>
-                  </div>
-                </div>
-                <button
-                  onClick={handleSfxToggle}
-                  style={{ width: 46, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: sfxOn ? '#22c55e' : '#374151', position: 'relative', transition: 'background 0.2s' }}
-                >
-                  <div style={{ position: 'absolute', top: 3, left: sfxOn ? 23 : 3, width: 20, height: 20, borderRadius: 10, background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }} />
-                </button>
-              </div>
-              {/* SFX volume slider */}
-              <div style={{ marginTop: 4 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                  <span style={{ color: '#8a9ab0', fontSize: 11, fontWeight: 600 }}>Game Volume</span>
-                  <span style={{ color: GOLD, fontWeight: 800, fontSize: 12 }}>{sfxVolume}%</span>
-                </div>
-                <input
-                  type="range" min={0} max={100} value={sfxVolume}
-                  onChange={handleSfxVolume}
-                  disabled={!sfxOn}
-                  style={{ width: '100%', height: 6, accentColor: GOLD, opacity: sfxOn ? 1 : 0.4, cursor: sfxOn ? 'pointer' : 'not-allowed' }}
                 />
               </div>
             </div>
