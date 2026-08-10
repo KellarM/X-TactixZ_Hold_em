@@ -69,7 +69,7 @@ function ScaleToFit({ naturalWidth, naturalHeight, children }) {
 // guessed box size to mismatch against, so it is IMPOSSIBLE for this to
 // leave extra empty space — the box is always exactly as tall as its
 // scaled content, nothing more.
-function ScaleToFitWidth({ naturalWidth, naturalHeight, children }) {
+function ScaleToFitWidth({ naturalWidth, naturalHeight, children, onScale }) {
   const outerRef = useRef(null);
   const [scale, setScale] = useState(0.3);
 
@@ -80,13 +80,23 @@ function ScaleToFitWidth({ naturalWidth, naturalHeight, children }) {
       const w = el.clientWidth;
       if (w === 0) return;
       const s = Math.min(w / naturalWidth, 1);
-      if (s > 0 && isFinite(s)) setScale(s);
+      if (s > 0 && isFinite(s)) {
+        setScale(s);
+        // Report the REAL live scale up to the parent — anything inside
+        // this box is shrunk by exactly this factor, so any sibling
+        // element that wants to visually MATCH a size in here (e.g. the
+        // lock icons on the side-bet boards, which live outside this
+        // transform and render at true, unscaled pixels) must multiply
+        // its natural size by this same number, not just copy the raw
+        // style value across.
+        onScale?.(s);
+      }
     };
     compute();
     const ro = new ResizeObserver(compute);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [naturalWidth]);
+  }, [naturalWidth, onScale]);
 
   return (
     <div ref={outerRef} style={{ width: '100%', height: naturalHeight * scale, overflow: 'hidden' }}>
@@ -124,6 +134,11 @@ export default function MobileGameLayout({
   // (62x88 each, 2 per slot) + odds/rank label rows + gaps/padding/border.
   const BOARD_NATURAL_W = 700;
   const BOARD_NATURAL_H = 365;
+  // Real live scale factor CardBoard is currently rendered at (see
+  // ScaleToFitWidth's onScale). Used to size the sidebar's lock icons so
+  // they visually MATCH CardBoard's locks at true rendered pixels, at any
+  // device width — not a hardcoded guess for one screen size.
+  const [cardScale, setCardScale] = useState(0.3);
 
   return (
     <div
@@ -205,7 +220,7 @@ export default function MobileGameLayout({
           box to mismatch against, so there is no possible leftover gap
           between this and the dealer area above it. ── */}
       <div style={{ flexShrink: 0, width: '100%', padding: '0 4px' }}>
-        <ScaleToFitWidth naturalWidth={BOARD_NATURAL_W} naturalHeight={BOARD_NATURAL_H}>
+        <ScaleToFitWidth naturalWidth={BOARD_NATURAL_W} naturalHeight={BOARD_NATURAL_H} onScale={setCardScale}>
           <CardBoard
             odds={game.flopOdds}
             bets={game.bets}
@@ -244,6 +259,7 @@ export default function MobileGameLayout({
           winnerRiverSide={game.winnerRiverSide}
           bonusPulse={bonusPulse}
           mobileLayout={true}
+          lockSize={34 * cardScale}
         />
       </div>
 
