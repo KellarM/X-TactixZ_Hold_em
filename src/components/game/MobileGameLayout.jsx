@@ -358,12 +358,22 @@ export default function MobileGameLayout({
           onClick={handleDeal}
           disabled={!canDeal}
           style={{
-            flexShrink: 0, padding: '13.75px 13.75px', borderRadius: 6,
+            flexShrink: 0,
+            width: 70, height: 46,
+            padding: 0,
+            borderRadius: 6,
             border: '2.0625px solid #4ade80',
             background: canDeal ? '#15803d' : '#0a3a1a',
-            color: '#fff', fontWeight: 900, fontSize: '0.76rem',
+            color: '#fff', fontWeight: 900, fontSize: '0.72rem',
             cursor: canDeal ? 'pointer' : 'default',
             letterSpacing: '0.04em', opacity: canDeal ? 1 : 0.4,
+            whiteSpace: 'normal',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            lineHeight: 1.1,
+            textAlign: 'center',
           }}
         >
           {dealLabel}
