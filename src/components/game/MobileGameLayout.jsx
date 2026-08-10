@@ -272,7 +272,7 @@ export default function MobileGameLayout({
                   opacity: active ? 1 : 0.55, transition: 'all 0.15s',
                 }}
               >
-                <Chip amount={chip.value} scale={0.34} />
+                <Chip amount={chip.value} scale={0.52} />
               </button>
             );
           })}
