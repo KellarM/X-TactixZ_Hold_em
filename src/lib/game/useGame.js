@@ -60,11 +60,13 @@ export const CHIPS = [
   { value: 5.00, label: '$5' }
 ];
 
-// Mobile portrait only — reduced chip set (4 chips)
+// Mobile portrait only — 6 chips in 2 rows of 3
 export const MOBILE_CHIPS = [
   { value: 0.01, label: '1¢' },
   { value: 0.10, label: '10¢' },
+  { value: 0.25, label: '25¢' },
   { value: 0.50, label: '50¢' },
+  { value: 1.00, label: '$1' },
   { value: 5.00, label: '$5' }
 ];
 

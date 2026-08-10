@@ -246,36 +246,63 @@ export default function MobileGameLayout({
         />
       </div>
 
-      {/* ── Footer (Player Area) — increased height for better usability ── */}
+      {/* ── Footer (Player Area) — 2 rows of 3 chips + ante ── */}
       <div style={{
         flexShrink: 0, display: 'flex', alignItems: 'center',
-        gap: 3, padding: '3px 5px', height: 70,
+        gap: 3, padding: '3px 5px', height: 80,
         borderTop: '1px solid rgba(202,138,4,0.3)',
         background: 'rgba(0,0,0,0.65)',
       }}>
-        {/* Chips — 4 only */}
-        <div style={{ display: 'flex', gap: 1, alignItems: 'center', flexShrink: 0 }}>
-          {MOBILE_CHIPS.map(chip => {
-            const active = game.selectedChip === chip.value;
-            return (
-              <button
-                key={chip.value}
-                onClick={() => {
-                  if (phase === 'ante') { sounds.playChipPlace(); actions.addToAnte(chip.value); }
-                  else { actions.setSelectedChip(chip.value); }
-                }}
-                style={{
-                  lineHeight: 0, border: 'none', background: 'transparent', padding: 0,
-                  cursor: 'pointer', flexShrink: 0,
-                  transform: active ? 'scale(1.15) translateY(-1px)' : 'scale(1)',
-                  filter: active ? 'drop-shadow(0 0 3px rgba(251,191,36,0.9))' : 'none',
-                  opacity: active ? 1 : 0.55, transition: 'all 0.15s',
-                }}
-              >
-                <Chip amount={chip.value} scale={0.52} />
-              </button>
-            );
-          })}
+        {/* Chips — 2 rows of 3: top = .50/$1/$5, bottom = .01/.10/.25 */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center', flexShrink: 0 }}>
+          {/* Top row: .50, 1, 5 */}
+          <div style={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {MOBILE_CHIPS.slice(3).map(chip => {
+              const active = game.selectedChip === chip.value;
+              return (
+                <button
+                  key={chip.value}
+                  onClick={() => {
+                    if (phase === 'ante') { sounds.playChipPlace(); actions.addToAnte(chip.value); }
+                    else { actions.setSelectedChip(chip.value); }
+                  }}
+                  style={{
+                    lineHeight: 0, border: 'none', background: 'transparent', padding: 0,
+                    cursor: 'pointer', flexShrink: 0,
+                    transform: active ? 'scale(1.15) translateY(-1px)' : 'scale(1)',
+                    filter: active ? 'drop-shadow(0 0 3px rgba(251,191,36,0.9))' : 'none',
+                    opacity: active ? 1 : 0.55, transition: 'all 0.15s',
+                  }}
+                >
+                  <Chip amount={chip.value} scale={0.52} />
+                </button>
+              );
+            })}
+          </div>
+          {/* Bottom row: .01, .10, .25 */}
+          <div style={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            {MOBILE_CHIPS.slice(0, 3).map(chip => {
+              const active = game.selectedChip === chip.value;
+              return (
+                <button
+                  key={chip.value}
+                  onClick={() => {
+                    if (phase === 'ante') { sounds.playChipPlace(); actions.addToAnte(chip.value); }
+                    else { actions.setSelectedChip(chip.value); }
+                  }}
+                  style={{
+                    lineHeight: 0, border: 'none', background: 'transparent', padding: 0,
+                    cursor: 'pointer', flexShrink: 0,
+                    transform: active ? 'scale(1.15) translateY(-1px)' : 'scale(1)',
+                    filter: active ? 'drop-shadow(0 0 3px rgba(251,191,36,0.9))' : 'none',
+                    opacity: active ? 1 : 0.55, transition: 'all 0.15s',
+                  }}
+                >
+                  <Chip amount={chip.value} scale={0.52} />
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Ante circle */}
