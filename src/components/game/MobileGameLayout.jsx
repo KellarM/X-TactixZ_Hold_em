@@ -311,8 +311,8 @@ export default function MobileGameLayout({
           style={{
             cursor: phase === 'ante' && game.ante > 0 ? 'pointer' : 'default',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, width: 28, height: 28, borderRadius: '50%',
-            border: game.ante > 0 ? '2px solid #FFD700' : '2px solid #C5A059',
+            flexShrink: 0, width: 35, height: 35, borderRadius: '50%',
+            border: game.ante > 0 ? '2.5px solid #FFD700' : '2.5px solid #C5A059',
             background: game.ante > 0
               ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
               : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%)',
@@ -321,20 +321,20 @@ export default function MobileGameLayout({
           }}
         >
           {game.ante > 0 ? (
-            <Chip amount={game.ante} scale={0.24} />
+            <Chip amount={game.ante} scale={0.30} />
           ) : (
-            <span style={{ color: '#000', fontSize: 6, fontWeight: 900, letterSpacing: '0.3px' }}>ANTE</span>
+            <span style={{ color: '#000', fontSize: 7.5, fontWeight: 900, letterSpacing: '0.3px' }}>ANTE</span>
           )}
         </div>
 
         {/* Bet sum */}
         <div style={{
-          flexShrink: 0, padding: '1px 4px', borderRadius: 4,
+          flexShrink: 0, padding: '1.25px 5px', borderRadius: 5,
           border: '1px solid rgba(234,179,8,0.4)', background: 'rgba(0,0,0,0.6)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 38,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 47.5,
         }}>
-          <span style={{ fontSize: '0.35rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.04em' }}>BET</span>
-          <span style={{ fontSize: '0.5rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(game.totalWagered)}</span>
+          <span style={{ fontSize: '0.4375rem', color: '#a8956a', fontWeight: 700, letterSpacing: '0.04em' }}>BET</span>
+          <span style={{ fontSize: '0.625rem', color: '#FFD700', fontWeight: 900 }}>{formatMoney(game.totalWagered)}</span>
         </div>
 
         {/* Clear / New */}
@@ -358,10 +358,10 @@ export default function MobileGameLayout({
           onClick={handleDeal}
           disabled={!canDeal}
           style={{
-            flexShrink: 0, padding: '3px 10px', borderRadius: 5,
-            border: '1.5px solid #4ade80',
+            flexShrink: 0, padding: '3.75px 12.5px', borderRadius: 6,
+            border: '1.875px solid #4ade80',
             background: canDeal ? '#15803d' : '#0a3a1a',
-            color: '#fff', fontWeight: 900, fontSize: '0.55rem',
+            color: '#fff', fontWeight: 900, fontSize: '0.6875rem',
             cursor: canDeal ? 'pointer' : 'default',
             letterSpacing: '0.04em', opacity: canDeal ? 1 : 0.4,
           }}
@@ -371,10 +371,10 @@ export default function MobileGameLayout({
 
         {/* Bank */}
         <div style={{
-          flexShrink: 0, padding: '1px 4px', borderRadius: 4,
-          border: '1.5px solid #eab308', background: '#000',
+          flexShrink: 0, padding: '1.25px 5px', borderRadius: 5,
+          border: '1.875px solid #eab308', background: '#000',
         }}>
-          <span style={{ fontSize: '0.5rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 4px rgba(251,191,36,0.7)' }}>
+          <span style={{ fontSize: '0.625rem', fontWeight: 900, color: '#FFD700', textShadow: '0 0 4px rgba(251,191,36,0.7)' }}>
             {formatMoney(game.bank)}
           </span>
         </div>
@@ -382,13 +382,13 @@ export default function MobileGameLayout({
         {/* Gear */}
         <button onClick={() => setShowSettings(true)}
           style={{
-            flexShrink: 0, width: 22, height: 22, borderRadius: 5,
+            flexShrink: 0, width: 27.5, height: 27.5, borderRadius: 6,
             border: '1px solid rgba(234,179,8,0.5)', background: 'rgba(0,0,0,0.5)',
             color: '#fde047', display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
           }}
         >
-          <Settings size={12} />
+          <Settings size={15} />
         </button>
       </div>
 
