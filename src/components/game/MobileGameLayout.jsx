@@ -376,7 +376,7 @@ export default function MobileGameLayout({
             textAlign: 'center',
           }}
         >
-          {dealLabel}
+          <span style={{ width: '100%', whiteSpace: 'normal', textAlign: 'center' }}>{dealLabel}</span>
         </button>
 
         <div style={{ flex: 1 }} />
