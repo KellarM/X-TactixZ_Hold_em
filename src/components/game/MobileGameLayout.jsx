@@ -161,7 +161,7 @@ export default function MobileGameLayout({
           inside the taller outer row (alignItems:center) is what produces
           the even top/bottom padding around the cards. ── */}
       <div style={{
-        flexShrink: 0, height: 100, display: 'flex', alignItems: 'center',
+        flexShrink: 0, height: 85, display: 'flex', alignItems: 'center',
         gap: 4, padding: '0 4px',
         background: 'rgba(0,0,0,0.5)',
         borderBottom: '1px solid rgba(202,138,4,0.4)',

@@ -388,7 +388,7 @@ export default function RightSidebar({
 
       {/* ■■ HAND RANKING BOARD — flex: 5, chip CENTRED, winning rank PULSES ■■ */}
       <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 5, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
-        <SectionHeader capValue={caps.rank}>HAND RANKING</SectionHeader>
+        <SectionHeader capValue={caps.rank}>{mobileLayout ? "HAND" : "HAND RANKING"}</SectionHeader>
         <div className="flex flex-col" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {RANK_LABELS.map((label, rankIdx) => {
             const locked = rankLocked(label);
@@ -474,7 +474,7 @@ export default function RightSidebar({
         flex: mobileLayout ? '0 0 calc((100% + 36px) * 0.6)' : 3,
         ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}),
       }}>
-        <SectionHeader capValue={caps.color}>COLOR BOARD</SectionHeader>
+        <SectionHeader capValue={caps.color}>{mobileLayout ? "COLOR" : "COLOR BOARD"}</SectionHeader>
         <div className="grid grid-cols-2" style={{ flex: 1, minHeight: 0, gap: GAP }}>
           {colorPositions.map((pos, colorIdx) => {
             const locked = colorLocked(pos.key);
