@@ -122,7 +122,7 @@ export default function MobileGameLayout({
   // Natural size of the compact CardBoard: 5 cols x 2 rows of 'sm' cards
   // (62x88 each, 2 per slot) + odds/rank label rows + gaps/padding/border.
   const BOARD_NATURAL_W = 700;
-  const BOARD_NATURAL_H = 270;
+  const BOARD_NATURAL_H = 320;
 
   return (
     <div
@@ -138,7 +138,7 @@ export default function MobileGameLayout({
     >
       {/* ── Dealer status message bar ── */}
       <div style={{
-        flexShrink: 0, height: 16, display: 'flex', alignItems: 'center',
+        flexShrink: 0, height: 12, display: 'flex', alignItems: 'center',
         padding: '0 6px', overflow: 'hidden', whiteSpace: 'nowrap',
         // Transparent — lets the velvet-board's own radial gradient show
         // through, which IS the brighter blue Michael pointed to between
@@ -165,7 +165,7 @@ export default function MobileGameLayout({
           inside the taller outer row (alignItems:center) is what produces
           the even top/bottom padding around the cards. ── */}
       <div style={{
-        flexShrink: 0, height: 85, display: 'flex', alignItems: 'center',
+        flexShrink: 0, height: 62, display: 'flex', alignItems: 'center',
         gap: 4, padding: '0 4px',
         background: 'transparent',
         borderBottom: '1px solid rgba(202,138,4,0.4)',
@@ -174,7 +174,7 @@ export default function MobileGameLayout({
           style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
           onError={(e) => { e.target.style.display = 'none'; }}
         />
-        <div style={{ flex: 1, height: 58, minWidth: 0 }}>
+        <div style={{ flex: 1, height: 52, minWidth: 0 }}>
           <ScaleToFit naturalWidth={COMM_NATURAL_W} naturalHeight={COMM_NATURAL_H}>
             <div style={{ display: 'flex', gap: 4 }}>
               {[0, 1, 2, 3, 4].map(i => (
