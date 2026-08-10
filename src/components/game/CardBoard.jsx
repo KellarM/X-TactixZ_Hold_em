@@ -153,6 +153,7 @@ export default function CardBoard({ odds, bets, caps, phase, onPlace, onRemove, 
               isLeading={isLeading}
               isWinner={isWinner}
               isResolved={isResolved}
+              isAntePhase={isAntePhase}
               bonusPulse={bonusPulse}
               bonusIndex={handArrayIdx}
               onPlace={() => onPlace('card', hand.id)}
@@ -205,7 +206,7 @@ export function SectionTitle({ children, capValue }) {
 export function BettingSlot({
   oddsLabel, locked, lockReason = null, bet, onPlace, onRemove, children,
   rankLabel = null, isLeading = false, isWinner = false, isResolved = false,
-  bonusPulse = null, bonusIndex = null
+  bonusPulse = null, bonusIndex = null, isAntePhase = false
 }) {
   // ── Vault tint locked treatment (Option A) ──────────────────────────────────
   // When locked: dulled gold border, grayscale cards, dark scrim with padlock
@@ -253,8 +254,11 @@ export function BettingSlot({
   locked ? '#5a5240' :
   '#8a9ab0';
 
-  // Bottom label: show rank if available, "Dead" if no rank, or nothing pre-flop
-  const bottomLabel = locked ?
+  // Bottom label: blank during ante (nothing dealt yet), rank if available,
+  // "Dead Hand" only after the flop has actually been dealt and the hand
+  // is genuinely locked out with no playable rank.
+  const bottomLabel = isAntePhase ? null :
+  locked ?
   rankLabel || 'Dead Hand' :
   rankLabel;
 
