@@ -379,7 +379,7 @@ export function BettingSlot({
       {locked &&
       <div style={{
         position: 'absolute',
-        inset: '28px 0 18px 0',
+        inset: '28px 0 48px 0',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -411,6 +411,7 @@ export function BettingSlot({
         width: '100%',
         flexShrink: 0,
         lineHeight: 1,
+        minHeight: 48,
         color: rankColor,
         textTransform: 'uppercase'
       }}>

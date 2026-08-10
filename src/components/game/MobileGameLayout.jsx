@@ -123,7 +123,7 @@ export default function MobileGameLayout({
   // Natural size of the compact CardBoard: 5 cols x 2 rows of 'sm' cards
   // (62x88 each, 2 per slot) + odds/rank label rows + gaps/padding/border.
   const BOARD_NATURAL_W = 700;
-  const BOARD_NATURAL_H = 320;
+  const BOARD_NATURAL_H = 365;
 
   return (
     <div
