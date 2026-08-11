@@ -463,7 +463,7 @@ export default function MobileGameLayout({
             padding: '0 2px',
             color: '#FFD700',
             fontFamily: "'Playfair Display', serif",
-            fontSize: 'clamp(0.46rem, 1.95vw, 0.72rem)',
+            fontSize: 'clamp(0.52rem, 2.20vw, 0.82rem)',
             fontWeight: 900,
             letterSpacing: '0.015em',
             lineHeight: 1,
