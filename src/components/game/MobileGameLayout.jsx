@@ -472,6 +472,7 @@ export default function MobileGameLayout({
             textOverflow: 'clip',
             pointerEvents: 'none',
             textShadow: '0 0 3px rgba(251,191,36,0.7)',
+            transform: 'scaleY(1.15)',
           }}
         >
           {mobileInstruction}
