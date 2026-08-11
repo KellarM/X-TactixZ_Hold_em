@@ -85,8 +85,8 @@ export default function OnboardingIndicator() {
 
       <style>{`
         @keyframes rf-onboard-gear-glow {
-          0%, 100% { box-shadow: 0 0 8px 2px rgba(250,204,21,0.6); border-color: #facc15; }
-          50%       { box-shadow: 0 0 24px 8px rgba(250,204,21,0.95); border-color: #fde047; }
+          0%, 100% { box-shadow: 0 0 4px 1px rgba(250,204,21,0.6); border-color: #facc15; }
+          50%       { box-shadow: 0 0 10px 3px rgba(250,204,21,0.95); border-color: #fde047; }
         }
         @keyframes rf-onboard-slide {
           0%   { opacity: 0; transform: translateY(10px); }
