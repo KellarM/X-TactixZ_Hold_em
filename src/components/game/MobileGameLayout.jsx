@@ -362,6 +362,8 @@ export default function MobileGameLayout({
         <div style={{
           flexShrink: 0, display: 'flex', flexDirection: 'column',
           alignItems: 'center', gap: 2, minWidth: 52.25,
+          alignSelf: 'flex-start',
+          marginTop: 2,
         }}>
           {/* Top slot: Clear button — fixed height reserved even when empty */}
           <div style={{ height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -407,6 +409,8 @@ export default function MobileGameLayout({
             justifyContent: 'center',
             lineHeight: 1.1,
             textAlign: 'center',
+            alignSelf: 'flex-start',
+            marginTop: 2,
           }}
         >
           <span style={{ width: '100%', whiteSpace: 'normal', textAlign: 'center' }}>{dealLabel}</span>
@@ -418,6 +422,8 @@ export default function MobileGameLayout({
         <div style={{
           flexShrink: 0, display: 'flex', flexDirection: 'column',
           alignItems: 'center', gap: 2,
+          alignSelf: 'flex-start',
+          marginTop: 2,
         }}>
           {/* Top slot: Fold button — fixed height reserved even when empty */}
           <div style={{ height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
