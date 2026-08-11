@@ -1,12 +1,11 @@
 /**
- * useDealerVoice — Web Speech API dealer dialogue hook
+ * useDealerVoice — StreamElements TTS (Amazon Polly) dealer dialogue
  *
- * Uses the browser's built-in window.speechSynthesis (no API key, no cost).
- * Selects a female voice from the device's available voices and speaks
- * dealer dialogue at each game phase transition.
+ * Uses StreamElements' free TTS endpoint which wraps Amazon Polly voices.
+ * Pre-fetches all dealer lines as audio on game load, caches them in
+ * an Audio pool — zero latency during play, zero cost, zero API key.
  *
- * Settings persist via localStorage + cookie fallback (same pattern as
- * useGameSounds.js).
+ * Voice: Joanna (American female, calm, professional — casino dealer feel)
  */
 
 import { useEffect, useRef } from 'react';
@@ -85,49 +84,9 @@ function persistVoice() {
   saveVoiceSettings({ voiceEnabled, voiceVolume });
 }
 
-// ── Voice selection — find a female voice ──
-let _selectedVoice = null;
-
-function pickFemaleVoice() {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return null;
-  const voices = window.speechSynthesis.getVoices();
-  if (!voices || voices.length === 0) return null;
-
-  // Priority list of female voice name patterns (cross-platform)
-  const femalePriority = [
-    /Samantha/i, /Victoria/i, /Karen/i, /Moira/i, /Tessa/i, /Fiona/i, /Serena/i,
-    /Google US English/i, /Google UK English Female/i,
-    /female/i, /woman/i, /girl/i,
-    /Microsoft Aria/i, /Microsoft Jenny/i, /Microsoft Zira/i,
-    /Microsoft Michelle/i, /Microsoft Hazel/i,
-    /Apple.*Samantha/i,
-    /en-US.*female/i, /en_GB.*female/i,
-  ];
-
-  for (const pattern of femalePriority) {
-    const match = voices.find(v => pattern.test(v.name) && v.lang.startsWith('en'));
-    if (match) return match;
-  }
-
-  // Fallback: first English voice with a name that doesn't sound male
-  const malePatterns = [/Daniel/i, /Alex/i, /Fred/i, /Tom/i, /Oliver/i, /Arthur/i,
-    /male/i, /man/i, /boy/i, /Google UK English Male/i, /Microsoft Guy/i,
-    /Microsoft Mark/i, /Microsoft David/i, /Microsoft George/i, /Microsoft James/i];
-
-  const femaleOrNeutral = voices.find(v =>
-    v.lang.startsWith('en') && !malePatterns.some(p => p.test(v.name))
-  );
-
-  return femaleOrNeutral || voices.find(v => v.lang.startsWith('en')) || voices[0];
-}
-
-// Ensure voices are loaded (Chrome loads them async)
-if (typeof window !== 'undefined' && window.speechSynthesis) {
-  window.speechSynthesis.onvoiceschanged = () => {
-    _selectedVoice = pickFemaleVoice();
-  };
-  _selectedVoice = pickFemaleVoice();
-}
+// ── StreamElements TTS config ──
+const SE_VOICE = 'Joanna';
+const SE_TTS_URL = 'https://api.streamelements.com/kappa/v2/speech';
 
 // ── Dealer dialogue for each phase ──
 const DEALER_LINES = {
@@ -137,37 +96,51 @@ const DEALER_LINES = {
   resolved:  'The river card. All boards resolve.',
 };
 
+// ── Audio cache — one Audio element per phase ──
+const audioCache = {};
+let preloaded = false;
+
+function buildUrl(text) {
+  return `${SE_TTS_URL}?voice=${SE_VOICE}&text=${encodeURIComponent(text)}`;
+}
+
+async function fetchAudio(text) {
+  const url = buildUrl(text);
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`TTS fetch failed: ${res.status}`);
+  const blob = await res.blob();
+  const audioUrl = URL.createObjectURL(blob);
+  const audio = new Audio(audioUrl);
+  audio.preload = 'auto';
+  return audio;
+}
+
+async function preloadDealerVoice() {
+  if (preloaded) return;
+  preloaded = true;
+  const entries = Object.entries(DEALER_LINES);
+  await Promise.all(entries.map(async ([phase, text]) => {
+    try {
+      audioCache[phase] = await fetchAudio(text);
+    } catch (e) {
+      console.warn(`Dealer voice: failed to preload "${phase}"`, e);
+    }
+  }));
+}
+
 // ── Core speak function ──
 export function speakDealer(phase) {
   if (!voiceEnabled) return;
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-
-  const line = DEALER_LINES[phase];
-  if (!line) return;
-
-  window.speechSynthesis.cancel();
-
-  const utterance = new SpeechSynthesisUtterance(line);
-  utterance.volume = Math.max(0, Math.min(1, voiceVolume));
-  utterance.rate = 0.92;
-  utterance.pitch = 1.0;
-
-  if (!_selectedVoice) {
-    _selectedVoice = pickFemaleVoice();
-  }
-  if (_selectedVoice) {
-    utterance.voice = _selectedVoice;
-  }
-
-  window.speechSynthesis.speak(utterance);
+  const audio = audioCache[phase];
+  if (!audio) return;
+  audio.volume = Math.max(0, Math.min(1, voiceVolume));
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 }
 
-// ── Exported setters/getters (same pattern as useGameSounds) ──
+// ── Exported setters/getters ──
 export function setVoiceEnabled(enabled) {
   voiceEnabled = enabled;
-  if (!enabled && typeof window !== 'undefined' && window.speechSynthesis) {
-    window.speechSynthesis.cancel();
-  }
   persistVoice();
 }
 
@@ -180,10 +153,16 @@ export function setVoiceVolume(v) {
 
 export function getVoiceVolume() { return voiceVolume; }
 
-// ── React hook — watches phase and speaks on transitions ──
+// ── React hook — preloads audio + watches phase transitions ──
 export function useDealerVoice(phase) {
   const prevPhase = useRef(null);
 
+  // Preload audio on mount
+  useEffect(() => {
+    preloadDealerVoice();
+  }, []);
+
+  // Speak on phase change
   useEffect(() => {
     if (prevPhase.current !== phase) {
       prevPhase.current = phase;
@@ -194,13 +173,17 @@ export function useDealerVoice(phase) {
 
 // ── Test voice from settings ──
 export function testVoice() {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance('Welcome to the table. Place your ante to begin.');
-  u.volume = Math.max(0, Math.min(1, voiceVolume));
-  u.rate = 0.92;
-  u.pitch = 1.0;
-  if (!_selectedVoice) _selectedVoice = pickFemaleVoice();
-  if (_selectedVoice) u.voice = _selectedVoice;
-  window.speechSynthesis.speak(u);
+  if (!voiceEnabled) return;
+  // Use the ante line for testing, or fetch a test line if not yet cached
+  if (audioCache.ante) {
+    audioCache.ante.volume = Math.max(0, Math.min(1, voiceVolume));
+    audioCache.ante.currentTime = 0;
+    audioCache.ante.play().catch(() => {});
+  } else {
+    // Not yet preloaded — fetch on demand
+    fetchAudio('Welcome to the table. Place your ante to begin.').then(audio => {
+      audio.volume = Math.max(0, Math.min(1, voiceVolume));
+      audio.play().catch(() => {});
+    }).catch(() => {});
+  }
 }
