@@ -1,14 +1,22 @@
 /**
- * useDealerVoice — StreamElements TTS (Amazon Polly) dealer dialogue
+ * useDealerVoice — Pre-generated TTS dealer dialogue
  *
- * Uses StreamElements' free TTS endpoint which wraps Amazon Polly voices.
- * Pre-fetches all dealer lines as audio on game load, caches them in
- * an Audio pool — zero latency during play, zero cost, zero API key.
+ * Uses pre-generated audio files (Google TTS) hosted on Base44 CDN.
+ * Same Audio pool pattern as useGameSounds.js — no API calls during play,
+ * no external dependencies, no CORS issues.
  *
- * Voice: Joanna (American female, calm, professional — casino dealer feel)
+ * Voice: Google English female (calm, clear — casino dealer feel)
  */
 
 import { useEffect, useRef } from 'react';
+
+// ── Audio URLs (hosted on Base44 CDN — same as chip/card sounds) ──
+const DEALER_AUDIO = {
+  ante:      'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9c9626312_ante.mp3',
+  postflop:  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/3746c199c_postflop.mp3',
+  postturn:  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/cc5d35a4e_postturn.mp3',
+  resolved:  'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/4a00fb1fc_resolved.mp3',
+};
 
 // ── Persistence (same dual-layer pattern as useGameSounds) ──────────────
 const VOICE_STORAGE_KEY = 'rfpf_dealer_voice';
@@ -75,7 +83,7 @@ export function resetVoiceToDefaults() {
   clearVoiceSettings();
 }
 
-// ── Module-level state (survives hot-reloads) ──
+// ── Module-level state ──
 const _initial = loadVoiceSettings();
 let voiceEnabled = _initial.voiceEnabled;
 let voiceVolume  = _initial.voiceVolume;
@@ -84,54 +92,29 @@ function persistVoice() {
   saveVoiceSettings({ voiceEnabled, voiceVolume });
 }
 
-// ── StreamElements TTS config ──
-const SE_VOICE = 'Joanna';
-const SE_TTS_URL = 'https://api.streamelements.com/kappa/v2/speech';
-
-// ── Dealer dialogue for each phase ──
-const DEALER_LINES = {
-  ante:      'Place your ante, then deal.',
-  postflop:  'No more bets. Dealing the flop and turn.',
-  postturn:  'The river board is now open. Place your river bets.',
-  resolved:  'The river card. All boards resolve.',
-};
-
-// ── Audio cache — one Audio element per phase ──
-const audioCache = {};
+// ── Audio pool — pre-create Audio elements on module init ──
+const audioPool = {};
 let preloaded = false;
 
-function buildUrl(text) {
-  return `${SE_TTS_URL}?voice=${SE_VOICE}&text=${encodeURIComponent(text)}`;
-}
-
-async function fetchAudio(text) {
-  const url = buildUrl(text);
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`TTS fetch failed: ${res.status}`);
-  const blob = await res.blob();
-  const audioUrl = URL.createObjectURL(blob);
-  const audio = new Audio(audioUrl);
-  audio.preload = 'auto';
-  return audio;
-}
-
-async function preloadDealerVoice() {
+function initAudioPool() {
   if (preloaded) return;
   preloaded = true;
-  const entries = Object.entries(DEALER_LINES);
-  await Promise.all(entries.map(async ([phase, text]) => {
-    try {
-      audioCache[phase] = await fetchAudio(text);
-    } catch (e) {
-      console.warn(`Dealer voice: failed to preload "${phase}"`, e);
-    }
-  }));
+  for (const [phase, url] of Object.entries(DEALER_AUDIO)) {
+    const a = new Audio(url);
+    a.preload = 'auto';
+    audioPool[phase] = a;
+  }
+}
+
+// Initialize immediately (browser will lazy-load as needed)
+if (typeof window !== 'undefined') {
+  initAudioPool();
 }
 
 // ── Core speak function ──
 export function speakDealer(phase) {
   if (!voiceEnabled) return;
-  const audio = audioCache[phase];
+  const audio = audioPool[phase];
   if (!audio) return;
   audio.volume = Math.max(0, Math.min(1, voiceVolume));
   audio.currentTime = 0;
@@ -153,13 +136,15 @@ export function setVoiceVolume(v) {
 
 export function getVoiceVolume() { return voiceVolume; }
 
-// ── React hook — preloads audio + watches phase transitions ──
+// ── React hook — preloads audio + speaks on phase transitions ──
 export function useDealerVoice(phase) {
   const prevPhase = useRef(null);
 
-  // Preload audio on mount
+  // Ensure audio pool is initialized
   useEffect(() => {
-    preloadDealerVoice();
+    initAudioPool();
+    // Force load all audio files
+    Object.values(audioPool).forEach(a => a.load());
   }, []);
 
   // Speak on phase change
@@ -173,17 +158,10 @@ export function useDealerVoice(phase) {
 
 // ── Test voice from settings ──
 export function testVoice() {
-  if (!voiceEnabled) return;
-  // Use the ante line for testing, or fetch a test line if not yet cached
-  if (audioCache.ante) {
-    audioCache.ante.volume = Math.max(0, Math.min(1, voiceVolume));
-    audioCache.ante.currentTime = 0;
-    audioCache.ante.play().catch(() => {});
-  } else {
-    // Not yet preloaded — fetch on demand
-    fetchAudio('Welcome to the table. Place your ante to begin.').then(audio => {
-      audio.volume = Math.max(0, Math.min(1, voiceVolume));
-      audio.play().catch(() => {});
-    }).catch(() => {});
-  }
+  // Use the ante line for testing
+  const audio = audioPool.ante;
+  if (!audio) return;
+  audio.volume = Math.max(0, Math.min(1, voiceVolume));
+  audio.currentTime = 0;
+  audio.play().catch(() => {});
 }
