@@ -212,7 +212,7 @@ export default function MobileGameLayout({
       </div>
 
       {/* Reveal prompt */}
-      {awaitingReveal && <RevealPrompt onReveal={handleRevealClick} />}
+      {awaitingReveal && <RevealPrompt onReveal={handleRevealClick} mobileLayout={true} />}
 
       {/* ── Card Board — real desktop component, self-sized to its content ──
           ScaleToFitWidth measures width, computes scale, and sets ITS OWN

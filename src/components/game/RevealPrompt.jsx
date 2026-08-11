@@ -31,7 +31,7 @@ function injectStyles() {
   `;
 }
 
-export default function RevealPrompt({ onReveal }) {
+export default function RevealPrompt({ onReveal, mobileLayout = false }) {
   React.useEffect(() => { injectStyles(); }, []);
 
   return (
@@ -52,18 +52,25 @@ export default function RevealPrompt({ onReveal }) {
 
       {/* Visible banner — position:fixed so it floats over the content
           WITHOUT taking up flex space or pushing the board down. Positioned
-          in the gap between the community cards and the Card Board. */}
+          in the gap between the community cards and the Card Board.
+          Desktop: top:200 (unchanged, original values below). Mobile: the
+          community-card gap sits at status-bar(12) + community-row(62) = 74px
+          from the top (see MobileGameLayout.jsx), not desktop's 200px — and
+          the text needs a smaller font/letter-spacing/padding + a max-width
+          clamp, or "Click Anywhere / Open Window" at desktop sizing is wider
+          than a phone screen and gets clipped on both ends. */}
       <div
         onClick={onReveal}
         style={{
           position: 'fixed',
-          top: 200,
+          top: mobileLayout ? 78 : 200,
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 501,
-          height: 40,
-          minHeight: 40,
-          padding: '0 24px',
+          maxWidth: mobileLayout ? 'calc(100vw - 16px)' : undefined,
+          height: mobileLayout ? 'auto' : 40,
+          minHeight: mobileLayout ? 26 : 40,
+          padding: mobileLayout ? '4px 10px' : '0 24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -78,13 +85,15 @@ export default function RevealPrompt({ onReveal }) {
       >
         <span style={{
           fontFamily: 'Oswald, sans-serif',
-          fontSize: '1.1rem',
+          fontSize: mobileLayout ? '0.62rem' : '1.1rem',
           fontWeight: 900,
-          letterSpacing: '0.13em',
+          letterSpacing: mobileLayout ? '0.03em' : '0.13em',
           textTransform: 'uppercase',
           color: '#FFE566',
           animation: 'rf-reveal-text-pulse 1.4s ease-in-out infinite',
-          whiteSpace: 'nowrap',
+          whiteSpace: mobileLayout ? 'normal' : 'nowrap',
+          textAlign: 'center',
+          lineHeight: mobileLayout ? 1.2 : 1,
         }}>
           Click Anywhere / Open Window
         </span>
