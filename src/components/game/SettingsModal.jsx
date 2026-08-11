@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle, RotateCcw } from 'lucide-react';
 import { useGameSounds } from '@/lib/game/useGameSounds';
-import { isVoiceEnabled, setVoiceEnabled, getVoiceVolume, setVoiceVolume, testVoice } from '@/lib/game/useDealerVoice';
 import { formatMoney } from '@/lib/game/cards';
 
 const COLORS = [
@@ -46,8 +45,6 @@ function StatRow({ label, value, highlight }) {
 export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay, onGameRules, onResetBank }) {
   const sounds = useGameSounds();
   const [crowdOn, setCrowdOn] = useState(true);
-  const [voiceOn, setVoiceOn] = useState(true);
-  const [voiceVol, setVoiceVol] = useState(80);
   const [crowdVolume, setCrowdVolume] = useState(40);
   const [tab, setTab] = useState('sound');
 
@@ -55,8 +52,6 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
     if (isOpen) {
       setCrowdVolume(Math.round(sounds.getCrowdVolume() * 100));
       setCrowdOn(sounds.isCrowdEnabled());
-      setVoiceOn(isVoiceEnabled());
-      setVoiceVol(Math.round(getVoiceVolume() * 100));
     }
   }, [isOpen]);
 
@@ -72,16 +67,6 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
     const v = Number(e.target.value);
     setCrowdVolume(v);
     sounds.setCrowdVolume(v / 100);
-  };
-  const handleVoiceToggle = () => {
-    const next = !voiceOn;
-    setVoiceOn(next);
-    setVoiceEnabled(next);
-  };
-  const handleVoiceVolume = (e) => {
-    const v = Number(e.target.value);
-    setVoiceVol(v);
-    setVoiceVolume(v / 100);
   };
 
   const stats = playerStats || {};
@@ -196,44 +181,6 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
                   style={{ width: '100%', height: 6, accentColor: GOLD, opacity: crowdOn ? 1 : 0.4, cursor: crowdOn ? 'pointer' : 'not-allowed' }}
                 />
               </div>
-            </div>
-
-            {/* ── DEALER VOICE — independent channel ── */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 14px', background: 'rgba(197,160,89,0.07)', borderRadius: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {voiceOn ? <Volume2 size={20} color={GOLD} /> : <VolumeX size={20} color="#6a7a8a" />}
-                  <div>
-                    <div style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>Dealer Voice</div>
-                    <div style={{ color: '#8a9ab0', fontSize: 11 }}>Spoken dealer callouts each round</div>
-                  </div>
-                </div>
-                <button
-                  onClick={handleVoiceToggle}
-                  style={{ width: 46, height: 26, borderRadius: 13, border: 'none', cursor: 'pointer', background: voiceOn ? '#22c55e' : '#374151', position: 'relative', transition: 'background 0.2s' }}
-                >
-                  <div style={{ position: 'absolute', top: 3, left: voiceOn ? 23 : 3, width: 20, height: 20, borderRadius: 10, background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.4)' }} />
-                </button>
-              </div>
-              <div style={{ marginTop: 4 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                  <span style={{ color: '#8a9ab0', fontSize: 11, fontWeight: 600 }}>Voice Volume</span>
-                  <span style={{ color: GOLD, fontWeight: 800, fontSize: 12 }}>{voiceVol}%</span>
-                </div>
-                <input
-                  type="range" min={0} max={100} value={voiceVol}
-                  onChange={handleVoiceVolume}
-                  disabled={!voiceOn}
-                  style={{ width: '100%', height: 6, accentColor: GOLD, opacity: voiceOn ? 1 : 0.4, cursor: voiceOn ? 'pointer' : 'not-allowed' }}
-                />
-              </div>
-              <button
-                onClick={testVoice}
-                disabled={!voiceOn}
-                style={{ marginTop: 4, alignSelf: 'flex-start', background: voiceOn ? 'rgba(197,160,89,0.15)' : 'rgba(100,100,100,0.1)', color: voiceOn ? GOLD : '#6a7a8a', border: `1px solid ${voiceOn ? GOLD : '#374151'}`, borderRadius: 6, padding: '5px 12px', fontWeight: 700, fontSize: 11, cursor: voiceOn ? 'pointer' : 'not-allowed', letterSpacing: '0.3px' }}
-              >
-                Test Voice
-              </button>
             </div>
 
           </div>

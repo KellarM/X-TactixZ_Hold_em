@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useGame, loadStatsValue, saveStatsValue, clearStatsValue } from '@/lib/game/useGame';
 import { formatMoney } from '@/lib/game/cards';
 import { useGameSounds } from '@/lib/game/useGameSounds';
-import { useDealerVoice } from '@/lib/game/useDealerVoice';
 import PreviousHands from '@/components/game/PreviousHands';
 import DealerArea from '@/components/game/DealerArea';
 import CardBoard from '@/components/game/CardBoard';
@@ -23,7 +22,6 @@ export default function GameTable() {
   const game = useGame();
   const { phase, actions } = game;
   const sounds = useGameSounds();
-  useDealerVoice(phase);
 
   const [showSettings, setShowSettings] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
