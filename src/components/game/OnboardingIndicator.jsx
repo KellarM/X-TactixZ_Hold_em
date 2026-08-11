@@ -36,19 +36,7 @@ export default function OnboardingIndicator() {
         pointerEvents: 'none',
       }} />
 
-      {/* Pulsing gold ring around gear button — fixed bottom-right */}
-      <div style={{
-        position: 'fixed',
-        bottom: 8,
-        right: 8,
-        width: 44,
-        height: 44,
-        borderRadius: '50%',
-        border: '3px solid #facc15',
-        zIndex: 10000,
-        pointerEvents: 'none',
-        animation: 'rf-onboard-pulse 1.5s ease-in-out infinite',
-      }} />
+
 
       {/* Tooltip bubble — fixed above gear button, anchored bottom-right */}
       <div style={{
@@ -96,13 +84,16 @@ export default function OnboardingIndicator() {
       </div>
 
       <style>{`
-        @keyframes rf-onboard-pulse {
-          0%, 100% { box-shadow: 0 0 8px 2px rgba(250,204,21,0.5); opacity: 1; }
-          50%       { box-shadow: 0 0 24px 8px rgba(250,204,21,0.9); opacity: 0.85; }
+        @keyframes rf-onboard-gear-glow {
+          0%, 100% { box-shadow: 0 0 8px 2px rgba(250,204,21,0.6); border-color: #facc15; }
+          50%       { box-shadow: 0 0 24px 8px rgba(250,204,21,0.95); border-color: #fde047; }
         }
         @keyframes rf-onboard-slide {
           0%   { opacity: 0; transform: translateY(10px); }
           100% { opacity: 1; transform: translateY(0); }
+        }
+        .rf-onboard-gear {
+          animation: rf-onboard-gear-glow 1.5s ease-in-out infinite !important;
         }
       `}</style>
     </>

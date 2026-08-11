@@ -479,6 +479,7 @@ export default function MobileGameLayout({
 
         {/* Gear */}
         <button onClick={() => setShowSettings(true)}
+          className="rf-onboard-gear"
           style={{
             flexShrink: 0, width: 30.25, height: 30.25, borderRadius: 6,
             border: '1px solid rgba(234,179,8,0.5)', background: 'rgba(0,0,0,0.5)',

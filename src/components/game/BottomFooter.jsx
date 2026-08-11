@@ -401,6 +401,7 @@ export default function BottomFooter({
       <button
         onClick={onSettings}
         title="Settings"
+        className="rf-onboard-gear"
         style={{
           position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
           width: W.gear, height: 36, borderRadius: '50%',
