@@ -121,7 +121,7 @@ export default function MobileGameLayout({
   showSettings, setShowSettings,
   showHowToPlay, setShowHowToPlay,
   showGameRules, setShowGameRules,
-  dealLabel, subLabel, canDeal,
+  dealLabel, subLabel, mobileInstruction, canDeal,
   handlePlaceBet, handleRemoveBet, handleDeal, handleRevealClick,
   handleBonusPulse, handleBonusLand, handleBonusComplete,
   onFold, onClearBets, onNewHand,
@@ -265,6 +265,7 @@ export default function MobileGameLayout({
 
       {/* ── Footer (Player Area) — 2 rows of 3 chips + ante ── */}
       <div style={{
+        position: 'relative',
         flexShrink: 0, display: 'flex', alignItems: 'center',
         gap: 3, padding: '3px 5px', height: 80,
         borderTop: '1px solid rgba(202,138,4,0.3)',
@@ -444,6 +445,36 @@ export default function MobileGameLayout({
               {formatMoney(game.bank)}
             </span>
           </div>
+        </div>
+
+        {/* Mobile round instruction — occupies only the empty bottom strip.
+            Absolute positioning keeps every existing footer object at its
+            current size and position. The horizontal clamp corresponds to
+            the red-boxed area: it starts beneath the Bet/Deal region and
+            ends before the right edge, never crossing the footer bounds. */}
+        <div
+          aria-live="polite"
+          style={{
+            position: 'absolute',
+            left: '36%', right: 5, bottom: 3,
+            height: 14,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden',
+            padding: '0 2px',
+            color: '#FFD700',
+            fontFamily: "'Playfair Display', serif",
+            fontSize: 'clamp(0.34rem, 1.45vw, 0.52rem)',
+            fontWeight: 900,
+            letterSpacing: '0.015em',
+            lineHeight: 1,
+            whiteSpace: 'nowrap',
+            textAlign: 'center',
+            textOverflow: 'clip',
+            pointerEvents: 'none',
+            textShadow: '0 0 3px rgba(251,191,36,0.7)',
+          }}
+        >
+          {mobileInstruction}
         </div>
 
         {/* Gear */}

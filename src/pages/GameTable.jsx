@@ -198,21 +198,25 @@ export default function GameTable() {
 
   let dealLabel = 'DEAL';
   let subLabel  = 'PLACE AN ANTE TO DEAL';
+  let mobileInstruction = 'PLACE AN ANTE TO DEAL';
   let canDeal   = false;
   if (phase === 'ante') {
     subLabel = game.ante > 0
       ? `ANTE ${formatMoney(game.ante)} — PRESS TO DEAL FLOP`
       : 'SELECTING A CHIP PLACES AN ANTE, THEN DEAL';
+    mobileInstruction = subLabel;
     canDeal = game.ante > 0 && game.ante <= game.bank;
   } else if (phase === 'postflop') {
     dealLabel = 'DEAL TURN';
     subLabel  = game.selectedChip
       ? 'PLACE BETS ON ANY BOARD — THEN DEAL TURN'
       : 'SELECT A CHIP, THEN PLACE BETS ON ANY BOARD';
+    mobileInstruction = 'PLACE BETS ON ANY BOARD — THEN DEAL TURN';
     canDeal   = !game.computing;
   } else if (phase === 'postturn') {
     dealLabel = 'DEAL RIVER';
     subLabel  = 'PLACE RIVER BET OR DEAL NOW';
+    mobileInstruction = subLabel;
     canDeal   = true;
   }
 
@@ -250,6 +254,7 @@ export default function GameTable() {
         setShowGameRules={setShowGameRules}
         dealLabel={dealLabel}
         subLabel={subLabel}
+        mobileInstruction={mobileInstruction}
         canDeal={canDeal}
         handlePlaceBet={handlePlaceBet}
         handleRemoveBet={handleRemoveBet}
