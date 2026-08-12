@@ -266,6 +266,7 @@ export default function GameTable() {
         onFold={actions.fold}
         onClearBets={actions.clearBets}
         onNewHand={actions.newHand}
+        anteStructureId={game.anteStructure}
       />
     );
   }

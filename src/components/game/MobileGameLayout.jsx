@@ -1,4 +1,5 @@
-import React, { useState, useRef, useLayoutEffect } from 'react';
+import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import CardBoard from './CardBoard';
 import RightSidebar from './RightSidebar';
 import Chip from './Chip';
@@ -12,7 +13,8 @@ import OnboardingIndicator from './OnboardingIndicator';
 import PlayingCard from './PlayingCard';
 import { MOBILE_CHIPS } from '@/lib/game/useGame';
 import { formatMoney } from '@/lib/game/cards';
-import { Settings } from 'lucide-react';
+import { Settings, Info } from 'lucide-react';
+import { getStructureById, getSavedStructureId, getAnteTierDescriptions, ANTE_STRUCTURE_EVENT } from '@/lib/game/anteStructures';
 
 const LOGO_BADGE_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/7a23486be_xtactixz_template_badge.png';
 
@@ -125,6 +127,7 @@ export default function MobileGameLayout({
   handlePlaceBet, handleRemoveBet, handleDeal, handleRevealClick,
   handleBonusPulse, handleBonusLand, handleBonusComplete,
   onFold, onClearBets, onNewHand,
+  anteStructureId,
 }) {
   // Natural size of 5 community cards (70x100 each, fixed) + gaps
   const COMM_NATURAL_W = 70 * 5 + 4 * 4; // 366
@@ -139,6 +142,36 @@ export default function MobileGameLayout({
   // they visually MATCH CardBoard's locks at true rendered pixels, at any
   // device width — not a hardcoded guess for one screen size.
   const [cardScale, setCardScale] = useState(0.3);
+
+  // ── Ante Structure info bubble (ported from desktop BottomFooter) ──
+  const [anteStructId, setAnteStructId] = useState(anteStructureId || (() => { try { return getSavedStructureId(); } catch { return 'C'; } }));
+  const [showAnteBubble, setShowAnteBubble] = useState(false);
+  const [anteBubblePos, setAnteBubblePos] = useState(null);
+  const anteInfoRef = useRef(null);
+
+  useEffect(() => { setAnteStructId(anteStructureId || anteStructId); }, [anteStructureId]);
+
+  useEffect(() => {
+    if (!showAnteBubble || !anteInfoRef.current) return;
+    const rect = anteInfoRef.current.getBoundingClientRect();
+    setAnteBubblePos({
+      left: rect.left + rect.width / 2,
+      bottom: window.innerHeight - rect.top + 8,
+    });
+  }, [showAnteBubble]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      setAnteStructId(e.detail || 'C');
+      setShowAnteBubble(true);
+      setTimeout(() => setShowAnteBubble(false), 4000);
+    };
+    window.addEventListener(ANTE_STRUCTURE_EVENT, handler);
+    return () => window.removeEventListener(ANTE_STRUCTURE_EVENT, handler);
+  }, []);
+
+  const activeStruct = getStructureById(anteStructId);
+  const anteTiers = activeStruct ? getAnteTierDescriptions(activeStruct) : [];
 
   return (
     <div
@@ -323,41 +356,140 @@ export default function MobileGameLayout({
           </div>
         </div>
 
-        {/* Ante circle */}
-        {(() => {
-          // Single source of truth for the circle's diameter — the chip's
-          // scale is DERIVED from this, not guessed, so the chip always
-          // fills the button exactly (54px is Chip's own base diameter
-          // at scale=1, defined in Chip.jsx).
-          const ANTE_CIRCLE_D = 38.5;
-          const anteChipScale = ANTE_CIRCLE_D / 54;
-          return (
-            <div
-              onClick={phase === 'ante' && game.ante > 0 ? actions.clearAnte : undefined}
-              style={{
-                cursor: phase === 'ante' && game.ante > 0 ? 'pointer' : 'default',
+        {/* Ante column — info button on top, Ante circle at bottom */}
+        <div style={{
+          flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'flex-end',
+          gap: 2,
+          alignSelf: 'flex-end',
+          height: '100%',
+          paddingBottom: 3,
+        }}>
+          {/* Info button — same as desktop BottomFooter */}
+          <button
+            ref={anteInfoRef}
+            onClick={() => setShowAnteBubble(s => !s)}
+            title="Ante Bonus Structure"
+            style={{
+              background: showAnteBubble
+                ? 'linear-gradient(135deg, #e5c158 0%, #d4af37 100%)'
+                : 'rgba(197,160,89,0.15)',
+              border: showAnteBubble ? '1px solid #FFD700' : '1px solid rgba(197,160,89,0.4)',
+              borderRadius: '50%',
+              width: 18, height: 18,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', padding: 0,
+              transition: 'all 0.15s',
+              flexShrink: 0,
+            }}
+          >
+            <Info size={10} color={showAnteBubble ? '#1a0f00' : '#C5A059'} />
+          </button>
+
+          {/* Ante circle — pushed to bottom of footer */}
+          {(() => {
+            const ANTE_CIRCLE_D = 38.5;
+            const anteChipScale = ANTE_CIRCLE_D / 54;
+            return (
+              <div
+                onClick={phase === 'ante' && game.ante > 0 ? actions.clearAnte : undefined}
+                style={{
+                  cursor: phase === 'ante' && game.ante > 0 ? 'pointer' : 'default',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0, width: ANTE_CIRCLE_D, height: ANTE_CIRCLE_D, borderRadius: '50%',
+                  border: game.ante > 0 ? '2.75px solid #FFD700' : '2.75px solid #C5A059',
+                  background: game.ante > 0
+                    ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
+                    : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%)',
+                  boxShadow: game.ante > 0 ? '0 0 6px 2px rgba(255,215,0,0.7)' : 'none',
+                  animation: game.ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
+                }}
+              >
+                {game.ante > 0 ? (
+                  <Chip
+                    amount={game.ante}
+                    scale={anteChipScale}
+                    style={{ filter: 'drop-shadow(0 0 5px rgba(255,215,0,0.85)) drop-shadow(0 0 2px rgba(255,215,0,0.9))' }}
+                  />
+                ) : (
+                  <span style={{ color: '#000', fontSize: 7.5, fontWeight: 900, letterSpacing: '0.3px' }}>ANTE</span>
+                )}
+              </div>
+            );
+          })()}
+        </div>
+
+        {/* Ante info bubble — portal to document.body, positioned above the info button */}
+        {showAnteBubble && activeStruct && anteBubblePos && typeof document !== 'undefined' && createPortal(
+          <>
+            <div onClick={() => setShowAnteBubble(false)} style={{ position: 'fixed', inset: 0, zIndex: 9998 }} />
+            <div style={{
+              position: 'fixed',
+              left: anteBubblePos.left,
+              bottom: anteBubblePos.bottom,
+              transform: 'translateX(-50%)',
+              zIndex: 9999,
+              background: 'linear-gradient(160deg, #1a0f00 0%, #0a0600 100%)',
+              border: '1.5px solid rgba(202,138,4,0.7)',
+              borderRadius: 10,
+              padding: '12px 12px 8px',
+              minWidth: 180,
+              maxWidth: 220,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.9)',
+              pointerEvents: 'auto',
+            }}>
+              {/* Bubble tail */}
+              <div style={{
+                position: 'absolute', bottom: -7, left: '50%',
+                transform: 'translateX(-50%) rotate(45deg)',
+                width: 12, height: 12, background: '#0a0600',
+                borderRight: '1.5px solid rgba(202,138,4,0.7)',
+                borderBottom: '1.5px solid rgba(202,138,4,0.7)',
+              }} />
+              {/* Structure letter badge */}
+              <div style={{
+                position: 'absolute', top: -9, right: -9,
+                width: 20, height: 20, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%)',
+                border: '1.5px solid #FFD700',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                flexShrink: 0, width: ANTE_CIRCLE_D, height: ANTE_CIRCLE_D, borderRadius: '50%',
-                border: game.ante > 0 ? '2.75px solid #FFD700' : '2.75px solid #C5A059',
-                background: game.ante > 0
-                  ? 'radial-gradient(circle, rgba(255,215,0,0.08) 60%, rgba(0,0,0,0.5) 100%)'
-                  : 'linear-gradient(135deg, #f6d860 0%, #e8c22a 30%, #fef08a 55%, #c9960a 80%)',
-                boxShadow: game.ante > 0 ? '0 0 6px 2px rgba(255,215,0,0.7)' : 'none',
-                animation: game.ante > 0 ? 'rf-ante-glow 1.6s ease-in-out infinite' : 'none',
-              }}
-            >
-              {game.ante > 0 ? (
-                <Chip
-                  amount={game.ante}
-                  scale={anteChipScale}
-                  style={{ filter: 'drop-shadow(0 0 5px rgba(255,215,0,0.85)) drop-shadow(0 0 2px rgba(255,215,0,0.9))' }}
-                />
-              ) : (
-                <span style={{ color: '#000', fontSize: 7.5, fontWeight: 900, letterSpacing: '0.3px' }}>ANTE</span>
-              )}
+                boxShadow: '0 2px 6px rgba(0,0,0,0.6)',
+              }}>
+                <span style={{ fontSize: 10, fontWeight: 900, color: '#1a0f00' }}>{activeStruct.id}</span>
+              </div>
+              <div style={{
+                fontSize: 9, fontWeight: 800, color: '#e5c158',
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                marginBottom: 6, textAlign: 'center',
+              }}>
+                How The Ante Pays
+              </div>
+              <div style={{
+                fontSize: 9, color: '#c4b896', lineHeight: 1.4,
+                marginBottom: 6, paddingBottom: 5,
+                borderBottom: '1px solid rgba(202,138,4,0.3)',
+              }}>
+                Bet the <b style={{ color: '#facc15' }}>full Ante</b> on one position per board to qualify that board. All payouts are based on the <b style={{ color: '#facc15' }}>Ante amount</b>.
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {anteTiers.map((tier, i) => {
+                  const color = tier.kind === 'loss' ? '#f87171' : tier.kind === 'bonus' ? '#4ade80' : '#facc15';
+                  return (
+                    <div key={i} style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                      gap: 8, fontSize: 10, lineHeight: 1.3,
+                    }}>
+                      <span style={{ color: '#c4b896', whiteSpace: 'nowrap' }}>{tier.range} {tier.boardWord} Win</span>
+                      <span style={{ color, fontWeight: 700, textAlign: 'right' }}>{tier.outcome}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          );
-        })()}
+          </>,
+          document.body
+        )}
 
         {/* Bet column — Clear button on top (when active), Bet display below */}
         <div style={{
