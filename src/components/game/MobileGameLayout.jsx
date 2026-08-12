@@ -156,7 +156,7 @@ export default function MobileGameLayout({
     const rect = anteInfoRef.current.getBoundingClientRect();
     setAnteBubblePos({
       left: rect.left + rect.width / 2,
-      bottom: window.innerHeight - rect.top + 8,
+      bottom: window.innerHeight - rect.top + 16,
     });
   }, [showAnteBubble]);
 
