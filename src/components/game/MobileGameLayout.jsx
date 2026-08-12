@@ -148,15 +148,28 @@ export default function MobileGameLayout({
   const [showAnteBubble, setShowAnteBubble] = useState(false);
   const [anteBubblePos, setAnteBubblePos] = useState(null);
   const anteInfoRef = useRef(null);
+  const footerRef = useRef(null);
 
   useEffect(() => { setAnteStructId(anteStructureId || anteStructId); }, [anteStructureId]);
 
   useEffect(() => {
     if (!showAnteBubble || !anteInfoRef.current) return;
-    const rect = anteInfoRef.current.getBoundingClientRect();
+    const infoRect = anteInfoRef.current.getBoundingClientRect();
+    // Find the footer's top edge (the gold border) to center the bubble
+    // between it and the info button.
+    const footerEl = footerRef.current;
+    let footerTop = infoRect.top - 80; // fallback
+    if (footerEl) {
+      footerTop = footerEl.getBoundingClientRect().top;
+    }
+    // Available space between footer top border and info button top edge
+    const availableSpace = infoRect.top - footerTop;
+    // Center the bubble in that space: position it halfway between
+    // the footer border and the info button, measured from the button's top.
+    const gap = availableSpace / 2;
     setAnteBubblePos({
-      left: rect.left + rect.width / 2,
-      bottom: window.innerHeight - rect.top + 16,
+      left: infoRect.left + infoRect.width / 2,
+      bottom: window.innerHeight - infoRect.top + gap,
     });
   }, [showAnteBubble]);
 
@@ -297,7 +310,7 @@ export default function MobileGameLayout({
       </div>
 
       {/* ── Footer (Player Area) — 2 rows of 3 chips + ante ── */}
-      <div style={{
+      <div ref={footerRef} style={{
         position: 'relative',
         flexShrink: 0, display: 'flex', alignItems: 'center',
         gap: 3, padding: '3px 5px', height: 80,
