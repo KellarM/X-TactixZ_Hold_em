@@ -369,19 +369,17 @@ export default function MobileGameLayout({
           </div>
         </div>
 
-        {/* Ante column — info circle centered between the footer's top
-            border and the Ante circle via two equal flex-grow spacers.
-            This is exact and self-adjusting — no fixed pixel guess that
-            can drift on different screens. */}
+        {/* Ante column — info circle at top, Ante circle at bottom,
+            separated by justifyContent: space-between. */}
         <div style={{
           flexShrink: 0,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center',
-          alignSelf: 'flex-end',
+          justifyContent: 'space-between',
           height: '100%',
+          paddingTop: 4,
           paddingBottom: 3,
         }}>
-          <div style={{ flex: 1 }} />
           {/* Info button — same as desktop BottomFooter */}
           <button
             ref={anteInfoRef}
@@ -402,7 +400,6 @@ export default function MobileGameLayout({
           >
             <Info size={10} color={showAnteBubble ? '#1a0f00' : '#C5A059'} />
           </button>
-          <div style={{ flex: 1 }} />
 
           {/* Ante circle — pushed to bottom of footer */}
           {(() => {
