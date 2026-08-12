@@ -377,12 +377,13 @@ export default function MobileGameLayout({
           flexShrink: 0,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center',
-          alignSelf: 'flex-end',
+          justifyContent: 'space-between',
           height: '100%',
           paddingBottom: 3,
         }}>
-          <div style={{ flex: 1 }} />
-          {/* Info button — same as desktop BottomFooter */}
+          {/* Info button — same as desktop BottomFooter.
+              marginTop gives clear, even spacing between the footer's top
+              border and the Ante circle below. */}
           <button
             ref={anteInfoRef}
             onClick={() => setShowAnteBubble(s => !s)}
@@ -398,11 +399,11 @@ export default function MobileGameLayout({
               cursor: 'pointer', padding: 0,
               transition: 'all 0.15s',
               flexShrink: 0,
+              marginTop: 8,
             }}
           >
             <Info size={10} color={showAnteBubble ? '#1a0f00' : '#C5A059'} />
           </button>
-          <div style={{ flex: 1 }} />
 
           {/* Ante circle — pushed to bottom of footer */}
           {(() => {
