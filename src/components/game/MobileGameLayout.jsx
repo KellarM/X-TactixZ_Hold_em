@@ -289,7 +289,7 @@ export default function MobileGameLayout({
                     cursor: 'pointer', flexShrink: 0,
                     transform: active ? 'scale(1.15) translateY(-1px)' : 'scale(1)',
                     filter: active ? 'drop-shadow(0 0 3px rgba(251,191,36,0.9))' : 'none',
-                    opacity: active ? 1 : 0.55, transition: 'all 0.15s',
+                    opacity: 1, transition: 'all 0.15s',
                   }}
                 >
                   <Chip amount={chip.value} scale={0.52} />
@@ -313,7 +313,7 @@ export default function MobileGameLayout({
                     cursor: 'pointer', flexShrink: 0,
                     transform: active ? 'scale(1.15) translateY(-1px)' : 'scale(1)',
                     filter: active ? 'drop-shadow(0 0 3px rgba(251,191,36,0.9))' : 'none',
-                    opacity: active ? 1 : 0.55, transition: 'all 0.15s',
+                    opacity: 1, transition: 'all 0.15s',
                   }}
                 >
                   <Chip amount={chip.value} scale={0.52} />
