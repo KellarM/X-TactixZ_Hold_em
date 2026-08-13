@@ -61,13 +61,14 @@ const capBadgeStyle = {
 // boardPanelStyle is now a function so it reads the CSS variable at render time
 const boardPanelStyle = {
   background: 'var(--theme-bg, #051532)',
-  border: '1.5px solid #C5A059',
+  border: '3px solid #e8b84b',
   borderRadius: 10,
   padding: 6,
   display: 'flex',
   flexDirection: 'column',
   minHeight: 0,
   boxSizing: 'border-box',
+  boxShadow: '0 0 0 1px #000 inset, 0 0 8px rgba(232,184,75,0.3), 0 2px 8px rgba(0,0,0,0.6)',
 };
 
 // ── Inject pulse animations once ─────────────────────────────────────────────

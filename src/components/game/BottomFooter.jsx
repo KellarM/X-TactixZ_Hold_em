@@ -84,7 +84,7 @@ export default function BottomFooter({
         width: '100%',
         position: 'relative',
         background: 'var(--theme-bg, #050d21)',
-        borderTop: '2px solid #C5A059',
+        borderTop: '3px solid #e8b84b',
         display: 'flex',
         alignItems: 'center',
         padding: '10px 14px',

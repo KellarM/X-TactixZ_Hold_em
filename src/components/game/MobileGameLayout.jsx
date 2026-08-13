@@ -314,7 +314,7 @@ export default function MobileGameLayout({
         position: 'relative',
         flexShrink: 0, display: 'flex', alignItems: 'center',
         gap: 3, padding: '3px 5px', height: 80,
-        borderTop: '1px solid rgba(202,138,4,0.3)',
+        borderTop: '3px solid #e8b84b',
         background: 'rgba(0,0,0,0.65)',
       }}>
         {/* Chips — 2 rows of 3: top = .50/$1/$5, bottom = .01/.10/.25 */}

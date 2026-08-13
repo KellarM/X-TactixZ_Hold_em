@@ -7,7 +7,8 @@ export default function PreviousHands({ history }) {
       className="flex flex-col rounded-lg overflow-hidden h-full"
       style={{
         background: 'var(--theme-bg, #050d21)',
-        border: '1px solid #C5A059',
+        border: '3px solid #e8b84b',
+        boxShadow: '0 0 0 1px #000 inset, 0 0 8px rgba(232,184,75,0.3), 0 2px 8px rgba(0,0,0,0.6)',
         minHeight: 0
       }}
     >
