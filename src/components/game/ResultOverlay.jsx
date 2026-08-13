@@ -69,7 +69,7 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
         padding: '6px 8px',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
+        overflow: 'auto',
         height: '100%',
         boxSizing: 'border-box',
       }}
@@ -114,7 +114,7 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
         </div>
       ) : (
         /* Win rows */
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflow: 'auto' }}>
           {wins.map((win, idx) => {
             const profit = Math.round(win.amt * win.payout * 100) / 100;
             const total  = win.amt + profit;
@@ -125,12 +125,11 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
                   background: 'rgba(255,255,255,0.06)',
                   borderRadius: 6,
                   padding: '3px 6px',
-                  flex: '1 1 0',
-                  minHeight: 0,
+                  flex: '0 0 auto',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
-                  overflow: 'hidden',
+                  overflow: 'visible',
                 }}
               >
                 {/* Row 1: cards/label + bet/odds */}
@@ -420,7 +419,7 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
             boxShadow: `0 0 50px rgba(0,0,0,0.85), 0 0 20px ${ACCENT}44`,
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'hidden',
+            overflow: 'auto',
           }}
         >
           {/* Gold accent top bar */}
@@ -466,7 +465,7 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
               minHeight: 0,
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gridTemplateRows: '3fr 2fr',
+              gridTemplateRows: 'auto auto',
               gap: 6,
               padding: 6,
             }}
