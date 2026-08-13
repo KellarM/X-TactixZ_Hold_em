@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { RANK_LABELS, formatPayout, formatMoney } from '@/lib/game/cards';
 import Chip from '@/components/game/Chip';
 
-const GAP = 4;
+const GAP = 8;
 const R   = 8;
 
 const GOLD_ACTIVE = {
@@ -560,7 +560,7 @@ export default function RightSidebar({
       </div>
 
       {/* ■■ RIVER — flex: 2, chip LEFT, text CENTRED, winning side PULSES ■■ */}
-      <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 2, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
+      <div style={{ ...boardPanelStyle, flex: mobileLayout ? 1 : 1, ...(mobileLayout ? { display: 'flex', flexDirection: 'column' } : {}) }}>
         <SectionHeader capValue={caps.river}>RIVER</SectionHeader>
         <div className="grid grid-cols-2" style={{
           flex: 1, minHeight: 0, gap: GAP,

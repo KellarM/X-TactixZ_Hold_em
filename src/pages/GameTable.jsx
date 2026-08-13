@@ -346,7 +346,7 @@ export default function GameTable() {
       </div>
 
       {/* ■■ Footer — full width, flush against content row ■■ */}
-      <div style={{ flexShrink: 0, width: '100%' }}>
+      <div style={{ flexShrink: 0, width: '100%', padding: '0 6px 6px 6px' }}>
         <BottomFooter
           bank={game.bank}
           ante={game.ante}
