@@ -663,18 +663,18 @@ export function useGame() {
   const statusMessage = useMemo(() => {
     if (phase === 'ante') {
       return ante > 0
-        ? `Phase 1 — Ante set at ${formatMoney(ante)}. Press DEAL to receive the flop.`
-        : "Phase 1 — Texas Hold'em is open for play. Phase 2 — Place Hand, Rank, and Color bets after the flop.";
+        ? `Ante set at ${formatMoney(ante)}. Press DEAL to receive the flop.`
+        : "The Board is open for play. Place Hand, Rank, and Color bets after the flop.";
     }
     if (phase === 'postflop') {
-      if (computing) return 'Phase 2 — Calculating dynamic odds for all boards…';
+      if (computing) return 'Calculating dynamic odds for all boards…';
       const flopStr = flop.map(cardDisplay).join(' ');
       if (leadingRankName && leadingHandIds.length > 0) {
         const leaderHand = FIXED_HANDS.find(h => h.id === leadingHandIds[0]);
         const leaderLabel = leaderHand ? leaderHand.label : '';
         return `Flop: ${flopStr} — ${leaderLabel} leads (${leadingRankName}) — Place bets, then deal Turn.`;
       }
-      return `Flop: ${flopStr} — Phase 2: Place Hand, Rank, and Color bets. Deal Turn when ready.`;
+      return `Flop: ${flopStr} — Place Hand, Rank, and Color bets. Deal Turn when ready.`;
     }
     if (phase === 'postturn') {
       const turnStr = turn ? cardDisplay(turn) : '';
@@ -683,10 +683,10 @@ export function useGame() {
         const leaderLabel = leaderHand ? leaderHand.label : '';
         return `Turn: ${turnStr} — ${leaderLabel} leads (${leadingRankName}) — River bet open! LOW 2–7 or HIGH 8–A.`;
       }
-      return `Turn: ${turnStr} — Phase 3: Place River bet (LOW 2–7 or HIGH 8–A), then deal River.`;
+      return `Turn: ${turnStr} — Place River bet (LOW 2–7 or HIGH 8–A), then deal River.`;
     }
     if (phase === 'resolved') {
-      if (!result) return 'Phase 4 — Round resolved.';
+      if (!result) return 'Round resolved.';
       if (result.resolution?.boardWin) {
         const riverStr = river ? cardDisplay(river) : '';
         return `River: ${riverStr} — Board Wins! All Hand and Rank bets lose.`;
