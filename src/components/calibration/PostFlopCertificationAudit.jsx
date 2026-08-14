@@ -467,11 +467,11 @@ function ModulePanel({ module, flopData, flopIndex }) {
                             </tr>
                           );
                         }
-                        const odds100 = r.observedProb > 0 ? (1 / r.observedProb) - 1 : null;
-                        const oddsLiveCard = r.observedProb > 0 ? (LIVE_RTP_CARD / r.observedProb) - 1 : null;
-                        const odds95 = r.observedProb > 0 ? (0.95 / r.observedProb) - 1 : null;
-                        const odds965 = r.observedProb > 0 ? (0.965 / r.observedProb) - 1 : null;
-                        const odds98 = r.observedProb > 0 ? (0.98 / r.observedProb) - 1 : null;
+                        const odds100 = r.trueProb > 0 ? (1 / r.trueProb) - 1 : null;
+                        const oddsLiveCard = r.trueProb > 0 ? (LIVE_RTP_CARD / r.trueProb) - 1 : null;
+                        const odds95 = r.trueProb > 0 ? (0.95 / r.trueProb) - 1 : null;
+                        const odds965 = r.trueProb > 0 ? (0.965 / r.trueProb) - 1 : null;
+                        const odds98 = r.trueProb > 0 ? (0.98 / r.trueProb) - 1 : null;
                         const pass = r.observedRtp >= module.rtpLow && r.observedRtp <= module.rtpHigh;
                         return (
                           <tr key={'c'+i} className="border-b border-slate-700/50">
@@ -503,11 +503,11 @@ function ModulePanel({ module, flopData, flopIndex }) {
                             </tr>
                           );
                         }
-                        const odds100 = r.observedProb > 0 ? (1 / r.observedProb) - 1 : null;
-                        const oddsLiveRank = r.observedProb > 0 ? (LIVE_RTP_RANK / r.observedProb) - 1 : null;
-                        const odds95 = r.observedProb > 0 ? (0.95 / r.observedProb) - 1 : null;
-                        const odds965 = r.observedProb > 0 ? (0.965 / r.observedProb) - 1 : null;
-                        const odds98 = r.observedProb > 0 ? (0.98 / r.observedProb) - 1 : null;
+                        const odds100 = r.trueProb > 0 ? (1 / r.trueProb) - 1 : null;
+                        const oddsLiveRank = r.trueProb > 0 ? (LIVE_RTP_RANK / r.trueProb) - 1 : null;
+                        const odds95 = r.trueProb > 0 ? (0.95 / r.trueProb) - 1 : null;
+                        const odds965 = r.trueProb > 0 ? (0.965 / r.trueProb) - 1 : null;
+                        const odds98 = r.trueProb > 0 ? (0.98 / r.trueProb) - 1 : null;
                         const pass = r.observedRtp >= module.rtpLow && r.observedRtp <= module.rtpHigh;
                         return (
                           <tr key={'r'+i} className="border-b border-slate-700/50">
