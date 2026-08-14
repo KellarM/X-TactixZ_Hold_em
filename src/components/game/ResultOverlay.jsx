@@ -69,8 +69,7 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
         padding: '6px 8px',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'auto',
-        height: '100%',
+        overflow: 'visible',
         boxSizing: 'border-box',
       }}
     >
@@ -114,7 +113,7 @@ function Quadrant({ title, wins, placedBets = [], accentColor }) {
         </div>
       ) : (
         /* Win rows */
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflow: 'auto' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, overflow: 'visible' }}>
           {wins.map((win, idx) => {
             const profit = Math.round(win.amt * win.payout * 100) / 100;
             const total  = win.amt + profit;
@@ -408,18 +407,14 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
           style={{
             width: 500,
             maxWidth: '96vw',
-            position: 'absolute',
-            top: 'calc(50% - 210px)',
-            bottom: 70,
-            left: '50%',
-            transform: 'translateX(-50%)',
+            maxHeight: '92vh',
             background: 'linear-gradient(135deg,rgba(60,20,5,0.98) 0%,rgba(25,8,2,0.99) 100%)',
             border: `2px solid ${ACCENT}`,
             borderRadius: 16,
             boxShadow: `0 0 50px rgba(0,0,0,0.85), 0 0 20px ${ACCENT}44`,
             display: 'flex',
             flexDirection: 'column',
-            overflow: 'auto',
+            overflowY: 'auto',
           }}
         >
           {/* Gold accent top bar */}
@@ -461,8 +456,6 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
           {/* ── 2×2 Quadrant Grid ── */}
           <div
             style={{
-              flex: 1,
-              minHeight: 0,
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
               gridTemplateRows: 'auto auto',
