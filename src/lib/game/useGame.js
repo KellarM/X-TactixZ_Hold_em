@@ -641,7 +641,7 @@ export function useGame() {
     setPhase('ante');
   }, []);
 
-  // Full player reset: bank → $1000, stats → zeros, sound → defaults.
+  // Full player reset: bank → $20, stats → zeros, sound → defaults.
   // All three persistence layers are cleared so a fresh page load also
   // starts clean. This is the player's deliberate "start fresh" action.
   const resetBank = useCallback(() => {
