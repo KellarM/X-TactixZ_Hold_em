@@ -1,8 +1,8 @@
 // Post-Flop & Post-Turn odds engine + round resolution.
 // Uses COMPLETE ENUMERATION (not Monte Carlo) per the build spec.
 
-import { bestHand, evaluate5, compare5, combinations } from './pokerEvaluator';
-import { cardColor, isLowRank, cardKey, CAT_TO_LABEL } from './cards';
+import { bestHand, evaluate5, compare5, combinations } from './pokerEvaluator.js';
+import { cardColor, isLowRank, cardKey, CAT_TO_LABEL } from './cards.js';
 
 // Tiered house edges — higher for boards where player has more post-flop information
 export const HOUSE_EDGE_CARD  = 0.15;  // Card Board: player sees exact hand matchups post-flop

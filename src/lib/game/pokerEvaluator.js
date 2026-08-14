@@ -3,7 +3,7 @@
 // 8 Royal Flush, 7 Straight Flush, 6 Four of a Kind, 5 Full House, 4 Flush,
 // 3 Straight, 2 Three of a Kind, 1 Two Pair, 0 One Pair, -1 High Card
 
-import { rankValue } from './cards';
+import { rankValue } from './cards.js';
 
 const VAL_CACHE = {};
 function rv(rank) {
