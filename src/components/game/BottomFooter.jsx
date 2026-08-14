@@ -89,7 +89,7 @@ export default function BottomFooter({
         boxShadow: '0 0 0 1px #000 inset, 0 0 8px rgba(232,184,75,0.3), 0 2px 8px rgba(0,0,0,0.6)',
         display: 'flex',
         alignItems: 'center',
-        padding: '10px 14px',
+        padding: '6px 14px',
         gap: 8,
         boxSizing: 'border-box',
         overflow: 'hidden',
