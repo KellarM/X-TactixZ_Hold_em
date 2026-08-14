@@ -200,7 +200,7 @@ export default function MobileGameLayout({
     >
       {/* ── Dealer status message bar ── */}
       <div style={{
-        flexShrink: 0, height: 12, display: 'flex', alignItems: 'center',
+        flexShrink: 0, height: 22, display: 'flex', alignItems: 'center',
         padding: '0 6px', overflow: 'hidden', whiteSpace: 'nowrap',
         // Transparent — lets the velvet-board's own radial gradient show
         // through, which IS the brighter blue Michael pointed to between
@@ -210,7 +210,7 @@ export default function MobileGameLayout({
         borderBottom: '1px solid rgba(202,138,4,0.3)',
       }}>
         <span style={{
-          fontFamily: 'Oswald, sans-serif', fontSize: '0.5rem', fontWeight: 700,
+          fontFamily: 'Oswald, sans-serif', fontSize: '0.75rem', fontWeight: 700,
           fontStyle: 'italic', color: '#f6d860',
           textShadow: '0 1px 2px rgba(0,0,0,0.8)',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
