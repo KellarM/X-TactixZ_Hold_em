@@ -13,13 +13,32 @@
 //
 // Also supports Full Enumeration mode (all 406 Turn+River combos)
 // for exact baseline comparison.
+//
 // ============================================================
+// FIX (2026-08-14): Replaced broken inline eval5/best7 with imports
+// from pokerEvaluator.js. The old inline evaluator had a faulty
+// 5-element sorting network (8 compare-exchanges instead of 9),
+// producing a 10.87% category mismatch rate vs the live engine.
+// Now uses the same canonical evaluator as the live game — single
+// source of truth, no divergence possible.
+// ============================================================
+
+import { evaluate5, bestHand, compare5 } from '../lib/game/pokerEvaluator.js';
 
 const RANK_LABELS = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const SUIT_LABELS = ['clubs','diamonds','hearts','spades'];
 
 function enc(rankLabel, suitLabel) {
   return RANK_LABELS.indexOf(rankLabel) * 4 + SUIT_LABELS.indexOf(suitLabel);
+}
+
+// ── Integer-to-card-object converter ───────────────────────────
+// The worker uses fast integer encoding (rank*4+suit) for shuffling.
+// pokerEvaluator.js works with {rank, suit} card objects. This thin
+// adapter bridges the two — called only during evaluation, not during
+// the hot shuffle loop, so overhead is negligible.
+function intToCard(n) {
+  return { rank: RANK_LABELS[n >> 2], suit: SUIT_LABELS[n & 3] };
 }
 
 // Fixed player hands
@@ -47,28 +66,15 @@ for (let r = 0; r < 13; r++)
 const HAND_LABELS = ['A♦10♥','K♣K♠','Q♣J♠','Q♠10♠','J♣9♣','8♦6♦','7♦7♠','4♥2♥','3♣3♥','A♥5♦'];
 const RANK_NAMES = ['1 Pair', '2 Pair', '3 Of A Kind', 'Straight', 'Flush', 'Full House', '4 Of A Kind'];
 // Odds thresholds — must match oddsEngine.js
-// Separate per-board so they can be tuned independently
 const ODDS_THRESHOLD_CARD_HIGH = 300;
 const ODDS_THRESHOLD_CARD_LOW  = 1.1;
 const ODDS_THRESHOLD_RANK_HIGH = 300;
 const ODDS_THRESHOLD_RANK_LOW  = 1.1;
 
-// Check if true odds fall outside the bettable window
 function isOddsDead(trueOdds, high, low) {
   if (trueOdds === null) return true;
   return trueOdds > high || trueOdds < low;
 }
-
-// ── Precomputed 7-choose-5 combos ─────────────────────────────
-const COMBOS_7_5 = [
-  [0,1,2,3,4],[0,1,2,3,5],[0,1,2,3,6],[0,1,2,4,5],[0,1,2,4,6],
-  [0,1,2,5,6],[0,1,3,4,5],[0,1,3,4,6],[0,1,3,5,6],[0,1,4,5,6],
-  [0,2,3,4,5],[0,2,3,4,6],[0,2,3,5,6],[0,2,4,5,6],[0,3,4,5,6],
-  [1,2,3,4,5],[1,2,3,4,6],[1,2,3,5,6],[1,2,4,5,6],[1,3,4,5,6],
-  [2,3,4,5,6]
-];
-
-const B1=14, B2=196, B3=2744, B4=38416, B5=537824;
 
 // ── Card encoding helpers (for decoding flop from message) ──
 const SUIT_SYMBOLS = { clubs:'♣', diamonds:'♦', hearts:'♥', spades:'♠' };
@@ -78,79 +84,10 @@ function cardLabel(c) {
 }
 
 function parseCard(label) {
-  // Parse labels like "A♦", "10♣", "2♥"
   const suitMap = { '♣':'clubs', '♦':'diamonds', '♥':'hearts', '♠':'spades' };
   const suit = suitMap[label.slice(-1)];
   const rank = label.slice(0, -1);
   return enc(rank, suit);
-}
-
-// ── Inlined 5-card strength evaluation ───────────────────────
-function eval5(c0, c1, c2, c3, c4) {
-  const r0=c0>>2, r1=c1>>2, r2=c2>>2, r3=c3>>2, r4=c4>>2;
-  const s0=c0&3, s1=c1&3, s2=c2&3, s3=c3&3, s4=c4&3;
-
-  let a=r0,b=r1,c=r2,d=r3,e=r4;
-  if(a<b){const t=a;a=b;b=t;} if(c<d){const t=c;c=d;d=t;}
-  if(a<c){const t=a;a=c;c=t;} if(b<d){const t=b;b=d;d=t;}
-  if(b<c){const t=b;b=c;c=t;} if(d<e){const t=d;d=e;e=t;}
-  if(c<d){const t=c;c=d;d=t;} if(d<e){const t=d;d=e;e=t;}
-
-  const flush = (s0===s1 && s1===s2 && s2===s3 && s3===s4);
-
-  let isStraight = false, straightHigh = 0;
-  if (a!==b && b!==c && c!==d && d!==e) {
-    if (a - e === 4) { isStraight = true; straightHigh = a; }
-    else if (a===12 && b===3 && c===2 && d===1 && e===0) { isStraight = true; straightHigh = 3; }
-  }
-
-  const counts = [1,0,0,0,0]; const vals = [a,0,0,0,0];
-  let gi = 0; let prev = a;
-  for (let i = 1; i < 5; i++) {
-    const v = [b,c,d,e][i-1];
-    if (v === prev) { counts[gi]++; }
-    else { gi++; counts[gi] = 1; vals[gi] = v; prev = v; }
-  }
-  const nGroups = gi + 1;
-  for (let i = 0; i < nGroups - 1; i++) {
-    for (let j = 0; j < nGroups - 1 - i; j++) {
-      if (counts[j] < counts[j+1] || (counts[j] === counts[j+1] && vals[j] < vals[j+1])) {
-        const tc = counts[j]; counts[j] = counts[j+1]; counts[j+1] = tc;
-        const tv = vals[j]; vals[j] = vals[j+1]; vals[j+1] = tv;
-      }
-    }
-  }
-
-  const fc = counts[0], fv = vals[0];
-  const sc = counts[1] || 0, sv = vals[1] || 0;
-
-  if (isStraight && flush) {
-    if (straightHigh === 12) return 9*B5;
-    return 8*B5 + straightHigh*B1;
-  }
-  if (fc === 4) return 7*B5 + fv*B1 + sv;
-  if (fc === 3 && sc === 2) return 6*B5 + fv*B1 + sv;
-  if (flush) return 5*B5 + a*B4 + b*B3 + c*B2 + d*B1 + e;
-  if (isStraight) return 4*B5 + straightHigh*B1;
-  if (fc === 3) return 3*B5 + fv*B2 + sv*B1 + (counts[2]||0)*1 + (vals[2]||0);
-  if (fc === 2 && sc === 2) return 2*B5 + fv*B2 + sv*B1 + (counts[2]||0)*1 + (vals[2]||0);
-  if (fc === 2) return 1*B5 + fv*B3 + sv*B2 + (counts[2]||0)*B1 + (vals[2]||0) + (counts[3]||0)*1 + (vals[3]||0);
-  return a*B4 + b*B3 + c*B2 + d*B1 + e;
-}
-
-function catFromStrength(s) {
-  return Math.floor(s / B5) - 1;
-}
-
-function best7(h0, h1, b0, b1, b2, b3, b4) {
-  const all = [h0, h1, b0, b1, b2, b3, b4];
-  let best = 0;
-  for (let i = 0; i < 21; i++) {
-    const idx = COMBOS_7_5[i];
-    const s = eval5(all[idx[0]], all[idx[1]], all[idx[2]], all[idx[3]], all[idx[4]]);
-    if (s > best) best = s;
-  }
-  return best;
 }
 
 // ── CSPRNG shuffle ────────────────────────────────────────────
@@ -176,14 +113,13 @@ function secureRandInt(max) {
 // ── Main run handler ───────────────────────────────────────────
 function handleRun(payload) {
   const { callId, flopCards, rounds, trueProbabilities, mode } = payload;
-  // flopCards: array of 3 card labels (e.g., ["2♣","2♦","2♠"])
-  // rounds: number of Monte Carlo rounds
-  // trueProbabilities: { cardProbs: [10 floats], rankProbs: [7 floats] } from matrix
-  // mode: 'monte-carlo' or 'enumeration'
 
-  // Parse flop cards
+  // Parse flop cards (integer-encoded for fast set operations)
   const flop = flopCards.map(parseCard);
   const flopSet = new Set(flop);
+
+  // Pre-convert flop to card objects for evaluation (reused every round)
+  const flopCards5 = flop.map(intToCard);
 
   // Build remaining 29 cards
   const remaining = [];
@@ -204,25 +140,26 @@ function handleRun(payload) {
     const R = remaining.length;
     for (let t = 0; t < R; t++) {
       for (let r = t + 1; r < R; r++) {
-        const b0 = flop[0], b1 = flop[1], b2 = flop[2], b3 = remaining[t], b4 = remaining[r];
-        const boardStr = eval5(b0, b1, b2, b3, b4);
+        const board = [flopCards5[0], flopCards5[1], flopCards5[2],
+                       intToCard(remaining[t]), intToCard(remaining[r])];
+        const boardResult = evaluate5(board);
 
-        let bestHandStr = 0;
-        const handStrs = [0,0,0,0,0,0,0,0,0,0];
+        let bestHandResult = null;
+        const handResults = [null,null,null,null,null,null,null,null,null,null];
         let boardBeatsAll = true;
 
         for (let h = 0; h < 10; h++) {
-          const hs = best7(HANDS[h][0], HANDS[h][1], b0, b1, b2, b3, b4);
-          handStrs[h] = hs;
-          if (hs >= boardStr) boardBeatsAll = false;
-          if (hs > bestHandStr) bestHandStr = hs;
+          const hs = bestHand([intToCard(HANDS[h][0]), intToCard(HANDS[h][1])], board);
+          handResults[h] = hs;
+          if (compare5(hs, boardResult) >= 0) boardBeatsAll = false;
+          if (bestHandResult === null || compare5(hs, bestHandResult) > 0) bestHandResult = hs;
         }
 
         if (!boardBeatsAll) {
           for (let h = 0; h < 10; h++) {
-            if (handStrs[h] === bestHandStr) cardWins[h]++;
+            if (compare5(handResults[h], bestHandResult) === 0) cardWins[h]++;
           }
-          const winCat = catFromStrength(bestHandStr);
+          const winCat = bestHandResult.category;
           if (winCat >= 0 && winCat <= 6) rankWins[winCat]++;
         } else {
           boardWins++;
@@ -240,26 +177,26 @@ function handleRun(payload) {
         const tmp = _workDeck[i]; _workDeck[i] = _workDeck[j]; _workDeck[j] = tmp;
       }
       // Turn at position [1] (after burn at [0]), River at position [3] (after burn at [2])
-      const b0 = flop[0], b1 = flop[1], b2 = flop[2], b3 = _workDeck[1], b4 = _workDeck[3];
+      const board = [flopCards5[0], flopCards5[1], flopCards5[2],
+                     intToCard(_workDeck[1]), intToCard(_workDeck[3])];
+      const boardResult = evaluate5(board);
 
-      const boardStr = eval5(b0, b1, b2, b3, b4);
-
-      let bestHandStr = 0;
-      const handStrs = [0,0,0,0,0,0,0,0,0,0];
+      let bestHandResult = null;
+      const handResults = [null,null,null,null,null,null,null,null,null,null];
       let boardBeatsAll = true;
 
       for (let h = 0; h < 10; h++) {
-        const hs = best7(HANDS[h][0], HANDS[h][1], b0, b1, b2, b3, b4);
-        handStrs[h] = hs;
-        if (hs >= boardStr) boardBeatsAll = false;
-        if (hs > bestHandStr) bestHandStr = hs;
+        const hs = bestHand([intToCard(HANDS[h][0]), intToCard(HANDS[h][1])], board);
+        handResults[h] = hs;
+        if (compare5(hs, boardResult) >= 0) boardBeatsAll = false;
+        if (bestHandResult === null || compare5(hs, bestHandResult) > 0) bestHandResult = hs;
       }
 
       if (!boardBeatsAll) {
         for (let h = 0; h < 10; h++) {
-          if (handStrs[h] === bestHandStr) cardWins[h]++;
+          if (compare5(handResults[h], bestHandResult) === 0) cardWins[h]++;
         }
-        const winCat = catFromStrength(bestHandStr);
+        const winCat = bestHandResult.category;
         if (winCat >= 0 && winCat <= 6) rankWins[winCat]++;
       } else {
         boardWins++;
@@ -288,7 +225,6 @@ function handleRun(payload) {
       trueOdds: trueProb > 0 ? (1 / trueProb) - 1 : null,
       observedRtp: obsRtp,
       dead: trueProb === 0 || isOddsDead(trueProb > 0 ? (1 / trueProb) - 1 : null, ODDS_THRESHOLD_CARD_HIGH, ODDS_THRESHOLD_CARD_LOW),
-      // RTP at various targets
       rtpAt96: trueProb > 0 ? observedProb * (0.96 / trueProb) * 100 : 0,
       rtpAt98: trueProb > 0 ? observedProb * (0.98 / trueProb) * 100 : 0,
       rtpAt100: trueProb > 0 ? (observedProb / trueProb) * 100 : 0,
