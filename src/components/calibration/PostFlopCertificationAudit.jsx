@@ -4,7 +4,7 @@ import { Play, RefreshCw, CheckCircle2, XCircle, AlertTriangle, ChevronDown, Che
 import { runPostFlopAudit, resetWorker } from '@/lib/postFlopWorkerBridge';
 import { downloadPostFlopExcel } from '@/lib/game/postFlopExcelExporter';
 import { DEALER_STOCK, SUIT_SYMBOL } from '@/lib/game/cards';
-import { HOUSE_EDGE_CARD, HOUSE_EDGE_RANK } from '@/lib/game/oddsEngine';
+
 import compactMatrix from '@/lib/game/postFlopMatrixCompact.json';
 
 // ── Constants ──────────────────────────────────────────────────
@@ -14,11 +14,6 @@ const HAND_LABELS = [
   'Hand 9 — 3♣3♥', 'Hand 10 — A♥5♦',
 ];
 const RANK_NAMES = ['1 Pair', '2 Pair', '3 Of A Kind', 'Straight', 'Flush', 'Full House', '4 Of A Kind'];
-
-// Live game RTP per board — from oddsEngine.js house edges
-// Card Board: 15% HE → 85% RTP, Rank Board: 12% HE → 88% RTP
-const LIVE_RTP_CARD = 1 - HOUSE_EDGE_CARD;   // 0.85
-const LIVE_RTP_RANK = 1 - HOUSE_EDGE_RANK;   // 0.88
 
 // ── Card pool for flop filter dropdowns ──────────────────────
 // Build from DEALER_STOCK (32-card community stock) formatted to match
@@ -468,7 +463,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
                           );
                         }
                         const odds100 = r.trueProb > 0 ? (1 / r.trueProb) - 1 : null;
-                        const oddsLiveCard = r.trueProb > 0 ? (LIVE_RTP_CARD / r.trueProb) - 1 : null;
+                        const oddsLiveCard = r.trueProb > 0 ? ((rtpValue / 100) / r.trueProb) - 1 : null;
                         const odds95 = r.trueProb > 0 ? (0.95 / r.trueProb) - 1 : null;
                         const odds965 = r.trueProb > 0 ? (0.965 / r.trueProb) - 1 : null;
                         const odds98 = r.trueProb > 0 ? (0.98 / r.trueProb) - 1 : null;
@@ -504,7 +499,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
                           );
                         }
                         const odds100 = r.trueProb > 0 ? (1 / r.trueProb) - 1 : null;
-                        const oddsLiveRank = r.trueProb > 0 ? (LIVE_RTP_RANK / r.trueProb) - 1 : null;
+                        const oddsLiveRank = r.trueProb > 0 ? ((rtpValue / 100) / r.trueProb) - 1 : null;
                         const odds95 = r.trueProb > 0 ? (0.95 / r.trueProb) - 1 : null;
                         const odds965 = r.trueProb > 0 ? (0.965 / r.trueProb) - 1 : null;
                         const odds98 = r.trueProb > 0 ? (0.98 / r.trueProb) - 1 : null;
@@ -541,7 +536,7 @@ export default function PostFlopCertificationAudit() {
   const [flopIndex, setFlopIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFlopList, setShowFlopList] = useState(false);
-  const [rtpValue, setRtpValue] = useState(100);
+  const [rtpValue, setRtpValue] = useState(96.5);
   const listRef = useRef(null);
 
   // Card filter state — 3 dropdowns for selecting specific flop cards
@@ -621,21 +616,23 @@ export default function PostFlopCertificationAudit() {
         </button>
       </div>
 
-      {/* RTP Control for Excel */}
+      {/* RTP Control — Card & Rank Odds */}
       <div className="flex items-center gap-3 bg-slate-900/60 rounded-lg border border-slate-700 px-4 py-3">
-        <span className="text-xs font-semibold text-slate-400">Excel RTP Setting:</span>
+        <span className="text-xs font-semibold text-slate-400">Card & Rank RTP:</span>
         <input
-          type="range"
+          type="number"
           min="80"
           max="100"
-          step="0.5"
+          step="0.1"
           value={rtpValue}
-          onChange={e => setRtpValue(parseFloat(e.target.value))}
-          className="flex-1 max-w-xs"
-          style={{ accentColor: '#eab308' }}
+          onChange={e => {
+            const v = parseFloat(e.target.value);
+            if (!isNaN(v) && v >= 80 && v <= 100) setRtpValue(v);
+          }}
+          className="w-20 px-2 py-1 bg-slate-800 border border-amber-600/50 rounded-md text-sm font-bold text-amber-400 font-mono text-center focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
         />
-        <span className="text-sm font-bold text-amber-400 font-mono">{rtpValue}%</span>
-        <span className="text-xs text-slate-500">HE: {(100 - rtpValue).toFixed(1)}%</span>
+        <span className="text-sm font-bold text-amber-400 font-mono">%</span>
+        <span className="text-xs text-slate-500">House Edge: {(100 - rtpValue).toFixed(1)}%</span>
       </div>
 
       {/* Flop Selector */}
