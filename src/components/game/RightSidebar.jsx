@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { RANK_LABELS, formatPayout, formatMoney } from '@/lib/game/cards';
 import Chip from '@/components/game/Chip';
 
-const GAP = 8;
+const GAP = 4;
 const R   = 8;
 
 const GOLD_ACTIVE = {
@@ -63,7 +63,7 @@ const boardPanelStyle = {
   background: 'var(--theme-bg, #051532)',
   border: '3px solid #e8b84b',
   borderRadius: 10,
-  padding: 6,
+  padding: 4,
   display: 'flex',
   flexDirection: 'column',
   minHeight: 0,
@@ -425,7 +425,7 @@ export default function RightSidebar({
                 onClick={() => !locked && onPlace('rank', label)}
                 onContextMenu={(e) => { e.preventDefault(); if (!locked && bets.rank[label]) onRemove('rank', label); }}
                 className="relative flex items-center justify-between flex-1"
-                style={{ ...style, ...bonusRankStyle(rankIdx), borderRadius: R, padding: '0 12px', minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
+                style={{ ...style, ...bonusRankStyle(rankIdx), borderRadius: R, padding: '0 8px', minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
                 <span style={{ color: 'rgba(0,0,0,0.88)', fontWeight: 900, fontSize: 15, lineHeight: 1, WebkitTextStroke: '0.4px currentColor' }}>
                   {label}
