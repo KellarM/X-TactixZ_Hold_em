@@ -317,9 +317,9 @@ export default function MobileGameLayout({
         borderTop: '3px solid #e8b84b',
         background: 'rgba(0,0,0,0.65)',
       }}>
-        {/* Chips — 2 rows of 3: top = .50/$1/$5, bottom = .01/.10/.25 */}
+        {/* Chips — 2 rows of 3: top = .50/.25/.10, bottom = .05/.02/.01 (penny right) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center', flexShrink: 0 }}>
-          {/* Top row: .50, 1, 5 */}
+          {/* Top row: .50, .25, .10 */}
           <div style={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             {MOBILE_CHIPS.slice(3).map(chip => {
               const active = game.selectedChip === chip.value;
@@ -343,7 +343,7 @@ export default function MobileGameLayout({
               );
             })}
           </div>
-          {/* Bottom row: .01, .10, .25 */}
+          {/* Bottom row: .05, .02, .01 */}
           <div style={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             {MOBILE_CHIPS.slice(0, 3).map(chip => {
               const active = game.selectedChip === chip.value;

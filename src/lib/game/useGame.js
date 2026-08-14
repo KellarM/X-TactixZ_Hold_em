@@ -51,26 +51,25 @@ function bestFromPool(pool) {
 }
 
 export const CHIPS = [
-  { value: 0.01, label: '1¢' },
-  { value: 0.05, label: '5¢' },
-  { value: 0.10, label: '10¢' },
-  { value: 0.25, label: '25¢' },
   { value: 0.50, label: '50¢' },
-  { value: 1.00, label: '$1' },
-  { value: 5.00, label: '$5' }
+  { value: 0.25, label: '25¢' },
+  { value: 0.10, label: '10¢' },
+  { value: 0.05, label: '5¢' },
+  { value: 0.02, label: '2¢' },
+  { value: 0.01, label: '1¢' }
 ];
 
 // Mobile portrait only — 6 chips in 2 rows of 3
 export const MOBILE_CHIPS = [
+  { value: 0.05, label: '5¢' },
+  { value: 0.02, label: '2¢' },
   { value: 0.01, label: '1¢' },
-  { value: 0.10, label: '10¢' },
-  { value: 0.25, label: '25¢' },
   { value: 0.50, label: '50¢' },
-  { value: 1.00, label: '$1' },
-  { value: 5.00, label: '$5' }
+  { value: 0.25, label: '25¢' },
+  { value: 0.10, label: '10¢' }
 ];
 
-const START_BANK = 1000;
+const START_BANK = 20;
 
 // ── Bank persistence (localStorage + cookie fallback) ─────────────────────
 const BANK_STORAGE_KEY = 'rfpf_bank';
@@ -646,7 +645,7 @@ export function useGame() {
   // All three persistence layers are cleared so a fresh page load also
   // starts clean. This is the player's deliberate "start fresh" action.
   const resetBank = useCallback(() => {
-    setBank(1000);              // useEffect will persist this via saveBankValue
+    setBank(20);              // useEffect will persist this via saveBankValue
     clearStatsValue();          // Clear persisted stats
     resetSoundToDefaults();     // Clear + reset sound to defaults
     setDeck([]);
