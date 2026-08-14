@@ -4,6 +4,7 @@ import { Play, RefreshCw, CheckCircle2, XCircle, AlertTriangle, ChevronDown, Che
 import { runPostFlopAudit, resetWorker } from '@/lib/postFlopWorkerBridge';
 import { downloadPostFlopExcel } from '@/lib/game/postFlopExcelExporter';
 import { DEALER_STOCK, SUIT_SYMBOL } from '@/lib/game/cards';
+import { HOUSE_EDGE_CARD, HOUSE_EDGE_RANK } from '@/lib/game/oddsEngine';
 import compactMatrix from '@/lib/game/postFlopMatrixCompact.json';
 
 // ── Constants ──────────────────────────────────────────────────
@@ -13,6 +14,11 @@ const HAND_LABELS = [
   'Hand 9 — 3♣3♥', 'Hand 10 — A♥5♦',
 ];
 const RANK_NAMES = ['1 Pair', '2 Pair', '3 Of A Kind', 'Straight', 'Flush', 'Full House', '4 Of A Kind'];
+
+// Live game RTP per board — from oddsEngine.js house edges
+// Card Board: 15% HE → 85% RTP, Rank Board: 12% HE → 88% RTP
+const LIVE_RTP_CARD = 1 - HOUSE_EDGE_CARD;   // 0.85
+const LIVE_RTP_RANK = 1 - HOUSE_EDGE_RANK;   // 0.88
 
 // ── Card pool for flop filter dropdowns ──────────────────────
 // Build from DEALER_STOCK (32-card community stock) formatted to match
@@ -438,6 +444,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
                         <th className="px-2 py-1.5 text-left font-semibold text-slate-400">Position</th>
                         <th className="px-2 py-1.5 text-right font-semibold text-slate-400">Current Odds</th>
                         <th className="px-2 py-1.5 text-right font-semibold text-slate-400">For 100%</th>
+                        <th className="px-2 py-1.5 text-right font-semibold text-amber-300">Live Game</th>
                         <th className="px-2 py-1.5 text-right font-semibold text-slate-400">For 95%</th>
                         <th className="px-2 py-1.5 text-right font-semibold text-slate-400">For 96.5%</th>
                         <th className="px-2 py-1.5 text-right font-semibold text-slate-400">For 98%</th>
@@ -455,11 +462,13 @@ function ModulePanel({ module, flopData, flopIndex }) {
                               <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
                               <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
                               <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
                               <td className="px-2 py-1 text-center font-mono text-slate-500 font-bold">DEAD</td>
                             </tr>
                           );
                         }
                         const odds100 = r.observedProb > 0 ? (1 / r.observedProb) - 1 : null;
+                        const oddsLiveCard = r.observedProb > 0 ? (LIVE_RTP_CARD / r.observedProb) - 1 : null;
                         const odds95 = r.observedProb > 0 ? (0.95 / r.observedProb) - 1 : null;
                         const odds965 = r.observedProb > 0 ? (0.965 / r.observedProb) - 1 : null;
                         const odds98 = r.observedProb > 0 ? (0.98 / r.observedProb) - 1 : null;
@@ -469,6 +478,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
                             <td className="px-2 py-1 text-slate-300">{HAND_LABELS[r.handId - 1]}</td>
                             <td className="px-2 py-1 text-right font-mono text-amber-300">{formatOdds(r.trueOdds)}</td>
                             <td className="px-2 py-1 text-right font-mono text-slate-300">{formatOdds(odds100)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-amber-300 font-semibold">{formatOdds(oddsLiveCard)}</td>
                             <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds95)}</td>
                             <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds965)}</td>
                             <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds98)}</td>
@@ -488,11 +498,13 @@ function ModulePanel({ module, flopData, flopIndex }) {
                               <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
                               <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
                               <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
+                              <td className="px-2 py-1 text-right font-mono text-slate-600">DEAD</td>
                               <td className="px-2 py-1 text-center font-mono text-slate-500 font-bold">DEAD</td>
                             </tr>
                           );
                         }
                         const odds100 = r.observedProb > 0 ? (1 / r.observedProb) - 1 : null;
+                        const oddsLiveRank = r.observedProb > 0 ? (LIVE_RTP_RANK / r.observedProb) - 1 : null;
                         const odds95 = r.observedProb > 0 ? (0.95 / r.observedProb) - 1 : null;
                         const odds965 = r.observedProb > 0 ? (0.965 / r.observedProb) - 1 : null;
                         const odds98 = r.observedProb > 0 ? (0.98 / r.observedProb) - 1 : null;
@@ -502,6 +514,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
                             <td className="px-2 py-1 text-slate-300">{RANK_NAMES[r.rankIndex]}</td>
                             <td className="px-2 py-1 text-right font-mono text-amber-300">{formatOdds(r.trueOdds)}</td>
                             <td className="px-2 py-1 text-right font-mono text-slate-300">{formatOdds(odds100)}</td>
+                            <td className="px-2 py-1 text-right font-mono text-amber-300 font-semibold">{formatOdds(oddsLiveRank)}</td>
                             <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds95)}</td>
                             <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds965)}</td>
                             <td className="px-2 py-1 text-right font-mono text-slate-400">{formatOdds(odds98)}</td>
