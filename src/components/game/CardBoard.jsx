@@ -34,12 +34,8 @@ function injectStyles() {
     /* EXPLODE — winning position pops with an elastic overshoot then
        settles back to its regular size, with a brightness flash on impact */
     @keyframes rf-bonus-explode {
-      0%   { box-shadow: 0 0 20px 8px  rgba(255,215,0,0.7),  inset 0 0 30px rgba(255,215,0,0.3); transform: scale(1.0);  filter: brightness(1.0); }
-      12%  { box-shadow: 0 0 80px 30px rgba(255,255,180,1.0), inset 0 0 120px rgba(255,255,180,0.8); transform: scale(1.38); filter: brightness(2.4); }
-      30%  { box-shadow: 0 0 50px 18px rgba(255,225,0,0.9),  inset 0 0 80px rgba(255,225,0,0.5);  transform: scale(0.90);  filter: brightness(1.3); }
-      50%  { box-shadow: 0 0 60px 22px rgba(255,225,0,0.95), inset 0 0 90px rgba(255,225,0,0.55); transform: scale(1.10);  filter: brightness(1.5); }
-      75%  { box-shadow: 0 0 44px 16px rgba(255,220,0,0.85), inset 0 0 70px rgba(255,220,0,0.45); transform: scale(0.98);  filter: brightness(1.15); }
-      100% { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0),  inset 0 0 80px rgba(255,235,0,0.55); transform: scale(1.0);   filter: brightness(1.0); }
+      0%   { box-shadow: 0 0 12px 4px rgba(232,184,75,0.6), inset 0 0 16px rgba(232,184,75,0.15); transform: scale(1.0); filter: brightness(1.0); }
+      100% { box-shadow: 0 0 24px 8px rgba(232,184,75,0.9), inset 0 0 30px rgba(232,184,75,0.25); transform: scale(1.0); filter: brightness(1.0); }
     }
     /* Bright flashbulb burst — accompanies the explode on winning positions */
     @keyframes rf-bonus-flash {
@@ -74,9 +70,8 @@ function injectStyles() {
     }
     /* Sustained golden glow on the landed box */
     @keyframes rf-bonus-sustained-glow {
-      0%   { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0),  inset 0 0 80px rgba(255,235,0,0.55); }
-      50%  { box-shadow: 0 0 70px 26px rgba(255,235,0,1.0),  inset 0 0 120px rgba(255,235,0,0.70); }
-      100% { box-shadow: 0 0 40px 16px rgba(255,235,0,1.0),  inset 0 0 80px rgba(255,235,0,0.55); }
+      0%, 100% { box-shadow: 0 0 16px 5px rgba(232,184,75,0.5), inset 0 0 20px rgba(232,184,75,0.15); }
+      50%      { box-shadow: 0 0 28px 10px rgba(232,184,75,0.7), inset 0 0 34px rgba(232,184,75,0.22); }
     }
     /* Persistent marker — pulsing gold star tag that stays on the bonus-
        selected position until the player clicks to reveal the result. */
@@ -86,8 +81,8 @@ function injectStyles() {
       100% { opacity: 1; transform: translateX(-50%) scale(1); }
     }
   @keyframes rf-bonus-marker-pulse {
-      0%, 100% { opacity: 1;   box-shadow: 0 0 12px rgba(255,215,0,0.5); transform: scale(1); }
-      50%      { opacity: 0.85; box-shadow: 0 0 22px rgba(255,215,0,0.9); transform: scale(1.03); }
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(232,184,75,0.3), inset 0 0 12px rgba(232,184,75,0.06); transform: scale(1); }
+      50%      { opacity: 1; box-shadow: 0 0 16px rgba(232,184,75,0.6), inset 0 0 24px rgba(232,184,75,0.12); transform: scale(1); }
     }
   `;
 }
@@ -285,14 +280,14 @@ export function BettingSlot({
       onClick={() => {if (!locked) onPlace();}}
       onContextMenu={(e) => {e.preventDefault();if (!locked && bet > 0) onRemove();}}>
       
-      {/* BONUS MARKER — black overlay with gold "Bonus Round" text */}
+      {/* BONUS MARKER — Rapid Fire style: black overlay, gold border, clean text */}
       {isBonusActive &&
       <div
         style={{
           position: 'absolute',
           top: 0, left: 0,
           width: '100%', height: '100%',
-          background: 'rgba(0, 0, 0, 0.88)',
+          background: 'linear-gradient(180deg, rgba(5,15,35,0.95) 0%, rgba(10,25,50,0.95) 100%)',
           borderRadius: 'inherit',
           display: 'flex',
           alignItems: 'center',
@@ -300,18 +295,21 @@ export function BettingSlot({
           pointerEvents: 'none',
           zIndex: 30,
           opacity: markerFading ? 0 : 1,
-          transition: 'opacity 1s ease-out',
-          animation: isBonusPulsing ? 'rf-bonus-marker-pulse 1.2s ease-in-out infinite' : 'none',
+          transition: 'opacity 0.8s ease-out',
+          animation: isBonusPulsing ? 'rf-bonus-marker-pulse 1.5s ease-in-out infinite' : 'none',
+          border: '2px solid #e8b84b',
+          boxShadow: isBonusPulsing ? '0 0 12px rgba(232,184,75,0.4), inset 0 0 20px rgba(232,184,75,0.08)' : 'none',
         }}
       >
         <span style={{
-          color: '#FFD700',
-          fontWeight: 900,
-          fontSize: '11px',
+          color: '#e8b84b',
+          fontWeight: 700,
+          fontSize: '10px',
           textTransform: 'uppercase',
-          letterSpacing: '1px',
+          letterSpacing: '1.5px',
           textAlign: 'center',
-          textShadow: '0 0 8px rgba(255,215,0,0.6), 0 1px 2px rgba(0,0,0,1)',
+          fontFamily: "'Cinzel', serif",
+          textShadow: '0 1px 3px rgba(0,0,0,0.9)',
           whiteSpace: 'nowrap',
         }}>
           Bonus Round
@@ -324,27 +322,28 @@ export function BettingSlot({
       {isBonusLanded && bonusPulse?.markerFading &&
       <div style={{
         position: 'absolute',
-        bottom: -10,
+        bottom: -8,
         left: '50%',
         transform: 'translateX(-50%)',
         background: bonusPulse.cardWon ?
-        'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)' :
-        'linear-gradient(135deg, #888 0%, #555 50%, #888 100%)',
-        color: '#000',
-        fontSize: 11,
-        fontWeight: 900,
+        'linear-gradient(135deg, #e8b84b 0%, #c9971e 100%)' :
+        'linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 100%)',
+        color: bonusPulse.cardWon ? '#000' : '#ccc',
+        fontSize: 10,
+        fontWeight: 700,
         padding: '2px 10px',
-        borderRadius: 5,
+        borderRadius: 3,
         zIndex: 41,
-        letterSpacing: '0.5px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 12px rgba(255,215,0,0.5)',
+        letterSpacing: '1px',
+        fontFamily: "'Cinzel', serif",
+        boxShadow: '0 2px 6px rgba(0,0,0,0.8)',
         pointerEvents: 'none',
         whiteSpace: 'nowrap',
-        border: '1px solid ' + (bonusPulse.cardWon ? '#FFE566' : '#aaa'),
+        border: '1px solid ' + (bonusPulse.cardWon ? '#e8b84b' : '#555'),
         opacity: 0,
         animation: 'rf-badge-appear 0.4s ease-out 0.3s forwards'
       }}>
-          {bonusPulse.cardWon ? `★ ×${bonusPulse.cardMult} BONUS` : '★ BONUS PICK'}
+          {bonusPulse.cardWon ? `×${bonusPulse.cardMult} BONUS` : 'BONUS PICK'}
         </div>
       }
 

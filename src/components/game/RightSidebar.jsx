@@ -94,12 +94,8 @@ function injectStyles() {
     /* EXPLODE — winning side bet position pops with an elastic overshoot
        then settles back to its regular size, with a brightness flash */
     @keyframes rf-bonus-explode-side {
-      0%   { box-shadow: 0 0 18px 7px  rgba(255,215,0,0.7),  inset 0 0 26px rgba(255,215,0,0.3); transform: scale(1.0);  filter: brightness(1.0); }
-      12%  { box-shadow: 0 0 70px 26px rgba(255,255,180,1.0), inset 0 0 100px rgba(255,255,180,0.8); transform: scale(1.35); filter: brightness(2.4); }
-      30%  { box-shadow: 0 0 46px 16px rgba(255,225,0,0.9),  inset 0 0 70px rgba(255,225,0,0.5);  transform: scale(0.90);  filter: brightness(1.3); }
-      50%  { box-shadow: 0 0 54px 20px rgba(255,225,0,0.95), inset 0 0 80px rgba(255,225,0,0.55); transform: scale(1.10);  filter: brightness(1.5); }
-      75%  { box-shadow: 0 0 40px 14px rgba(255,220,0,0.85), inset 0 0 60px rgba(255,220,0,0.45); transform: scale(0.98);  filter: brightness(1.15); }
-      100% { box-shadow: 0 0 36px 14px rgba(255,235,0,1.0),  inset 0 0 70px rgba(255,235,0,0.55); transform: scale(1.0);   filter: brightness(1.0); }
+      0%   { box-shadow: 0 0 12px 4px rgba(232,184,75,0.6), inset 0 0 16px rgba(232,184,75,0.15); transform: scale(1.0); filter: brightness(1.0); }
+      100% { box-shadow: 0 0 24px 8px rgba(232,184,75,0.9), inset 0 0 30px rgba(232,184,75,0.25); transform: scale(1.0); filter: brightness(1.0); }
     }
     /* Bright flashbulb burst — accompanies the explode on winning side bets */
     @keyframes rf-bonus-flash-side {
@@ -112,8 +108,8 @@ function injectStyles() {
       100% { transform: translate(-50%, -50%) scale(1.7); opacity: 0;    border-color: rgba(140,140,140,0.1); }
     }
     @keyframes rf-bonus-land-lose-side {
-      0%   { box-shadow: 0 0 16px 6px rgba(140,140,140,0.35), inset 0 0 22px rgba(140,140,140,0.12); transform: scale(1.04); }
-      100% { box-shadow: 0 0 20px 6px rgba(90,90,90,0.2),    inset 0 0 28px rgba(60,60,60,0.08);   transform: scale(1.0); }
+      0%   { box-shadow: 0 0 10px 3px rgba(140,140,140,0.3), inset 0 0 14px rgba(140,140,140,0.1); transform: scale(1.0); }
+      100% { box-shadow: 0 0 14px 4px rgba(90,90,90,0.2),   inset 0 0 18px rgba(60,60,60,0.06);   transform: scale(1.0); }
     }
     @keyframes rf-bonus-shockwave-side-1 {
       0%   { transform: translate(-50%, -50%) scale(0.5); opacity: 1; border-width: 4px; }
@@ -128,9 +124,8 @@ function injectStyles() {
       100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
     }
     @keyframes rf-bonus-sustained-glow-side {
-      0%   { box-shadow: 0 0 36px 14px rgba(255,235,0,1.0), inset 0 0 70px rgba(255,235,0,0.55); }
-      50%  { box-shadow: 0 0 60px 22px rgba(255,235,0,1.0), inset 0 0 100px rgba(255,235,0,0.70); }
-      100% { box-shadow: 0 0 36px 14px rgba(255,235,0,1.0), inset 0 0 70px rgba(255,235,0,0.55); }
+      0%, 100% { box-shadow: 0 0 16px 5px rgba(232,184,75,0.5), inset 0 0 20px rgba(232,184,75,0.15); }
+      50%      { box-shadow: 0 0 28px 10px rgba(232,184,75,0.7), inset 0 0 34px rgba(232,184,75,0.22); }
     }
     @keyframes rf-side-leader {
       0%, 100% { transform: scale(1); }
@@ -148,8 +143,8 @@ function injectStyles() {
       100% { opacity: 1; transform: translateX(-50%) scale(1); }
     }
   @keyframes rf-bonus-marker-pulse-side {
-      0%, 100% { opacity: 1;   box-shadow: 0 2px 6px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.5); }
-      50%      { opacity: 0.82; box-shadow: 0 2px 6px rgba(0,0,0,0.9), 0 0 18px rgba(255,215,0,0.85); }
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px rgba(232,184,75,0.3), inset 0 0 12px rgba(232,184,75,0.06); }
+      50%      { opacity: 1; box-shadow: 0 0 16px rgba(232,184,75,0.6), inset 0 0 24px rgba(232,184,75,0.12); }
     }
   `;
 }
@@ -301,7 +296,7 @@ export default function RightSidebar({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(0, 0, 0, 0.88)',
+          background: 'linear-gradient(180deg, rgba(5,15,35,0.95) 0%, rgba(10,25,50,0.95) 100%)',
           borderRadius: 'inherit',
           display: 'flex',
           alignItems: 'center',
@@ -309,18 +304,21 @@ export default function RightSidebar({
           pointerEvents: 'none',
           zIndex: 30,
           opacity: fading ? 0 : 1,
-          transition: 'opacity 1s ease-out',
-          animation: pulsing ? 'rf-bonus-marker-pulse-side 1.2s ease-in-out infinite' : 'none',
+          transition: 'opacity 0.8s ease-out',
+          animation: pulsing ? 'rf-bonus-marker-pulse-side 1.5s ease-in-out infinite' : 'none',
+          border: '2px solid #e8b84b',
+          boxShadow: pulsing ? '0 0 12px rgba(232,184,75,0.4), inset 0 0 20px rgba(232,184,75,0.08)' : 'none',
         }}
       >
         <span style={{
-          color: '#FFD700',
-          fontWeight: 900,
-          fontSize: '11px',
+          color: '#e8b84b',
+          fontWeight: 700,
+          fontSize: '10px',
           textTransform: 'uppercase',
-          letterSpacing: '1px',
+          letterSpacing: '1.5px',
           textAlign: 'center',
-          textShadow: '0 0 8px rgba(255,215,0,0.6), 0 1px 2px rgba(0,0,0,1)',
+          fontFamily: "'Cinzel', serif",
+          textShadow: '0 1px 3px rgba(0,0,0,0.9)',
           whiteSpace: 'nowrap',
         }}>
           Bonus Round
@@ -341,7 +339,7 @@ export default function RightSidebar({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'rgba(0, 0, 0, 0.88)',
+          background: 'linear-gradient(180deg, rgba(5,15,35,0.95) 0%, rgba(10,25,50,0.95) 100%)',
           borderRadius: 'inherit',
           display: 'flex',
           alignItems: 'center',
@@ -349,18 +347,21 @@ export default function RightSidebar({
           pointerEvents: 'none',
           zIndex: 30,
           opacity: fading ? 0 : 1,
-          transition: 'opacity 1s ease-out',
-          animation: pulsing ? 'rf-bonus-marker-pulse-side 1.2s ease-in-out infinite' : 'none',
+          transition: 'opacity 0.8s ease-out',
+          animation: pulsing ? 'rf-bonus-marker-pulse-side 1.5s ease-in-out infinite' : 'none',
+          border: '2px solid #e8b84b',
+          boxShadow: pulsing ? '0 0 12px rgba(232,184,75,0.4), inset 0 0 20px rgba(232,184,75,0.08)' : 'none',
         }}
       >
         <span style={{
-          color: '#FFD700',
-          fontWeight: 900,
-          fontSize: '11px',
+          color: '#e8b84b',
+          fontWeight: 700,
+          fontSize: '10px',
           textTransform: 'uppercase',
-          letterSpacing: '1px',
+          letterSpacing: '1.5px',
           textAlign: 'center',
-          textShadow: '0 0 8px rgba(255,215,0,0.6), 0 1px 2px rgba(0,0,0,1)',
+          fontFamily: "'Cinzel', serif",
+          textShadow: '0 1px 3px rgba(0,0,0,0.9)',
           whiteSpace: 'nowrap',
         }}>
           Bonus Round
@@ -378,22 +379,23 @@ export default function RightSidebar({
 
     return (
       <span style={{
-        position: 'absolute', bottom: -7, left: '50%',
+        position: 'absolute', bottom: -5, left: '50%',
         transform: 'translateX(-50%)',
         background: won
-          ? 'linear-gradient(135deg, #FFD700 0%, #FF8C00 50%, #FFD700 100%)'
-          : 'linear-gradient(135deg, #888 0%, #555 50%, #888 100%)',
-        color: '#000',
-        fontSize: 10, fontWeight: 900,
-        padding: '2px 8px', borderRadius: 5,
-        zIndex: 41, letterSpacing: '0.5px',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.9), 0 0 10px rgba(255,215,0,0.5)',
+          ? 'linear-gradient(135deg, #e8b84b 0%, #c9971e 100%)'
+          : 'linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 100%)',
+        color: won ? '#000' : '#ccc',
+        fontSize: 10, fontWeight: 700,
+        padding: '2px 8px', borderRadius: 3,
+        zIndex: 41, letterSpacing: '1px',
+        fontFamily: "'Cinzel', serif",
+        boxShadow: '0 2px 6px rgba(0,0,0,0.8)',
         pointerEvents: 'none', whiteSpace: 'nowrap',
-        border: '1px solid ' + (won ? '#FFE566' : '#aaa'),
+        border: '1px solid ' + (won ? '#e8b84b' : '#555'),
         opacity: 0,
         animation: 'rf-badge-appear-side 0.4s ease-out 0.3s forwards',
       }}>
-        {won ? `★ ×${mult} BONUS` : '★ BONUS PICK'}
+        {won ? `×${mult} BONUS` : 'BONUS PICK'}
       </span>
     );
   };
