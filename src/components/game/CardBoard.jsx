@@ -285,21 +285,38 @@ export function BettingSlot({
       onClick={() => {if (!locked) onPlace();}}
       onContextMenu={(e) => {e.preventDefault();if (!locked && bet > 0) onRemove();}}>
       
-      {/* BONUS MARKER — gold placemat image overlay */}
+      {/* BONUS MARKER — black overlay with gold "Bonus Round" text */}
       {isBonusActive &&
-      <img
-        src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png"
-        alt="Bonus Marker"
+      <div
         style={{
           position: 'absolute',
           top: 0, left: 0,
           width: '100%', height: '100%',
-          objectFit: 'contain',
+          background: 'rgba(0, 0, 0, 0.88)',
+          borderRadius: 'inherit',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           pointerEvents: 'none',
           zIndex: 30,
           opacity: markerFading ? 0 : 1,
-          transition: 'opacity 1s ease-out'
-        }} />
+          transition: 'opacity 1s ease-out',
+          animation: isBonusPulsing ? 'rf-bonus-marker-pulse 1.2s ease-in-out infinite' : 'none',
+        }}
+      >
+        <span style={{
+          color: '#FFD700',
+          fontWeight: 900,
+          fontSize: '11px',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+          textAlign: 'center',
+          textShadow: '0 0 8px rgba(255,215,0,0.6), 0 1px 2px rgba(0,0,0,1)',
+          whiteSpace: 'nowrap',
+        }}>
+          Bonus Round
+        </span>
+      </div>
 
       }
 

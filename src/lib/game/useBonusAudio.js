@@ -1,6 +1,6 @@
 // Procedural Web Audio API sounds for the RNG Bonus chase.
+// Iteration 2: Clean casino chime — soft bell dings, gentle settle, warm landing.
 // No audio files needed — everything synthesized.
-// Respects the SFX channel — when SFX is muted, bonus sounds are also muted.
 
 let audioCtx = null;
 let bonusSfxEnabled = true;
@@ -24,55 +24,45 @@ function getCtx() {
   return audioCtx;
 }
 
-// ─── WARM WOOD-BLOCK CLICK — for each pulse during the random jump phase ─
-// Sine wave with a fast pitch drop + a short noise burst for wood-block attack.
-// Warmer and rounder than the old triangle/square — less harsh, more casino.
-export function playBing(pitch = 800, duration = 0.10, volume = 0.12) {
+// ─── SOFT BELL DING — for each pulse during the random jump phase ───────
+// Two sine partials (fundamental + octave) with a gentle envelope.
+// Clean, warm, casino-appropriate. No harsh transients.
+export function playBing(pitch = 800, duration = 0.12, volume = 0.12) {
   if (!bonusSfxEnabled || bonusSfxVolume <= 0) return;
   const ctx = getCtx();
   if (!ctx) return;
 
   const now = ctx.currentTime;
 
-  // Sine — warm body, quick pitch drop like a wood block
+  // Fundamental sine
   const osc1 = ctx.createOscillator();
   const gain1 = ctx.createGain();
   osc1.type = 'sine';
-  osc1.frequency.setValueAtTime(pitch * 1.3, now);
-  osc1.frequency.exponentialRampToValueAtTime(pitch, now + duration * 0.5);
+  osc1.frequency.setValueAtTime(pitch, now);
   gain1.gain.setValueAtTime(0, now);
-  gain1.gain.linearRampToValueAtTime(volume * bonusSfxVolume * 0.8, now + 0.005);
+  gain1.gain.linearRampToValueAtTime(volume * bonusSfxVolume * 0.6, now + 0.01);
   gain1.gain.exponentialRampToValueAtTime(0.001, now + duration);
   osc1.connect(gain1);
   gain1.connect(ctx.destination);
   osc1.start(now);
   osc1.stop(now + duration);
 
-  // Noise burst — short wood-block attack transient
-  const bufferSize = Math.floor(ctx.sampleRate * 0.03);
-  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.15));
-  }
-  const noise = ctx.createBufferSource();
-  noise.buffer = buffer;
-  const noiseGain = ctx.createGain();
-  const noiseFilter = ctx.createBiquadFilter();
-  noiseFilter.type = 'bandpass';
-  noiseFilter.frequency.value = pitch * 1.5;
-  noiseFilter.Q.value = 1.5;
-  noiseGain.gain.setValueAtTime(volume * bonusSfxVolume * 0.3, now);
-  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-  noise.connect(noiseFilter);
-  noiseFilter.connect(noiseGain);
-  noiseGain.connect(ctx.destination);
-  noise.start(now);
-  noise.stop(now + 0.03);
+  // Octave — softer, adds warmth without harshness
+  const osc2 = ctx.createOscillator();
+  const gain2 = ctx.createGain();
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(pitch * 2, now);
+  gain2.gain.setValueAtTime(0, now);
+  gain2.gain.linearRampToValueAtTime(volume * bonusSfxVolume * 0.25, now + 0.01);
+  gain2.gain.exponentialRampToValueAtTime(0.001, now + duration * 0.7);
+  osc2.connect(gain2);
+  gain2.connect(ctx.destination);
+  osc2.start(now);
+  osc2.stop(now + duration * 0.7);
 }
 
-// ─── SETTLE TICK — during deceleration, rising pitch tension ─────────────
-// Sine-based, softer than triangle. Pitch climbs gently as it settles.
+// ─── SETTLE TICK — gentle rising bell, builds anticipation ─────────────
+// Same bell character but pitch climbs smoothly as it nears the target.
 export function playSettleTick(pitch = 600, stepIndex = 0, totalSteps = 5, volume = 0.10) {
   if (!bonusSfxEnabled || bonusSfxVolume <= 0) return;
   const ctx = getCtx();
@@ -80,23 +70,23 @@ export function playSettleTick(pitch = 600, stepIndex = 0, totalSteps = 5, volum
 
   const now = ctx.currentTime;
   const progress = Math.min(stepIndex / Math.max(1, totalSteps - 1), 1);
-  const climbingPitch = pitch * (1 + progress * 0.5); // gentler rise, up to 1.5x
+  const climbingPitch = pitch * (1 + progress * 0.4);
 
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'sine';
   osc.frequency.setValueAtTime(climbingPitch, now);
   gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(volume * bonusSfxVolume, now + 0.005);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+  gain.gain.linearRampToValueAtTime(volume * bonusSfxVolume * 0.5, now + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
   osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start(now);
-  osc.stop(now + 0.15);
+  osc.stop(now + 0.18);
 }
 
-// ─── LANDING CRASH — full chord + sub-bass thump + shimmer ───────────────
-// This replaces the old two-oscillator ding. A real celebration sound.
+// ─── LANDING — warm gong strike, not a crash ───────────────────────────
+// Low bell + soft chord, decays naturally. Celebratory but not jarring.
 export function playLand(pitch = 1200, volume = 0.20) {
   if (!bonusSfxEnabled || bonusSfxVolume <= 0) return;
   const ctx = getCtx();
@@ -104,57 +94,35 @@ export function playLand(pitch = 1200, volume = 0.20) {
 
   const now = ctx.currentTime;
 
-  // Sub-bass thump — the "impact"
-  const sub = ctx.createOscillator();
-  const subGain = ctx.createGain();
-  sub.type = 'sine';
-  sub.frequency.setValueAtTime(120, now);
-  sub.frequency.exponentialRampToValueAtTime(60, now + 0.15);
-  subGain.gain.setValueAtTime(volume * bonusSfxVolume * 0.8, now);
-  subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
-  sub.connect(subGain);
-  subGain.connect(ctx.destination);
-  sub.start(now);
-  sub.stop(now + 0.25);
+  // Low bell — the anchor
+  const bell = ctx.createOscillator();
+  const bellGain = ctx.createGain();
+  bell.type = 'sine';
+  bell.frequency.setValueAtTime(pitch * 0.5, now);
+  bellGain.gain.setValueAtTime(0, now);
+  bellGain.gain.linearRampToValueAtTime(volume * bonusSfxVolume * 0.7, now + 0.02);
+  bellGain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+  bell.connect(bellGain);
+  bellGain.connect(ctx.destination);
+  bell.start(now);
+  bell.stop(now + 1.2);
 
-  // Full major chord — root, third, fifth, octave
-  const chordNotes = [pitch, pitch * 1.26, pitch * 1.5, pitch * 2.0];
+  // Soft major chord — root, third, fifth
+  const chordNotes = [pitch * 0.75, pitch * 0.94, pitch * 1.12];
   chordNotes.forEach((freq, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
-    const startTime = now + i * 0.025; // slight strum
-    const dur = 0.6;
-
-    osc.type = i === 0 ? 'triangle' : 'sine';
+    const startTime = now + i * 0.03;
+    osc.type = 'sine';
     osc.frequency.value = freq;
-
     gain.gain.setValueAtTime(0, startTime);
-    gain.gain.linearRampToValueAtTime(volume * bonusSfxVolume * (0.5 - i * 0.08), startTime + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
-
+    gain.gain.linearRampToValueAtTime(volume * bonusSfxVolume * (0.35 - i * 0.06), startTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.8);
     osc.connect(gain);
     gain.connect(ctx.destination);
     osc.start(startTime);
-    osc.stop(startTime + dur);
+    osc.stop(startTime + 0.8);
   });
-
-  // Shimmer — high-frequency sparkle that decays slowly
-  const shimmer = ctx.createOscillator();
-  const shimmerGain = ctx.createGain();
-  const shimmerFilter = ctx.createBiquadFilter();
-  shimmer.type = 'sawtooth';
-  shimmer.frequency.value = pitch * 4;
-  shimmerFilter.type = 'bandpass';
-  shimmerFilter.frequency.value = pitch * 4;
-  shimmerFilter.Q.value = 2;
-  shimmerGain.gain.setValueAtTime(0, now);
-  shimmerGain.gain.linearRampToValueAtTime(volume * bonusSfxVolume * 0.15, now + 0.02);
-  shimmerGain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
-  shimmer.connect(shimmerFilter);
-  shimmerFilter.connect(shimmerGain);
-  shimmerGain.connect(ctx.destination);
-  shimmer.start(now);
-  shimmer.stop(now + 0.8);
 }
 
 // ─── Ascending win sting — bright, celebratory ──────────────────────────
@@ -163,22 +131,18 @@ export function playWin(volume = 0.2) {
   const ctx = getCtx();
   if (!ctx) return;
 
-  const notes = [523, 659, 784, 1047, 1319]; // C5, E5, G5, C6, E6 — brighter 5-note arpeggio
+  const notes = [523, 659, 784, 1047, 1319];
   notes.forEach((freq, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const startTime = ctx.currentTime + i * 0.07;
-
-    osc.type = 'triangle';
+    osc.type = 'sine';
     osc.frequency.value = freq;
-
     gain.gain.setValueAtTime(0, startTime);
     gain.gain.linearRampToValueAtTime(volume * bonusSfxVolume, startTime + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.4);
-
     osc.connect(gain);
     gain.connect(ctx.destination);
-
     osc.start(startTime);
     osc.stop(startTime + 0.4);
   });
@@ -195,17 +159,13 @@ export function playLose(volume = 0.12) {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const startTime = ctx.currentTime + i * 0.12;
-
     osc.type = 'sine';
     osc.frequency.value = freq;
-
     gain.gain.setValueAtTime(0, startTime);
     gain.gain.linearRampToValueAtTime(volume * bonusSfxVolume, startTime + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.25);
-
     osc.connect(gain);
     gain.connect(ctx.destination);
-
     osc.start(startTime);
     osc.stop(startTime + 0.25);
   });

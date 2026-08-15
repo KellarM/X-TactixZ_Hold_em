@@ -301,34 +301,71 @@ export default function RightSidebar({
           left: 0,
           width: '100%',
           height: '100%',
-          background: 'linear-gradient(135deg, rgba(255,215,0,0.85) 0%, rgba(255,180,0,0.80) 50%, rgba(255,215,0,0.85) 100%)',
+          background: 'rgba(0, 0, 0, 0.88)',
           borderRadius: 'inherit',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
           pointerEvents: 'none',
           zIndex: 30,
-          opacity: fading ? 0 : (pulsing ? 0.9 : 1),
+          opacity: fading ? 0 : 1,
           transition: 'opacity 1s ease-out',
           animation: pulsing ? 'rf-bonus-marker-pulse-side 1.2s ease-in-out infinite' : 'none',
         }}
-      />
+      >
+        <span style={{
+          color: '#FFD700',
+          fontWeight: 900,
+          fontSize: '11px',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+          textAlign: 'center',
+          textShadow: '0 0 8px rgba(255,215,0,0.6), 0 1px 2px rgba(0,0,0,1)',
+          whiteSpace: 'nowrap',
+        }}>
+          Bonus Round
+        </span>
+      </div>
     );
   };
 
-  const bonusColorRiverMarker = (crIdx, markerUrl) => {
+  const bonusColorRiverMarker = (crIdx) => {
     if (!isColorRiverActive(crIdx)) return null;
     const fading = isColorRiverLanded(crIdx) && bonusPulse?.markerFading;
+    const pulsing = isColorRiverPulsing(crIdx);
     return (
-      <img
-        src={markerUrl}
-        alt="Bonus Marker"
+      <div
         style={{
-          position: 'absolute', top: 0, left: 0,
-          width: '100%', height: '100%',
-          objectFit: 'contain',
-          pointerEvents: 'none', zIndex: 30,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0, 0, 0, 0.88)',
+          borderRadius: 'inherit',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          pointerEvents: 'none',
+          zIndex: 30,
           opacity: fading ? 0 : 1,
           transition: 'opacity 1s ease-out',
+          animation: pulsing ? 'rf-bonus-marker-pulse-side 1.2s ease-in-out infinite' : 'none',
         }}
-      />
+      >
+        <span style={{
+          color: '#FFD700',
+          fontWeight: 900,
+          fontSize: '11px',
+          textTransform: 'uppercase',
+          letterSpacing: '1px',
+          textAlign: 'center',
+          textShadow: '0 0 8px rgba(255,215,0,0.6), 0 1px 2px rgba(0,0,0,1)',
+          whiteSpace: 'nowrap',
+        }}>
+          Bonus Round
+        </span>
+      </div>
     );
   };
 
@@ -512,7 +549,7 @@ export default function RightSidebar({
                 className="relative flex flex-col items-center justify-center"
                 style={{ ...style, ...bonusColorRiverStyle(colorIdx), borderRadius: R, minHeight: 0, cursor: locked ? 'not-allowed' : 'pointer' }}
               >
-                {bonusColorRiverMarker(colorIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png')}
+                {bonusColorRiverMarker(colorIdx)}
                 {bonusBadge(colorIdx, 'colorRiver')}
                 <span style={{ ...colorTextStyle, fontSize: 20, fontWeight: 900, lineHeight: 1 }}>{pos.num}</span>
                 {locked ? (
@@ -580,7 +617,7 @@ export default function RightSidebar({
                   ...(mobileLayout && colorRowHeight ? { height: colorRowHeight, flexShrink: 0 } : {}),
                 }}
               >
-                {bonusColorRiverMarker(6 + riverIdx, 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png')}
+                {bonusColorRiverMarker(6 + riverIdx)}
                 {bonusBadge(6 + riverIdx, 'colorRiver')}
                 {/* Mobile: combined onto ONE line (device is only 2 text-rows tall).
                     Desktop: original two-line layout (label, then range) — unchanged. */}
