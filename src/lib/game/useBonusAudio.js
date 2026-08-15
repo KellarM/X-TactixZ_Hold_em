@@ -24,44 +24,55 @@ function getCtx() {
   return audioCtx;
 }
 
-// ─── BRIGHT CLICK — for each pulse during the random jump phase ───────────
-// Triangle wave with a quick downward pitch sweep + a square wave layer
-// for "bite". Much more character than the old flat sine blip.
-export function playBing(pitch = 800, duration = 0.07, volume = 0.12) {
+// ─── WARM WOOD-BLOCK CLICK — for each pulse during the random jump phase ─
+// Sine wave with a fast pitch drop + a short noise burst for wood-block attack.
+// Warmer and rounder than the old triangle/square — less harsh, more casino.
+export function playBing(pitch = 800, duration = 0.10, volume = 0.12) {
   if (!bonusSfxEnabled || bonusSfxVolume <= 0) return;
   const ctx = getCtx();
   if (!ctx) return;
 
   const now = ctx.currentTime;
 
-  // Triangle — bright, sweeps down quickly
+  // Sine — warm body, quick pitch drop like a wood block
   const osc1 = ctx.createOscillator();
   const gain1 = ctx.createGain();
-  osc1.type = 'triangle';
-  osc1.frequency.setValueAtTime(pitch * 1.4, now);
-  osc1.frequency.exponentialRampToValueAtTime(pitch, now + duration * 0.6);
-  gain1.gain.setValueAtTime(volume * bonusSfxVolume * 0.7, now);
+  osc1.type = 'sine';
+  osc1.frequency.setValueAtTime(pitch * 1.3, now);
+  osc1.frequency.exponentialRampToValueAtTime(pitch, now + duration * 0.5);
+  gain1.gain.setValueAtTime(0, now);
+  gain1.gain.linearRampToValueAtTime(volume * bonusSfxVolume * 0.8, now + 0.005);
   gain1.gain.exponentialRampToValueAtTime(0.001, now + duration);
   osc1.connect(gain1);
   gain1.connect(ctx.destination);
   osc1.start(now);
   osc1.stop(now + duration);
 
-  // Square — adds a sharp transient click on top, very short
-  const osc2 = ctx.createOscillator();
-  const gain2 = ctx.createGain();
-  osc2.type = 'square';
-  osc2.frequency.setValueAtTime(pitch * 2, now);
-  gain2.gain.setValueAtTime(volume * bonusSfxVolume * 0.25, now);
-  gain2.gain.exponentialRampToValueAtTime(0.001, now + duration * 0.3);
-  osc2.connect(gain2);
-  gain2.connect(ctx.destination);
-  osc2.start(now);
-  osc2.stop(now + duration * 0.3);
+  // Noise burst — short wood-block attack transient
+  const bufferSize = Math.floor(ctx.sampleRate * 0.03);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.15));
+  }
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const noiseGain = ctx.createGain();
+  const noiseFilter = ctx.createBiquadFilter();
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.value = pitch * 1.5;
+  noiseFilter.Q.value = 1.5;
+  noiseGain.gain.setValueAtTime(volume * bonusSfxVolume * 0.3, now);
+  noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+  noise.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(ctx.destination);
+  noise.start(now);
+  noise.stop(now + 0.03);
 }
 
 // ─── SETTLE TICK — during deceleration, rising pitch tension ─────────────
-// Pitch climbs as the sequence slows down, creating anticipation.
+// Sine-based, softer than triangle. Pitch climbs gently as it settles.
 export function playSettleTick(pitch = 600, stepIndex = 0, totalSteps = 5, volume = 0.10) {
   if (!bonusSfxEnabled || bonusSfxVolume <= 0) return;
   const ctx = getCtx();
@@ -69,18 +80,19 @@ export function playSettleTick(pitch = 600, stepIndex = 0, totalSteps = 5, volum
 
   const now = ctx.currentTime;
   const progress = Math.min(stepIndex / Math.max(1, totalSteps - 1), 1);
-  const climbingPitch = pitch * (1 + progress * 0.8); // rises up to 1.8x
+  const climbingPitch = pitch * (1 + progress * 0.5); // gentler rise, up to 1.5x
 
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-  osc.type = 'triangle';
+  osc.type = 'sine';
   osc.frequency.setValueAtTime(climbingPitch, now);
-  gain.gain.setValueAtTime(volume * bonusSfxVolume, now);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(volume * bonusSfxVolume, now + 0.005);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
   osc.connect(gain);
   gain.connect(ctx.destination);
   osc.start(now);
-  osc.stop(now + 0.12);
+  osc.stop(now + 0.15);
 }
 
 // ─── LANDING CRASH — full chord + sub-bass thump + shimmer ───────────────

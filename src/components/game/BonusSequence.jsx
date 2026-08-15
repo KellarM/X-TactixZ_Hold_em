@@ -66,21 +66,21 @@ function computeDelays(seqLen, bounceTouches, bounceDuration = 5500) {
       if (i >= bounceTouches - 4) {
         // ACCELERATE: last 4 bounces get progressively faster
         // 0.85x, 0.70x, 0.55x, 0.40x — quickening into the settle
-        const accelFactor = 1 - (i - (bounceTouches - 4)) * 0.15;
-        delays.push(baseDelay * Math.max(0.35, accelFactor));
+        const accelFactor = 1 - (i - (bounceTouches - 4)) * 0.08;
+        delays.push(baseDelay * Math.max(0.55, accelFactor));
       } else {
         delays.push(baseDelay * (0.85 + Math.random() * 0.3));
       }
     } else {
       // Settle: fast steps, each QUICKER than the last — sharp snap
       const settleIdx = i - bounceTouches;
-      delays.push(Math.max(60, 180 - settleIdx * 40));
+      delays.push(Math.max(100, 280 - settleIdx * 30));
     }
   }
 
   // Final landing hold — short and sharp
   if (delays.length > 0) {
-    delays[delays.length - 1] += 500;
+    delays[delays.length - 1] += 700;
   }
 
   return delays;
@@ -121,8 +121,8 @@ export default function BonusSequence({
   useEffect(() => {
     completedRef.current = false;
 
-    const BOUNCE_TOUCHES = 22;
-    const BOUNCE_DURATION = 5500;
+    const BOUNCE_TOUCHES = 16;
+    const BOUNCE_DURATION = 8000;
 
     // Generate 3 independent sequences
     const cardSeq = generateRandomJumpSequence(10, BOUNCE_TOUCHES, cardIdx);
@@ -229,7 +229,7 @@ export default function BonusSequence({
     // ── Completion callback — show result overlay after short landing hold ──
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, maxTime + 3500);
+    }, maxTime + 4500);
     timersRef.current.push(completeTimer);
 
     return clearTimers;

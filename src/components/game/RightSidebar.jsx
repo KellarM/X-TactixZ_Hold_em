@@ -289,38 +289,27 @@ export default function RightSidebar({
   const bonusRankStyle = (rankIdx) => ({});
   const bonusColorRiverStyle = (crIdx) => ({});
 
-  const RANK_SHIELD_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png';
   const bonusRankMarker = (rankIdx) => {
     if (!isRankActive(rankIdx)) return null;
     const fading = isRankLanded(rankIdx) && bonusPulse?.markerFading;
+    const pulsing = isRankPulsing(rankIdx);
     return (
       <div
         style={{
-          position: 'absolute', top: 0, left: 0,
-          width: '100%', height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-evenly',
-          pointerEvents: 'none', zIndex: 30,
-          opacity: fading ? 0 : 1,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'linear-gradient(135deg, rgba(255,215,0,0.85) 0%, rgba(255,180,0,0.80) 50%, rgba(255,215,0,0.85) 100%)',
+          borderRadius: 'inherit',
+          pointerEvents: 'none',
+          zIndex: 30,
+          opacity: fading ? 0 : (pulsing ? 0.9 : 1),
           transition: 'opacity 1s ease-out',
+          animation: pulsing ? 'rf-bonus-marker-pulse-side 1.2s ease-in-out infinite' : 'none',
         }}
-      >
-        {[0, 1, 2, 3, 4].map(i => (
-          <img
-            key={i}
-            src={RANK_SHIELD_URL}
-            alt="X-TactixZ Shield"
-            style={{
-              height: '100%',
-              width: 'auto',
-              objectFit: 'contain',
-              flex: '0 0 auto',
-              maxWidth: '19%',
-            }}
-          />
-        ))}
-      </div>
+      />
     );
   };
 
