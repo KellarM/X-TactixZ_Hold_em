@@ -86,8 +86,8 @@ function injectStyles() {
       100% { opacity: 1; transform: translateX(-50%) scale(1); }
     }
   @keyframes rf-bonus-marker-pulse {
-      0%, 100% { opacity: 1;   box-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 12px rgba(255,215,0,0.5); transform: translateX(-50%) scale(1); }
-      50%      { opacity: 0.85; box-shadow: 0 2px 8px rgba(0,0,0,0.9), 0 0 22px rgba(255,215,0,0.9); transform: translateX(-50%) scale(1.06); }
+      0%, 100% { opacity: 1;   box-shadow: 0 0 12px rgba(255,215,0,0.5); transform: scale(1); }
+      50%      { opacity: 0.85; box-shadow: 0 0 22px rgba(255,215,0,0.9); transform: scale(1.03); }
     }
   `;
 }
@@ -279,7 +279,7 @@ export function BettingSlot({
         alignItems: 'center',
         cursor: locked ? 'not-allowed' : 'pointer',
         transition: 'border-color 0.2s, border-width 0.2s',
-        overflow: 'visible',
+        overflow: 'hidden',
         userSelect: 'none'
       }}
       onClick={() => {if (!locked) onPlace();}}
