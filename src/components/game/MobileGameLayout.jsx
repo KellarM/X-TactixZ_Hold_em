@@ -10,6 +10,7 @@ import SettingsModal from './SettingsModal';
 import HowToPlayModal from './HowToPlayModal';
 import GameRulesModal from './GameRulesModal';
 import OnboardingIndicator from './OnboardingIndicator';
+import MobileLayoutModal from './MobileLayoutModal';
 import PlayingCard from './PlayingCard';
 import { MOBILE_CHIPS } from '@/lib/game/useGame';
 import { formatMoney } from '@/lib/game/cards';
@@ -128,6 +129,8 @@ export default function MobileGameLayout({
   handleBonusPulse, handleBonusLand, handleBonusComplete,
   onFold, onClearBets, onNewHand,
   anteStructureId,
+  mobileLayout = 'A',
+  onOpenMobileLayout = () => {},
 }) {
   // Natural size of 5 community cards (70x100 each, fixed) + gaps
   const COMM_NATURAL_W = 70 * 5 + 4 * 4; // 366
@@ -186,6 +189,155 @@ export default function MobileGameLayout({
   const activeStruct = getStructureById(anteStructId);
   const anteTiers = activeStruct ? getAnteTierDescriptions(activeStruct) : [];
 
+  // ── Shared content sections — extracted as arrow functions so they can
+  //    be rearranged per layout without duplicating code. Each returns the
+  //    same JSX the original single-layout version had. ──
+  const dealerBar = (
+    <div style={{
+      flexShrink: 0, height: 22, display: 'flex', alignItems: 'center',
+      padding: '0 6px', overflow: 'hidden', whiteSpace: 'nowrap',
+      background: 'transparent',
+      borderBottom: '1px solid rgba(202,138,4,0.3)',
+    }}>
+      <span style={{
+        fontFamily: 'Oswald, sans-serif', fontSize: '0.75rem', fontWeight: 700,
+        fontStyle: 'italic', color: '#f6d860',
+        textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>
+        {game.statusMessage || ''}
+      </span>
+    </div>
+  );
+
+  const communityCards = (
+    <div style={{
+      flexShrink: 0, height: 62, display: 'flex', alignItems: 'center',
+      gap: 4, padding: '0 4px',
+      background: 'transparent',
+      borderBottom: '1px solid rgba(202,138,4,0.4)',
+    }}>
+      <img src={LOGO_BADGE_URL} alt=""
+        style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
+        onError={(e) => { e.target.style.display = 'none'; }}
+      />
+      <div style={{ flex: 1, height: 52, minWidth: 0 }}>
+        <ScaleToFit naturalWidth={COMM_NATURAL_W} naturalHeight={COMM_NATURAL_H}>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[0, 1, 2, 3, 4].map(i => (
+              <React.Fragment key={i}>
+                {game.community[i] ? (
+                  <PlayingCard card={game.community[i]} size="community" useImage={false} />
+                ) : (
+                  <PlayingCard faceDown size="community" />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </ScaleToFit>
+      </div>
+      <img src={LOGO_BADGE_URL} alt=""
+        style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
+        onError={(e) => { e.target.style.display = 'none'; }}
+      />
+    </div>
+  );
+
+  const revealPrompt = awaitingReveal && <RevealPrompt onReveal={handleRevealClick} mobileLayout={true} />;
+
+  const cardBoardSection = (
+    <div style={{ flexShrink: 0, width: '100%', padding: '0 4px' }}>
+      <ScaleToFitWidth naturalWidth={BOARD_NATURAL_W} naturalHeight={BOARD_NATURAL_H} onScale={setCardScale}>
+        <CardBoard
+          odds={game.flopOdds}
+          bets={game.bets}
+          caps={game.caps}
+          phase={phase}
+          onPlace={handlePlaceBet}
+          onRemove={handleRemoveBet}
+          handEvals={game.handEvals}
+          leadingHandIds={game.leadingHandIds}
+          winnerHandIds={game.winnerHandIds}
+          bonusPulse={bonusPulse}
+          compact={true}
+        />
+      </ScaleToFitWidth>
+    </div>
+  );
+
+  const rightSidebarSection = (
+    <div style={{ flex: '1 1 0', minHeight: 0, padding: '4px 4px 0 4px', overflow: 'hidden' }}>
+      <RightSidebar
+        phase={phase}
+        flopOdds={game.flopOdds}
+        riverOdds={game.riverOdds}
+        bets={game.bets}
+        caps={game.caps}
+        boardTotals={game.boardTotals}
+        ante={game.ante}
+        onPlace={handlePlaceBet}
+        onRemove={handleRemoveBet}
+        leadingRankLabel={game.leadingRankLabel}
+        winnerRankLabel={game.winnerRankLabel}
+        leadingColorKeys={game.leadingColorKeys}
+        winnerColorKeys={game.winnerColorKeys}
+        leadingRiverSide={game.leadingRiverSide}
+        winnerRiverSide={game.winnerRiverSide}
+        bonusPulse={bonusPulse}
+        mobileLayout={true}
+        lockSize={34 * cardScale}
+      />
+    </div>
+  );
+
+  // ── Layout content: arranged per layout variant ──
+  // A (default): Dealer → Community → CardBoard → RightSidebar → Footer
+  // B:           Dealer → RightSidebar → CardBoard → Community → Footer
+  // C:           Dealer → CardBoard → Community → Footer → RightSidebar (below)
+  // D:           Dealer → Community → RightSidebar (full-width strips) → CardBoard → Footer
+  let layoutContent;
+  if (mobileLayout === 'B') {
+    layoutContent = (
+      <>
+        {dealerBar}
+        {rightSidebarSection}
+        {revealPrompt}
+        {cardBoardSection}
+        {communityCards}
+      </>
+    );
+  } else if (mobileLayout === 'C') {
+    layoutContent = (
+      <>
+        {dealerBar}
+        {cardBoardSection}
+        {communityCards}
+        {revealPrompt}
+      </>
+    );
+  } else if (mobileLayout === 'D') {
+    layoutContent = (
+      <>
+        {dealerBar}
+        {communityCards}
+        {rightSidebarSection}
+        {revealPrompt}
+        {cardBoardSection}
+      </>
+    );
+  } else {
+    // Layout A (default)
+    layoutContent = (
+      <>
+        {dealerBar}
+        {communityCards}
+        {revealPrompt}
+        {cardBoardSection}
+        {rightSidebarSection}
+      </>
+    );
+  }
+
   return (
     <div
       className={'velvet-board theme-' + boardTheme}
@@ -198,116 +350,7 @@ export default function MobileGameLayout({
         overflow: 'hidden',
       }}
     >
-      {/* ── Dealer status message bar ── */}
-      <div style={{
-        flexShrink: 0, height: 22, display: 'flex', alignItems: 'center',
-        padding: '0 6px', overflow: 'hidden', whiteSpace: 'nowrap',
-        // Transparent — lets the velvet-board's own radial gradient show
-        // through, which IS the brighter blue Michael pointed to between
-        // the gold-bordered panels. A flat hex can only match one exact
-        // point on that gradient; transparency matches everywhere, exactly.
-        background: 'transparent',
-        borderBottom: '1px solid rgba(202,138,4,0.3)',
-      }}>
-        <span style={{
-          fontFamily: 'Oswald, sans-serif', fontSize: '0.75rem', fontWeight: 700,
-          fontStyle: 'italic', color: '#f6d860',
-          textShadow: '0 1px 2px rgba(0,0,0,0.8)',
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-        }}>
-          {game.statusMessage || ''}
-        </span>
-      </div>
-
-      {/* ── Community cards row — expanded box, cards stay their original size ──
-          Outer box is now taller (per Michael's yellow-box spec). The card
-          SCALING box below is still fixed at the ORIGINAL 58px height, so
-          ScaleToFit computes the exact same scale as before — cards render
-          at their previous size, not bigger. Centering that fixed-size box
-          inside the taller outer row (alignItems:center) is what produces
-          the even top/bottom padding around the cards. ── */}
-      <div style={{
-        flexShrink: 0, height: 62, display: 'flex', alignItems: 'center',
-        gap: 4, padding: '0 4px',
-        background: 'transparent',
-        borderBottom: '1px solid rgba(202,138,4,0.4)',
-      }}>
-        <img src={LOGO_BADGE_URL} alt=""
-          style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
-          onError={(e) => { e.target.style.display = 'none'; }}
-        />
-        <div style={{ flex: 1, height: 52, minWidth: 0 }}>
-          <ScaleToFit naturalWidth={COMM_NATURAL_W} naturalHeight={COMM_NATURAL_H}>
-            <div style={{ display: 'flex', gap: 4 }}>
-              {[0, 1, 2, 3, 4].map(i => (
-                <React.Fragment key={i}>
-                  {game.community[i] ? (
-                    <PlayingCard card={game.community[i]} size="community" useImage={false} />
-                  ) : (
-                    <PlayingCard faceDown size="community" />
-                  )}
-                </React.Fragment>
-              ))}
-            </div>
-          </ScaleToFit>
-        </div>
-        <img src={LOGO_BADGE_URL} alt=""
-          style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
-          onError={(e) => { e.target.style.display = 'none'; }}
-        />
-      </div>
-
-      {/* Reveal prompt */}
-      {awaitingReveal && <RevealPrompt onReveal={handleRevealClick} mobileLayout={true} />}
-
-      {/* ── Card Board — real desktop component, self-sized to its content ──
-          ScaleToFitWidth measures width, computes scale, and sets ITS OWN
-          height to exactly naturalHeight*scale — no guessed aspect-ratio
-          box to mismatch against, so there is no possible leftover gap
-          between this and the dealer area above it. ── */}
-      <div style={{ flexShrink: 0, width: '100%', padding: '0 4px' }}>
-        <ScaleToFitWidth naturalWidth={BOARD_NATURAL_W} naturalHeight={BOARD_NATURAL_H} onScale={setCardScale}>
-          <CardBoard
-            odds={game.flopOdds}
-            bets={game.bets}
-            caps={game.caps}
-            phase={phase}
-            onPlace={handlePlaceBet}
-            onRemove={handleRemoveBet}
-            handEvals={game.handEvals}
-            leadingHandIds={game.leadingHandIds}
-            winnerHandIds={game.winnerHandIds}
-            bonusPulse={bonusPulse}
-            compact={true}
-          />
-        </ScaleToFitWidth>
-      </div>
-
-      {/* ── Right Sidebar — Rank + Color + River stacked ──
-          Now the flexible element: CardBoard above is a fixed aspect-ratio
-          box, so RightSidebar naturally absorbs whatever height is left. ── */}
-      <div style={{ flex: '1 1 0', minHeight: 0, padding: '4px 4px 0 4px', overflow: 'hidden' }}>
-        <RightSidebar
-          phase={phase}
-          flopOdds={game.flopOdds}
-          riverOdds={game.riverOdds}
-          bets={game.bets}
-          caps={game.caps}
-          boardTotals={game.boardTotals}
-          ante={game.ante}
-          onPlace={handlePlaceBet}
-          onRemove={handleRemoveBet}
-          leadingRankLabel={game.leadingRankLabel}
-          winnerRankLabel={game.winnerRankLabel}
-          leadingColorKeys={game.leadingColorKeys}
-          winnerColorKeys={game.winnerColorKeys}
-          leadingRiverSide={game.leadingRiverSide}
-          winnerRiverSide={game.winnerRiverSide}
-          bonusPulse={bonusPulse}
-          mobileLayout={true}
-          lockSize={34 * cardScale}
-        />
-      </div>
+      {layoutContent}
 
       {/* ── Footer (Player Area) — 2 rows of 3 chips + ante ── */}
       <div ref={footerRef} style={{
@@ -667,10 +710,37 @@ export default function MobileGameLayout({
         onHowToPlay={() => { setShowSettings(false); setShowHowToPlay(true); }}
         onGameRules={() => { setShowSettings(false); setShowGameRules(true); }}
         onResetBank={() => { actions.resetBank(); setPlayerStats({ totalBets: 0, totalWins: 0, roundsPlayed: 0, roundsWon: 0, highestMultiplier: 0, highestBalance: null, lowestBalance: null }); }}
+        onMobileLayout={onOpenMobileLayout}
       />
       <HowToPlayModal isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
       <GameRulesModal isOpen={showGameRules} onClose={() => setShowGameRules(false)} />
       <OnboardingIndicator />
+
+      {/* Layout C — RightSidebar below footer */}
+      {mobileLayout === 'C' && (
+        <div style={{ flexShrink: 0, padding: '4px 4px 2px 4px', borderTop: '2px solid rgba(202,138,4,0.4)', maxHeight: '35dvh', overflow: 'hidden' }}>
+          <RightSidebar
+            phase={phase}
+            flopOdds={game.flopOdds}
+            riverOdds={game.riverOdds}
+            bets={game.bets}
+            caps={game.caps}
+            boardTotals={game.boardTotals}
+            ante={game.ante}
+            onPlace={handlePlaceBet}
+            onRemove={handleRemoveBet}
+            leadingRankLabel={game.leadingRankLabel}
+            winnerRankLabel={game.winnerRankLabel}
+            leadingColorKeys={game.leadingColorKeys}
+            winnerColorKeys={game.winnerColorKeys}
+            leadingRiverSide={game.leadingRiverSide}
+            winnerRiverSide={game.winnerRiverSide}
+            bonusPulse={bonusPulse}
+            mobileLayout={true}
+            lockSize={34 * cardScale}
+          />
+        </div>
+      )}
     </div>
   );
 }

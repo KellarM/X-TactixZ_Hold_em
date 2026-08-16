@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle, RotateCcw } from 'lucide-react';
+import { X, Volume2, VolumeX, BarChart2, BookOpen, HelpCircle, RotateCcw, Smartphone } from 'lucide-react';
 import { useGameSounds } from '@/lib/game/useGameSounds';
 import { formatMoney } from '@/lib/game/cards';
 
@@ -42,7 +42,7 @@ function StatRow({ label, value, highlight }) {
   );
 }
 
-export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay, onGameRules, onResetBank }) {
+export default function SettingsModal({ isOpen, onClose, playerStats = {}, boardTheme = 'blue', setBoardTheme, onHowToPlay, onGameRules, onResetBank, onMobileLayout }) {
   const sounds = useGameSounds();
   const [crowdOn, setCrowdOn] = useState(true);
   const [crowdVolume, setCrowdVolume] = useState(40);
@@ -211,6 +211,16 @@ export default function SettingsModal({ isOpen, onClose, playerStats = {}, board
             <HelpCircle size={28} color="rgba(197,160,89,0.4)" />
             <span style={{ color: 'rgba(197,160,89,0.5)', fontSize: 12, fontWeight: 600 }}>How To Play — Coming Soon</span>
           </div>
+        )}
+
+        {/* Mobile Layout Picker */}
+        {onMobileLayout && (
+          <button
+            onClick={onMobileLayout}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: 'rgba(197,160,89,0.15)', color: GOLD, border: `1px solid ${GOLD}`, borderRadius: 8, padding: '9px 0', fontWeight: 800, fontSize: 13, cursor: 'pointer', letterSpacing: '0.5px' }}
+          >
+            <Smartphone size={15} /> MOBILE LAYOUT
+          </button>
         )}
 
         {/* Close */}

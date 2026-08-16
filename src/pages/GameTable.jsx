@@ -17,6 +17,7 @@ import GameRulesModal from '@/components/game/GameRulesModal';
 import OnboardingIndicator from '@/components/game/OnboardingIndicator';
 import { useViewportTier } from '@/hooks/useViewportTier';
 import MobileGameLayout from '@/components/game/MobileGameLayout';
+import MobileLayoutModal from '@/components/game/MobileLayoutModal';
 
 export default function GameTable() {
   const game = useGame();
@@ -45,6 +46,10 @@ export default function GameTable() {
   // After resolution: bonus sequence runs (or is skipped in the no-bonus
   // safety fallback) -> awaitingReveal becomes true -> "Click Anywhere /
   // Open Window" prompt shows -> player clicks anywhere -> showResult opens.
+  const [mobileLayout, setMobileLayout] = useState(() => {
+    try { return localStorage.getItem('rfpf_mobileLayout') || 'A'; } catch { return 'A'; }
+  });
+  const [showMobileLayout, setShowMobileLayout] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [awaitingReveal, setAwaitingReveal] = useState(false);
   const [bonusPulse, setBonusPulse] = useState({ card: null, rank: null, colorRiver: null, landed: false, cardWon: false, rankWon: false, colorRiverWon: false, cardMult: 5, rankMult: 4, colorRiverMult: 3, markerFading: false });
@@ -229,6 +234,7 @@ export default function GameTable() {
   // receive the same data.
   if (viewportTier === 'mobile') {
     return (
+      <>
       <MobileGameLayout
         game={game}
         phase={phase}
@@ -267,7 +273,17 @@ export default function GameTable() {
         onClearBets={actions.clearBets}
         onNewHand={actions.newHand}
         anteStructureId={game.anteStructure}
+        mobileLayout={mobileLayout}
+        onOpenMobileLayout={() => setShowMobileLayout(true)}
       />
+      {showMobileLayout && (
+        <MobileLayoutModal
+          current={mobileLayout}
+          onSelect={(v) => { setMobileLayout(v); try { localStorage.setItem('rfpf_mobileLayout', v); } catch {} setShowMobileLayout(false); }}
+          onClose={() => setShowMobileLayout(false)}
+        />
+      )}
+      </>
     );
   }
 
@@ -400,6 +416,7 @@ export default function GameTable() {
         onHowToPlay={() => { setShowSettings(false); setShowHowToPlay(true); }}
         onGameRules={() => { setShowSettings(false); setShowGameRules(true); }}
         onResetBank={() => { actions.resetBank(); setPlayerStats({ totalBets: 0, totalWins: 0, roundsPlayed: 0, roundsWon: 0, highestMultiplier: 0, highestBalance: null, lowestBalance: null }); }}
+        onMobileLayout={() => setShowMobileLayout(true)}
       />
       <HowToPlayModal isOpen={showHowToPlay} onClose={() => setShowHowToPlay(false)} />
       <GameRulesModal isOpen={showGameRules} onClose={() => setShowGameRules(false)} />
