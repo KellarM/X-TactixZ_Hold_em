@@ -1270,16 +1270,19 @@ export default function ToolBar() {
         document.body
       )}
 
-      {showCertTest && (
-        <CertificationTestModal onClose={() => setShowCertTest(false)} />
+      {showCertTest && typeof document !== 'undefined' && createPortal(
+        <CertificationTestModal onClose={() => setShowCertTest(false)} />,
+        document.body
       )}
 
-      {showAnteStructure && (
-        <AnteStructureModal onClose={() => setShowAnteStructure(false)} />
+      {showAnteStructure && typeof document !== 'undefined' && createPortal(
+        <AnteStructureModal onClose={() => setShowAnteStructure(false)} />,
+        document.body
       )}
 
-      {showBonusMultiplier && (
-        <BonusMultiplierModal onClose={() => setShowBonusMultiplier(false)} />
+      {showBonusMultiplier && typeof document !== 'undefined' && createPortal(
+        <BonusMultiplierModal onClose={() => setShowBonusMultiplier(false)} />,
+        document.body
       )}
     </>
   );
