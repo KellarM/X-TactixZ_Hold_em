@@ -2,7 +2,7 @@ import React from 'react';
 import { SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
 
 // Official Rapid Fire Open Flop crest logo (locked 2026-08-08)
-const CARD_BACK_LOGO = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png';
+const CARD_BACK_LOGO = 'https://media.base44.com/images/public/69fcabf54838c8e18515a406/6d04ded29_generated_image.png';
 
 // Real card image URLs — all fixed hand cards
 export const CARD_IMAGES = {
