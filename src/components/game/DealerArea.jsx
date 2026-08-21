@@ -93,7 +93,7 @@ function BrandLogo({ side = 'right' }) {
     <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}>
       <img
         src={LOGO_BADGE_URL}
-        alt="X-TactixZ Hold'em"
+        alt="Rapid Fire Open Flop"
         style={{ width: 64, height: 'auto', display: 'block', borderRadius: 6, opacity: 0.92 }}
         onError={(e) => { e.target.style.display = 'none'; }}
       />
@@ -189,7 +189,7 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
         }}>
           <img
             src={LOGO_BADGE_URL}
-            alt="X-TactixZ Hold'em"
+            alt="Rapid Fire Open Flop"
             style={{ width: 64, height: 'auto', display: 'block', borderRadius: 6, opacity: 0.92, flexShrink: 0 }}
             onError={(e) => { e.target.style.display = 'none'; }}
           />

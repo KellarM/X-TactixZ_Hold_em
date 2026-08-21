@@ -339,7 +339,7 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
           {/* Logo */}
           <img
             src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/a8b20c3bd_xtactixz_official_logo.png"
-            alt="X-TactixZ Hold'em"
+            alt="Rapid Fire Open Flop"
             style={{ width: 90, height: 'auto', marginBottom: 18, filter: 'drop-shadow(0 0 12px rgba(197,160,89,0.6))' }}
           />
 

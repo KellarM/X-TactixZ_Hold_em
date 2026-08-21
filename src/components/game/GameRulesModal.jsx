@@ -89,7 +89,7 @@ export default function GameRulesModal({ isOpen, onClose }) {
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-yellow-400" />
                   <h2 className="text-xl font-black text-yellow-400" style={{ fontFamily: 'Oswald, sans-serif' }}>
-                    RAPID FIRE POST-FLOP — GAME RULES
+                    RAPID FIRE OPEN FLOP — GAME RULES
                   </h2>
                 </div>
                 <p className="text-gray-400 text-xs mt-0.5">Everything you need to know to play</p>

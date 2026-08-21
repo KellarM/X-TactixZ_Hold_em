@@ -1,7 +1,7 @@
 import React from 'react';
 import { SUIT_SYMBOL, SUIT_COLOR } from '@/lib/game/cards';
 
-// Official X-TactixZ Hold'em crest logo (locked 2026-08-08)
+// Official Rapid Fire Open Flop crest logo (locked 2026-08-08)
 const CARD_BACK_LOGO = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/9d8e784cb_logo_gold_v3.png';
 
 // Real card image URLs — all fixed hand cards
@@ -74,7 +74,7 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
     lg: { w: 80, h: 112, rank: '26px', suit: '24px', big: 40, pad: '6px' },
   }[size];
 
-  // Card back (face down or no card yet) — Official X-TactixZ crest logo
+  // Card back (face down or no card yet) — Official Rapid Fire Open Flop crest logo
   if (faceDown || !card || !card.rank || !card.suit) {
     return (
       <div
@@ -89,7 +89,7 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
       >
         <img
           src={CARD_BACK_LOGO}
-          alt="X-TactixZ Hold'em"
+          alt="Rapid Fire Open Flop"
           style={{
             width: '92%',
             height: '92%',

@@ -5,7 +5,7 @@ function GameRulesModal({ onClose }) {
   const sections = [
     {
       title: '1. OVERVIEW',
-      body: `Rapid Fire Texas Hold'em — Post-Flop Edition is a fast-paced electronic casino game combining Texas Hold'em hand rankings with multi-position live betting. After the Flop is dealt, four boards open simultaneously: Card Hand, Hand Ranking, Color, and River. Each board has independent odds and caps based on real post-flop probabilities.`,
+      body: `Rapid Fire Open Flop is a fast-paced electronic casino game combining Texas Hold'em hand rankings with multi-position live betting. After the Flop is dealt, four boards open simultaneously: Card Hand, Hand Ranking, Color, and River. Each board has independent odds and caps based on real post-flop probabilities.`,
     },
     {
       title: '2. THE DECK',
