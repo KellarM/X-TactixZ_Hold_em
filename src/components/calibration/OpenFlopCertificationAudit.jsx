@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, RefreshCw, CheckCircle2, XCircle, AlertTriangle, ChevronDown, ChevronRight, Shield, FileDown, Search, BarChart3 } from 'lucide-react';
-import { runPostFlopAudit, resetWorker } from '@/lib/postFlopWorkerBridge';
-import { downloadPostFlopExcel } from '@/lib/game/postFlopExcelExporter';
+import { runOpenFlopAudit, resetWorker } from '@/lib/openFlopWorkerBridge';
+import { downloadOpenFlopExcel } from '@/lib/game/openFlopExcelExporter';
 import { DEALER_STOCK, SUIT_SYMBOL } from '@/lib/game/cards';
 
-import compactMatrix from '@/lib/game/postFlopMatrixCompact.json';
+import compactMatrix from '@/lib/game/openFlopMatrixCompact.json';
 
 // ── Constants ──────────────────────────────────────────────────
 const HAND_LABELS = [
@@ -224,7 +224,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
         boardWinProb: flopData.boardWinProb,
       };
 
-      const data = await runPostFlopAudit({
+      const data = await runOpenFlopAudit({
         flopCards: flopData.cards,
         rounds: module.rounds,
         trueProbabilities,
@@ -261,7 +261,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
         boardWinProb: flopData.boardWinProb,
       };
 
-      const data = await runPostFlopAudit({
+      const data = await runOpenFlopAudit({
         flopCards: flopData.cards,
         rounds: 406,
         trueProbabilities,
@@ -532,7 +532,7 @@ function ModulePanel({ module, flopData, flopIndex }) {
 }
 
 // ── Main Component ────────────────────────────────────────────
-export default function PostFlopCertificationAudit() {
+export default function OpenFlopCertificationAudit() {
   const [flopIndex, setFlopIndex] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFlopList, setShowFlopList] = useState(false);
@@ -601,14 +601,14 @@ export default function PostFlopCertificationAudit() {
         <div className="flex items-center gap-3">
           <Shield className="w-6 h-6 text-amber-400" />
           <div>
-            <h2 className="text-lg font-bold text-white">Post-Flop Certification Audit</h2>
+            <h2 className="text-lg font-bold text-white">Open Flop Certification Audit</h2>
             <p className="text-xs text-slate-400">
               {summary.total.toLocaleString()} flops · {summary.liveCards.toLocaleString()} live card positions · {summary.liveRanks.toLocaleString()} live rank positions
             </p>
           </div>
         </div>
         <button
-          onClick={() => downloadPostFlopExcel(rtpValue)}
+          onClick={() => downloadOpenFlopExcel(rtpValue)}
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-xs font-semibold text-white transition-colors"
         >
           <FileDown className="w-4 h-4" />

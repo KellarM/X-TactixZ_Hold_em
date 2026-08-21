@@ -1,4 +1,4 @@
-// GameRulesModal — standalone full-screen rules modal for Post-Flop.
+// GameRulesModal — standalone full-screen rules modal for Open Flop.
 // Matches the Desktop Gameking GameRulesModal look and style exactly:
 // dark blurred backdrop, centered wide card, header with icon/title/subtitle/X,
 // badge strip with live config values, scrollable collapsible sections.

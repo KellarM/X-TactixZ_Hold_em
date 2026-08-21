@@ -13,7 +13,7 @@ import {
   formatMoney
 } from './cards';
 import { shuffleDeck, dealCommunity, secureRandInt } from './shuffle';
-import { computePostFlopOdds, computeRiverOdds } from './oddsEngine';
+import { computeOpenFlopOdds, computeRiverOdds } from './oddsEngine';
 import { captureHand } from '../captureApi';
 import { settleRound } from './gameLogic';
 import { getStructureById, getSavedStructureId, saveStructureId, resolveAnteBonus, boardQualifies, ANTE_STRUCTURE_EVENT } from './anteStructures';
@@ -265,7 +265,7 @@ export function useGame() {
     if (revealed >= 3) {
       setComputing(true);
       const id = setTimeout(() => {
-        const odds = computePostFlopOdds(deck.slice(0, 3), DEALER_STOCK, FIXED_HANDS);
+        const odds = computeOpenFlopOdds(deck.slice(0, 3), DEALER_STOCK, FIXED_HANDS);
         setFlopOdds(odds);
         setComputing(false);
       }, 40);
@@ -334,13 +334,13 @@ export function useGame() {
     setBonus(null);
     setFlopOdds(null);
     setSelectedChip(ante);  // Auto-select the ante amount as the default betting chip
-    setPhase('postflop');
+    setPhase('openflop');
   }, [ante, bank]);
 
   const placeBet = useCallback((board, position) => {
-    // Phase guard: card/rank/color only during postflop; river only during postturn
+    // Phase guard: card/rank/color only during openflop; river only during postturn
     if (board === 'river' && phase !== 'postturn') return;
-    if (board !== 'river' && phase !== 'postflop') return;
+    if (board !== 'river' && phase !== 'openflop') return;
     const amount = selectedChip;
     if (!amount || amount <= 0) return;  // No chip selected
     if (bank < amount) return;  // Insufficient funds
@@ -378,7 +378,7 @@ export function useGame() {
   const removeBet = useCallback((board, position) => {
     // Phase guard: can only remove bets during the phase they were placed
     if (board === 'river' && phase !== 'postturn') return;
-    if (board !== 'river' && phase !== 'postflop') return;
+    if (board !== 'river' && phase !== 'openflop') return;
     setBets(prevBets => {
       const current = board === 'river'
         ? (prevBets.river[position] || 0)
@@ -666,7 +666,7 @@ export function useGame() {
         ? `Ante set at ${formatMoney(ante)}. Press DEAL to receive the flop.`
         : "The Board is open for play. Place Hand, Rank, and Color bets after the flop.";
     }
-    if (phase === 'postflop') {
+    if (phase === 'openflop') {
       if (computing) return 'Calculating dynamic odds for all boards…';
       const flopStr = flop.map(cardDisplay).join(' ');
       if (leadingRankName && leadingHandIds.length > 0) {

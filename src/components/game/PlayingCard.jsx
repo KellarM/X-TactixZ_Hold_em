@@ -128,7 +128,7 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
   // ── Community card CSS rendering (useImage={false}) ──────────────────────
   // Mirrors Desktop's PlayingCard.jsx "size === 'community'" branch exactly —
   // rose-red border, plain white face, non-rotated bottom-right index — for
-  // visual parity between the Desktop and Post-Flop products. Only reached
+  // visual parity between the Desktop and Open Flop products. Only reached
   // by community cards; fixed hand cards always resolve via CARD_IMAGES above.
   if (size === 'community') {
     const textColor = isRed ? '#dc2626' : '#000';

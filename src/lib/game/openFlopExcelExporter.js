@@ -1,5 +1,5 @@
 // ============================================================
-// POST-FLOP EXCEL EXPORTER
+// OPEN FLOP EXCEL EXPORTER
 // Generates an .xlsx file with:
 //   - Header section with adjustable RTP cell
 //   - 4,960 rows, one per flop combination
@@ -13,7 +13,7 @@
 // ============================================================
 
 import * as XLSX from 'xlsx';
-import probabilityMatrix from './postFlopProbabilityMatrix.json';
+import probabilityMatrix from './openFlopProbabilityMatrix.json';
 
 // Column letter helper (0-indexed → Excel letter)
 function colLetter(idx) {
@@ -33,7 +33,7 @@ const HAND_LABELS = [
 
 const RANK_NAMES = ['1 Pair', '2 Pair', '3 Of A Kind', 'Straight', 'Flush', 'Full House', '4 Of A Kind'];
 
-export function generatePostFlopExcel(rtpValue = 100) {
+export function generateOpenFlopExcel(rtpValue = 100) {
   // Build the worksheet as an array of arrays + formula overrides
   // Layout:
   // Row 0: Title
@@ -51,7 +51,7 @@ export function generatePostFlopExcel(rtpValue = 100) {
   const wsData = [];
 
   // Row 0: Title
-  wsData.push(['Post-Flop Probability Matrix — Rapid Fire Texas Hold\'em']);
+  wsData.push(['Open Flop Probability Matrix — Rapid Fire Texas Hold\'em']);
   // Row 1: RTP setting
   wsData.push(['RTP %', rtpValue, '(Change this cell to recalculate all payouts)']);
   // Row 2: House Edge (formula)
@@ -173,19 +173,19 @@ export function generatePostFlopExcel(rtpValue = 100) {
 
   // Create workbook
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Post-Flop Matrix');
+  XLSX.utils.book_append_sheet(wb, ws, 'Open Flop Matrix');
 
   // Generate file
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
   return new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 }
 
-export function downloadPostFlopExcel(rtpValue = 100) {
-  const blob = generatePostFlopExcel(rtpValue);
+export function downloadOpenFlopExcel(rtpValue = 100) {
+  const blob = generateOpenFlopExcel(rtpValue);
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `Post-Flop-Probability-Matrix-RTP-${rtpValue}.xlsx`;
+  a.download = `Open-Flop-Probability-Matrix-RTP-${rtpValue}.xlsx`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

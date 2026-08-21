@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 /**
- * OnboardingIndicator — Post-Flop variant
+ * OnboardingIndicator — Open Flop variant
  * Renders at GameTable level (NOT wrapping gear button) using position:fixed.
  * Gear button is at bottom-right of the screen — positions calculated from there.
  * Shows on every page load after 600ms. Dismissed by clicking anywhere.

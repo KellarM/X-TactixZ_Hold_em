@@ -560,7 +560,7 @@ export default function MobileGameLayout({
         }}>
           {/* Top slot: Clear button — fixed height reserved even when empty */}
           <div style={{ height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {(phase === 'postflop' || phase === 'postturn') && game.totalWagered > 0 && (
+            {(phase === 'openflop' || phase === 'postturn') && game.totalWagered > 0 && (
               <button onClick={onClearBets}
                 style={{ padding: '2px 6px', borderRadius: 3,
                   border: '1px solid rgba(239,68,68,0.5)', background: 'rgba(127,29,29,0.4)',
@@ -620,7 +620,7 @@ export default function MobileGameLayout({
         }}>
           {/* Top slot: Fold button — fixed height reserved even when empty */}
           <div style={{ height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {(phase === 'postflop' || phase === 'postturn') && (
+            {(phase === 'openflop' || phase === 'postturn') && (
               <button onClick={onFold}
                 style={{ padding: '2px 6px', borderRadius: 3,
                   border: '1px solid #C5A059', background: 'rgba(127,29,29,0.4)',

@@ -1,5 +1,5 @@
 // ============================================================
-// POST-FLOP CERTIFICATION AUDIT WORKER
+// OPEN FLOP CERTIFICATION AUDIT WORKER
 // 
 // Runs Monte Carlo simulation for a given flop (3 fixed community cards).
 // For each round:

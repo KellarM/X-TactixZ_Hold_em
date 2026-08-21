@@ -1,5 +1,5 @@
 // ============================================================
-// POST-FLOP WORKER BRIDGE — Manages the persistent audit worker
+// OPEN FLOP WORKER BRIDGE — Manages the persistent audit worker
 // ============================================================
 
 let _worker = null;
@@ -9,7 +9,7 @@ const _pendingCalls = new Map();
 function getWorker() {
   if (!_worker) {
     _worker = new Worker(
-      new URL('../workers/postFlopAuditWorker.js', import.meta.url),
+      new URL('../workers/openFlopAuditWorker.js', import.meta.url),
       { type: 'module' }
     );
     _worker.onmessage = (e) => {
@@ -35,13 +35,13 @@ function getWorker() {
       }
     };
     _worker.onerror = (e) => {
-      console.error('[PostFlopAuditWorker] Error:', e);
+      console.error('[OpenFlopAuditWorker] Error:', e);
     };
   }
   return _worker;
 }
 
-export function runPostFlopAudit({ flopCards, rounds, trueProbabilities, mode, onProgress }) {
+export function runOpenFlopAudit({ flopCards, rounds, trueProbabilities, mode, onProgress }) {
   return new Promise((resolve, reject) => {
     const callId = ++_callId;
     _pendingCalls.set(callId, { resolve, reject, onProgress });

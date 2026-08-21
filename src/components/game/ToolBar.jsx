@@ -1022,7 +1022,7 @@ function AdjustedBoard({ name, winners, he, posLabel, fixed }) {
 // ── Status Tab ──────────────────────────────────────────────────────────────
 function StatusTab() {
   const items = [
-    { item: 'Math Engine — Post-Flop Odds', status: 'VERIFIED', color: GREEN },
+    { item: 'Math Engine — Open Flop Odds', status: 'VERIFIED', color: GREEN },
     { item: 'RTP Formula Correctness', status: 'VERIFIED', color: GREEN },
     { item: 'Lockout Logic (80% threshold)', status: 'VERIFIED', color: GREEN },
     { item: 'Color Board Dynamic Odds', status: 'VERIFIED', color: GREEN },
@@ -1222,7 +1222,7 @@ export default function ToolBar() {
 
           <button
             className="rf-tool-btn"
-            onClick={() => { setOpen(false); navigate('/post-flop-certification'); }}
+            onClick={() => { setOpen(false); navigate('/open-flop-certification'); }}
           >
             <span style={{
               width: 22, height: 22, borderRadius: 5,

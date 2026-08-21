@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom';
 import { Shield } from 'lucide-react';
-import PostFlopCertificationAudit from '@/components/calibration/PostFlopCertificationAudit';
+import OpenFlopCertificationAudit from '@/components/calibration/OpenFlopCertificationAudit';
 
-export default function PostFlopCertification() {
+export default function OpenFlopCertification() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white p-4 pb-16">
       <div className="max-w-6xl mx-auto">
@@ -11,16 +11,16 @@ export default function PostFlopCertification() {
           <Link to="/" className="text-blue-400 hover:text-blue-300 text-sm mb-3 inline-block">← Back to Game</Link>
           <div className="flex items-center gap-3 mb-1">
             <Shield className="w-8 h-8 text-yellow-400" />
-            <h1 className="text-3xl font-bold">Post-Flop Possibilities</h1>
+            <h1 className="text-3xl font-bold">Open Flop Possibilities</h1>
           </div>
           <p className="text-gray-400 text-sm">
-            Certification audit and probability matrix for all {new Intl.NumberFormat().format(4960)} Post-Flop combinations.
+            Certification audit and probability matrix for all {new Intl.NumberFormat().format(4960)} Open Flop combinations.
             Run Monte Carlo simulations against true odds, compare observed vs theoretical RTP, and download the full Excel reference document.
           </p>
         </div>
 
         {/* Main content */}
-        <PostFlopCertificationAudit />
+        <OpenFlopCertificationAudit />
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ export default function BottomFooter({
   onClearBets, onFold, onSettings,
   anteStructureId,
 }) {
-  const showActions = phase === 'postflop' || phase === 'postturn';
+  const showActions = phase === 'openflop' || phase === 'postturn';
 
   // ── Ante Structure info bubble ──────────────────────────────────────
   // Reads the active structure from props (live-synced from ToolBar changes
@@ -300,7 +300,7 @@ export default function BottomFooter({
 
       {/* ── 4. DEAL BUTTON — locked width, never shifts.
              Fold (left) and Clear Bets (right) flank it, in the empty space
-             above the subtitle line, only during postflop/postturn.
+             above the subtitle line, only during openflop/postturn.
              Uses a 3-column CSS grid (1fr / auto / auto / 1fr... see below) so
              Fold sits at the exact horizontal midpoint between the box's left
              edge and the Deal button's left edge (equal distance from both),

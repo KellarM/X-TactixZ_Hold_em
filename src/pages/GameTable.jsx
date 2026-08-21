@@ -197,7 +197,7 @@ export default function GameTable() {
   const handleDeal = () => {
     sounds.playCardDeal();
     if (phase === 'ante')      actions.deal();
-    else if (phase === 'postflop') actions.dealTurn();
+    else if (phase === 'openflop') actions.dealTurn();
     else if (phase === 'postturn') actions.dealRiver();
   };
 
@@ -211,7 +211,7 @@ export default function GameTable() {
       : 'SELECTING A CHIP PLACES AN ANTE, THEN DEAL';
     mobileInstruction = subLabel;
     canDeal = game.ante > 0 && game.ante <= game.bank;
-  } else if (phase === 'postflop') {
+  } else if (phase === 'openflop') {
     dealLabel = 'DEAL TURN';
     subLabel  = game.selectedChip
       ? 'PLACE BETS ON ANY BOARD — THEN DEAL TURN'

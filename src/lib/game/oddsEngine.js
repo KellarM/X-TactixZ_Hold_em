@@ -1,4 +1,4 @@
-// Post-Flop & Post-Turn odds engine + round resolution.
+// Open Flop odds engine + round resolution.
 // Uses COMPLETE ENUMERATION (not Monte Carlo) per the build spec.
 
 import { bestHand, evaluate5, compare5, combinations } from './pokerEvaluator.js';
@@ -54,7 +54,7 @@ function lockReasonFor(p, payout, high, low) {
 
 // Compute exact odds for every position after the flop (3 community cards).
 // remaining = 29 cards, C(29,2) = 406 turn+river combinations.
-export function computePostFlopOdds(flop, stock, hands) {
+export function computeOpenFlopOdds(flop, stock, hands) {
   const flopKeys = new Set(flop.map(cardKey));
   const remaining = stock.filter(c => !flopKeys.has(cardKey(c)));
   const combos = combinations(remaining, 2); // 406

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-// ■■■ Post-Flop Game Rules Modal ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+// ■■■ Open Flop Game Rules Modal ■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
 function GameRulesModal({ onClose }) {
   const sections = [
     {
@@ -41,7 +41,7 @@ function GameRulesModal({ onClose }) {
     },
     {
       title: '10. RTP & FAIRNESS',
-      body: `Rapid Fire Texas Hold'em — Post-Flop Edition uses a certified RNG shuffle (Fisher-Yates CSPRNG) with burn cards at deck positions 0–4. Odds are computed by complete enumeration of all remaining card combinations after the Flop (406 possible Turn+River pairs). The game is designed for entertainment purposes.`,
+      body: `Rapid Fire Open Flop uses a certified RNG shuffle (Fisher-Yates CSPRNG) with burn cards at deck positions 0–4. Odds are computed by complete enumeration of all remaining card combinations after the Flop (406 possible Turn+River pairs). The game is designed for entertainment purposes.`,
     },
   ];
 
@@ -66,7 +66,7 @@ function GameRulesModal({ onClose }) {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0,
         }}>
           <span style={{ fontSize: 16, fontWeight: 900, color: '#facc15', letterSpacing: '0.1em' }}>
-            GAME RULES — POST-FLOP EDITION
+            GAME RULES — OPEN FLOP EDITION
           </span>
           <button onClick={onClose} style={{ color: '#facc15', background: 'none', border: 'none', cursor: 'pointer', fontSize: 20, lineHeight: 1 }}>✕</button>
         </div>
