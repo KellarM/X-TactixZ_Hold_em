@@ -336,12 +336,6 @@ export default function ResultOverlay({ result, ante = 0, bonus = null, onClose 
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg,#7f1d1d,#ef4444,#7f1d1d)' }} />
           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 4, background: 'linear-gradient(90deg,#7f1d1d,#ef4444,#7f1d1d)' }} />
 
-          {/* Logo */}
-          <img
-            src="https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/a8b20c3bd_xtactixz_official_logo.png"
-            alt="Rapid Fire Open Flop"
-            style={{ width: 90, height: 'auto', marginBottom: 18, filter: 'drop-shadow(0 0 12px rgba(197,160,89,0.6))' }}
-          />
 
           {/* Headline */}
           <div style={{
