@@ -91,9 +91,10 @@ export default function PlayingCard({ card, faceDown = false, size = 'md', class
           src={CARD_BACK_LOGO}
           alt="Rapid Fire Open Flop"
           style={{
-            width: '92%',
-            height: '92%',
-            objectFit: 'contain',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            borderRadius: '5px',
             display: 'block',
           }}
         />
