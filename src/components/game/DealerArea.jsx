@@ -86,20 +86,7 @@ function CardGroup({ cards, indices, label }) {
   );
 }
 
-const LOGO_BADGE_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/7a23486be_xtactixz_template_badge.png';
 
-function BrandLogo({ side = 'right' }) {
-  return (
-    <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}>
-      <img
-        src={LOGO_BADGE_URL}
-        alt="Rapid Fire Open Flop"
-        style={{ width: 64, height: 'auto', display: 'block', borderRadius: 6, opacity: 0.92 }}
-        onError={(e) => { e.target.style.display = 'none'; }}
-      />
-    </div>
-  );
-}
 
 export default function DealerArea({ statusMessage, community = [], phase }) {
   const cards = community;
@@ -170,12 +157,7 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
         overflow: 'visible',
         position: 'relative',
       }}>
-        {/* ── Left side: Logo badge mirrors the right BrandLogo's centering exactly
-               (same flex:1/minWidth:0 container, same centered 64px image) so the two
-               badges are always equidistant from their respective borders, regardless
-               of viewport width. ToolBar is anchored via absolute positioning to the
-               badge's own right edge (not a flex sibling) so it rides along with the
-               badge without altering the badge's centered position at all. ── */}
+        {/* ── Left side: ToolBar spacer (logo badge removed) ── */}
         <div style={{
           flex: 1,
           minWidth: 0,
@@ -187,14 +169,8 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
           minHeight: 0,
           overflow: 'visible',
         }}>
-          <img
-            src={LOGO_BADGE_URL}
-            alt="Rapid Fire Open Flop"
-            style={{ width: 64, height: 'auto', display: 'block', borderRadius: 6, opacity: 0.92, flexShrink: 0 }}
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-          {/* 42px = 32px (half of the 64px badge) + 10px gap — anchors ToolBar
-              immediately right of the badge's actual edge, wherever it lands. */}
+
+          {/* ToolBar anchored to center of left spacer */}
           <div style={{ position: 'absolute', left: 'calc(50% + 42px)', top: '50%', transform: 'translateY(-50%)' }}>
             <ToolBar />
           </div>
@@ -207,7 +183,8 @@ export default function DealerArea({ statusMessage, community = [], phase }) {
           <CardGroup cards={cards} indices={[4]} label="River" />
         </div>
 
-        <BrandLogo side="right" />
+        {/* Right-side spacer — keeps community cards centred (was logo badge) */}
+        <div style={{ flex: 1, minWidth: 0 }} />
       </div>
 
     </div>

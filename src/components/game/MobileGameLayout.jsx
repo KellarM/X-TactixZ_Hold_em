@@ -17,7 +17,6 @@ import { formatMoney } from '@/lib/game/cards';
 import { Settings, Info } from 'lucide-react';
 import { getStructureById, getSavedStructureId, getAnteTierDescriptions, ANTE_STRUCTURE_EVENT } from '@/lib/game/anteStructures';
 
-const LOGO_BADGE_URL = 'https://base44.app/api/apps/69fcabf54838c8e18515a406/files/mp/public/69fcabf54838c8e18515a406/7a23486be_xtactixz_template_badge.png';
 
 // ── Scale-to-fit wrapper ─────────────────────────────────────────────────────
 // Renders `children` at their NATURAL (desktop-tested) pixel size inside an
@@ -217,10 +216,6 @@ export default function MobileGameLayout({
       background: 'transparent',
       borderBottom: '1px solid rgba(202,138,4,0.4)',
     }}>
-      <img src={LOGO_BADGE_URL} alt=""
-        style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
-        onError={(e) => { e.target.style.display = 'none'; }}
-      />
       <div style={{ flex: 1, height: 52, minWidth: 0 }}>
         <ScaleToFit naturalWidth={COMM_NATURAL_W} naturalHeight={COMM_NATURAL_H}>
           <div style={{ display: 'flex', gap: 4 }}>
@@ -236,10 +231,6 @@ export default function MobileGameLayout({
           </div>
         </ScaleToFit>
       </div>
-      <img src={LOGO_BADGE_URL} alt=""
-        style={{ width: 14, height: 'auto', borderRadius: 2, flexShrink: 0, opacity: 0.7 }}
-        onError={(e) => { e.target.style.display = 'none'; }}
-      />
     </div>
   );
 
